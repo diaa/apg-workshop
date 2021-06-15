@@ -1,0 +1,8 @@
+I"T
+<p>Add the <code class="language-plaintext highlighter-rouge">stable</code> Helm charts repository
+<code class="language-plaintext highlighter-rouge">helm repo add stable https://kubernetes-charts.storage.googleapis.com/</code></p>
+
+<p>Upate the repositories
+<code class="language-plaintext highlighter-rouge">helm repo update</code></p>
+
+:ET

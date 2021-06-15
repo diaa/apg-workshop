@@ -1,0 +1,249 @@
+I"�A<p>Azure has a managed Kubernetes service, AKS (Azure Kubernetes Service), we’ll use this to easily deploy and standup a Kubernetes cluster.</p>
+
+<h3 id="tasks">Tasks</h3>
+
+<h4 id="get-the-latest-kubernetes-version-available-in-aks">Get the latest Kubernetes version available in AKS</h4>
+
+<!-- Begin collapsible container div -->
+<div class="collapsible-content-container">
+  <!-- Begin collapsible container button -->
+  <button class="toggle-collapsible">Toggle solution</button>
+  <!-- Begin collapsible container content div -->
+  <div class="collapsible-content">
+    <!-- Begin parsedText -->
+    
+<p>Get the latest available Kubernetes version in your preferred region and store it in a bash variable. Replace <code class="language-plaintext highlighter-rouge">&lt;region&gt;</code> with the region of your choosing, for example <code class="language-plaintext highlighter-rouge">eastus</code>.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">version</span><span class="o">=</span><span class="si">$(</span>az aks get-versions <span class="nt">-l</span> &lt;region&gt; <span class="nt">--query</span> <span class="s1">'orchestrators[?!isPreview] | [-1].orchestratorVersion'</span> <span class="nt">-o</span> tsv<span class="si">)</span>
+</code></pre></div></div>
+
+<p>The above command lists all versions of Kubernetes available to deploy using AKS. Newer Kubernetes releases are typically made available in “Preview”. To get the latest non-preview version of Kubernetes, use the following command instead</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">version</span><span class="o">=</span><span class="si">$(</span>az aks get-versions <span class="nt">-l</span> &lt;region&gt; <span class="nt">--query</span> <span class="s1">'orchestrators[?isPreview == null].[orchestratorVersion][-1]'</span> <span class="nt">-o</span> tsv<span class="si">)</span>
+</code></pre></div></div>
+
+
+    <!-- End parsedText -->
+  </div>
+  <!-- End collapsible container content div -->
+</div>
+<!-- End collapsible container div -->
+
+<h4 id="create-a-resource-group">Create a Resource Group</h4>
+
+<blockquote>
+  <p><strong>Note</strong> You don’t need to create a resource group if you’re using the lab environment. You can use the resource group created for you as part of the lab. To retrieve the resource group name in the managed lab environment, run <code class="language-plaintext highlighter-rouge">az group list</code>.</p>
+</blockquote>
+
+<!-- Begin collapsible container div -->
+<div class="collapsible-content-container">
+  <!-- Begin collapsible container button -->
+  <button class="toggle-collapsible">Toggle solution</button>
+  <!-- Begin collapsible container content div -->
+  <div class="collapsible-content">
+    <!-- Begin parsedText -->
+    
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>az group create <span class="nt">--name</span> &lt;resource-group&gt; <span class="nt">--location</span> &lt;region&gt;
+</code></pre></div></div>
+
+
+    <!-- End parsedText -->
+  </div>
+  <!-- End collapsible container content div -->
+</div>
+<!-- End collapsible container div -->
+
+<h4 id="create-the-aks-cluster">Create the AKS cluster</h4>
+
+<p><strong>Task Hints</strong></p>
+<ul>
+  <li>It’s recommended to use the Azure CLI and the <code class="language-plaintext highlighter-rouge">az aks create</code> command to deploy your cluster. Refer to the docs linked in the Resources section, or run <code class="language-plaintext highlighter-rouge">az aks create -h</code> for details</li>
+  <li>The size and number of nodes in your cluster is not critical but two or more nodes of type <code class="language-plaintext highlighter-rouge">Standard_DS2_v2</code> or larger is recommended</li>
+</ul>
+
+<blockquote>
+  <p><strong>Note</strong> You can create AKS clusters that support the <a href="https://docs.microsoft.com/en-us/azure/aks/cluster-autoscaler#about-the-cluster-autoscaler">cluster autoscaler</a>.</p>
+</blockquote>
+
+<h5 id="option-1-create-an-aks-cluster-without-the-cluster-autoscaler-recommended"><strong>Option 1:</strong> Create an AKS cluster without the cluster autoscaler (recommended)</h5>
+
+<p>Create AKS using the latest version (if using the provided lab environment)</p>
+
+<!-- Begin collapsible container div -->
+<div class="collapsible-content-container">
+  <!-- Begin collapsible container button -->
+  <button class="toggle-collapsible">Toggle solution</button>
+  <!-- Begin collapsible container content div -->
+  <div class="collapsible-content">
+    <!-- Begin parsedText -->
+    
+<blockquote>
+  <p><strong>Note</strong> If you’re using the provided lab environment, you’ll not be able to create the Log Analytics workspace required to enable monitoring while creating the cluster from the Azure Portal unless you manually create the workspace in your assigned resource group. Additionally, if you’re running this on an Azure Pass, please add <code class="language-plaintext highlighter-rouge">--load-balancer-sku basic</code> to the flags, as the Azure Pass only supports the basic Azure Load Balancer. Additionaly, please pass in the service prinipal and secret provided.</p>
+</blockquote>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  az aks create <span class="nt">--resource-group</span> &lt;resource-group&gt; <span class="se">\</span>
+    <span class="nt">--name</span> &lt;unique-aks-cluster-name&gt; <span class="se">\</span>
+    <span class="nt">--location</span> &lt;region&gt; <span class="se">\</span>
+    <span class="nt">--kubernetes-version</span> <span class="nv">$version</span> <span class="se">\</span>
+    <span class="nt">--generate-ssh-keys</span> <span class="se">\</span>
+    <span class="nt">--load-balancer-sku</span> basic <span class="se">\</span>
+    <span class="nt">--service-principal</span> &lt;APP_ID&gt; <span class="se">\</span>
+    <span class="nt">--client-secret</span> &lt;APP_SECRET&gt;
+</code></pre></div></div>
+
+
+    <!-- End parsedText -->
+  </div>
+  <!-- End collapsible container content div -->
+</div>
+<!-- End collapsible container div -->
+
+<p>Create AKS using the latest version (on your own subscription)</p>
+
+<p><!-- Begin collapsible container div --></p>
+<div class="collapsible-content-container">
+  <!-- Begin collapsible container button -->
+  <button class="toggle-collapsible">Toggle solution</button>
+  <!-- Begin collapsible container content div -->
+  <div class="collapsible-content">
+    <!-- Begin parsedText -->
+    
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  az aks create <span class="nt">--resource-group</span> &lt;resource-group&gt; <span class="se">\</span>
+    <span class="nt">--name</span> &lt;unique-aks-cluster-name&gt; <span class="se">\</span>
+    <span class="nt">--location</span> &lt;region&gt; <span class="se">\</span>
+    <span class="nt">--kubernetes-version</span> <span class="nv">$version</span> <span class="se">\</span>
+    <span class="nt">--generate-ssh-keys</span>
+</code></pre></div></div>
+
+
+    <!-- End parsedText -->
+  </div>
+  <!-- End collapsible container content div -->
+</div>
+<!-- End collapsible container div -->
+
+<h5 id="option-2--create-an-aks-cluster-with-the-cluster-autoscaler">**Option 2 ** Create an AKS cluster with the cluster autoscaler</h5>
+
+<p>AKS clusters create worker nodes in Virtual Machine Scale Sets by default. The number of nodes can be easily scaled up and down as required. AKS also supports the Kubernetes Cluster Autoscaler, which will automatically scale the number of nodes on demand to meet current system requirements.</p>
+
+<p>To enable the Cluster Autoscaler, use the <code class="language-plaintext highlighter-rouge">az aks create</code> command specifying the <code class="language-plaintext highlighter-rouge">--enable-cluster-autoscaler</code> parameter, and a node <code class="language-plaintext highlighter-rouge">--min-count</code> and <code class="language-plaintext highlighter-rouge">--max-count</code>.</p>
+
+<p>Create AKS using the latest version (if using the provided lab environment)</p>
+
+<!-- Begin collapsible container div -->
+<div class="collapsible-content-container">
+  <!-- Begin collapsible container button -->
+  <button class="toggle-collapsible">Toggle solution</button>
+  <!-- Begin collapsible container content div -->
+  <div class="collapsible-content">
+    <!-- Begin parsedText -->
+    
+<blockquote>
+  <p><strong>Note</strong> If you’re running this on an Azure Pass or the provided lab environment, please add <code class="language-plaintext highlighter-rouge">--load-balancer-sku basic</code> to the flags, as the Azure Pass only supports the basic Azure Load Balancer. Additionaly, please pass in the service prinipal and secret provided.</p>
+</blockquote>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  az aks create <span class="nt">--resource-group</span> &lt;resource-group&gt; <span class="se">\</span>
+    <span class="nt">--name</span> &lt;unique-aks-cluster-name&gt; <span class="se">\</span>
+    <span class="nt">--location</span> &lt;region&gt; <span class="se">\</span>
+    <span class="nt">--kubernetes-version</span> <span class="nv">$version</span> <span class="se">\</span>
+    <span class="nt">--generate-ssh-keys</span> <span class="se">\</span>
+    <span class="nt">--vm-set-type</span> VirtualMachineScaleSets <span class="se">\</span>
+    <span class="nt">--enable-cluster-autoscaler</span> <span class="se">\</span>
+    <span class="nt">--min-count</span> 1 <span class="se">\</span>
+    <span class="nt">--max-count</span> 3 <span class="se">\</span>
+    <span class="nt">--load-balancer-sku</span> basic <span class="se">\</span>
+    <span class="nt">--service-principal</span> &lt;APP_ID&gt; <span class="se">\</span>
+    <span class="nt">--client-secret</span> &lt;APP_SECRET&gt;
+</code></pre></div></div>
+
+
+    <!-- End parsedText -->
+  </div>
+  <!-- End collapsible container content div -->
+</div>
+<!-- End collapsible container div -->
+
+<p>Create AKS using the latest version (on your own subscription)</p>
+
+<!-- Begin collapsible container div -->
+<div class="collapsible-content-container">
+  <!-- Begin collapsible container button -->
+  <button class="toggle-collapsible">Toggle solution</button>
+  <!-- Begin collapsible container content div -->
+  <div class="collapsible-content">
+    <!-- Begin parsedText -->
+    
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  az aks create <span class="nt">--resource-group</span> &lt;resource-group&gt; <span class="se">\</span>
+    <span class="nt">--name</span> &lt;unique-aks-cluster-name&gt; <span class="se">\</span>
+    <span class="nt">--location</span> &lt;region&gt; <span class="se">\</span>
+    <span class="nt">--kubernetes-version</span> <span class="nv">$version</span> <span class="se">\</span>
+    <span class="nt">--generate-ssh-keys</span> <span class="se">\</span>
+    <span class="nt">--vm-set-type</span> VirtualMachineScaleSets <span class="se">\</span>
+    <span class="nt">--enable-cluster-autoscaler</span> <span class="se">\</span>
+    <span class="nt">--min-count</span> 1 <span class="se">\</span>
+    <span class="nt">--max-count</span> 3
+</code></pre></div></div>
+
+
+    <!-- End parsedText -->
+  </div>
+  <!-- End collapsible container content div -->
+</div>
+<!-- End collapsible container div -->
+
+<h4 id="ensure-you-can-connect-to-the-cluster-using-kubectl">Ensure you can connect to the cluster using <code class="language-plaintext highlighter-rouge">kubectl</code></h4>
+
+<p><strong>Task Hints</strong></p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">kubectl</code> is the main command line tool you will be using for working with Kubernetes and AKS. It is already installed in the Azure Cloud Shell</li>
+  <li>Refer to the AKS docs which includes <a href="https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough#connect-to-the-cluster">a guide for connecting kubectl to your cluster</a> (Note. using the cloud shell you can skip the <code class="language-plaintext highlighter-rouge">install-cli</code> step).</li>
+  <li>A good sanity check is listing all the nodes in your cluster <code class="language-plaintext highlighter-rouge">kubectl get nodes</code>.</li>
+  <li><a href="https://linuxacademy.com/site-content/uploads/2019/04/Kubernetes-Cheat-Sheet_07182019.pdf">This is a good cheat sheet</a> for kubectl.</li>
+  <li>If you run kubectl in PowerShell ISE , you can also define aliases :
+    <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function </span>k<span class="o">([</span>Parameter<span class="o">(</span>ValueFromRemainingArguments <span class="o">=</span> <span class="nv">$true</span><span class="o">)]</span><span class="nv">$params</span><span class="o">)</span> <span class="o">{</span> &amp; kubectl <span class="nv">$params</span> <span class="o">}</span>
+<span class="k">function </span>kubectl<span class="o">([</span>Parameter<span class="o">(</span>ValueFromRemainingArguments <span class="o">=</span> <span class="nv">$true</span><span class="o">)]</span><span class="nv">$params</span><span class="o">)</span> <span class="o">{</span> Write-Output <span class="s2">"&gt; kubectl </span><span class="si">$(</span>@<span class="o">(</span><span class="nv">$params</span> | ForEach-Object <span class="o">{</span><span class="nv">$_</span><span class="o">})</span> <span class="nt">-join</span> <span class="s1">' '</span><span class="si">)</span><span class="s2">"</span><span class="p">;</span> &amp; kubectl.exe <span class="nv">$params</span><span class="p">;</span> <span class="o">}</span>
+<span class="k">function </span>k<span class="o">([</span>Parameter<span class="o">(</span>ValueFromRemainingArguments <span class="o">=</span> <span class="nv">$true</span><span class="o">)]</span><span class="nv">$params</span><span class="o">)</span> <span class="o">{</span> Write-Output <span class="s2">"&gt; k </span><span class="si">$(</span>@<span class="o">(</span><span class="nv">$params</span> | ForEach-Object <span class="o">{</span><span class="nv">$_</span><span class="o">})</span> <span class="nt">-join</span> <span class="s1">' '</span><span class="si">)</span><span class="s2">"</span><span class="p">;</span> &amp; kubectl.exe <span class="nv">$params</span><span class="p">;</span> <span class="o">}</span>
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<!-- Begin collapsible container div -->
+<div class="collapsible-content-container">
+  <!-- Begin collapsible container button -->
+  <button class="toggle-collapsible">Toggle solution</button>
+  <!-- Begin collapsible container content div -->
+  <div class="collapsible-content">
+    <!-- Begin parsedText -->
+    
+<blockquote>
+  <p><strong>Note</strong> <code class="language-plaintext highlighter-rouge">kubectl</code>, the Kubernetes CLI, is already installed on the Azure Cloud Shell.</p>
+</blockquote>
+
+<p>Authenticate</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>az aks get-credentials <span class="nt">--resource-group</span> &lt;resource-group&gt; <span class="nt">--name</span> &lt;unique-aks-cluster-name&gt;
+</code></pre></div></div>
+
+<p>List the available nodes</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get nodes
+</code></pre></div></div>
+
+
+    <!-- End parsedText -->
+  </div>
+  <!-- End collapsible container content div -->
+</div>
+<!-- End collapsible container div -->
+
+<blockquote>
+  <p><strong>Resources</strong></p>
+  <ul>
+    <li><a href="https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough">https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough</a></li>
+    <li><a href="https://docs.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-create">https://docs.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-create</a></li>
+    <li><a href="https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough-portal">https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough-portal</a></li>
+    <li><a href="https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough#connect-to-the-cluster">https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough#connect-to-the-cluster</a></li>
+    <li><a href="https://linuxacademy.com/site-content/uploads/2019/04/Kubernetes-Cheat-Sheet_07182019.pdf">https://linuxacademy.com/site-content/uploads/2019/04/Kubernetes-Cheat-Sheet_07182019.pdf</a></li>
+  </ul>
+</blockquote>
+:ET

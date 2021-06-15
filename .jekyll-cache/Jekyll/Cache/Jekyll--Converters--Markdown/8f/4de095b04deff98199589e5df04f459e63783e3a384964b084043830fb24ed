@@ -1,0 +1,14 @@
+I"Ä
+<p>If you are running this lab as part of the managed lab environment, you may not be able to create the required resources to enable monitoring due to insufficient permissions on the subscription. Youâ€™ll need to pre-create the Log Analytics workspace in your assigned environment resource group.</p>
+
+<p>Follow the <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/learn/quick-create-workspace">Create a Log Analytics workspace in the Azure portal</a> instructions.</p>
+
+<p>Alternatively you can create the workspace using the CLI with the command below, ensure you pick a unique name for the workspace</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>az resource create <span class="nt">--resource-type</span> Microsoft.OperationalInsights/workspaces <span class="se">\</span>
+ <span class="nt">--name</span> &lt;workspace-name&gt; <span class="se">\</span>
+ <span class="nt">--resource-group</span> &lt;resource-group&gt; <span class="se">\</span>
+ <span class="nt">--location</span> &lt;region&gt; <span class="se">\</span>
+ <span class="nt">--properties</span> <span class="s1">'{}'</span> <span class="nt">-o</span> table
+</code></pre></div></div>
+
+:ET

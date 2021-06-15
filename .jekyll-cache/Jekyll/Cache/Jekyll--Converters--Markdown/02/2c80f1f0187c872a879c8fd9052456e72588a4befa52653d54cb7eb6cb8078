@@ -1,0 +1,26 @@
+I"
+<p>Save the YAML below as <code class="language-plaintext highlighter-rouge">captureorder-hpa.yaml</code> or download it from <a href="yaml-solutions/01. challenge-04/captureorder-hpa.yaml">captureorder-hpa.yaml</a></p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">autoscaling/v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">HorizontalPodAutoscaler</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">captureorder</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">scaleTargetRef</span><span class="pi">:</span>
+    <span class="na">apiVersion</span><span class="pi">:</span> <span class="s">apps/v1</span>
+    <span class="na">kind</span><span class="pi">:</span> <span class="s">Deployment</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">captureorder</span>
+  <span class="na">minReplicas</span><span class="pi">:</span> <span class="m">1</span>
+  <span class="na">maxReplicas</span><span class="pi">:</span> <span class="m">10</span>
+  <span class="na">targetCPUUtilizationPercentage</span><span class="pi">:</span> <span class="m">50</span>
+</code></pre></div></div>
+
+<p>And deploy it using</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> captureorder-hpa.yaml
+</code></pre></div></div>
+
+<blockquote>
+  <p><strong>Important</strong> For the Horizontal Pod Autoscaler to work, you <strong>MUST</strong> define requests and limits in the Capture Order API’s deployment.</p>
+</blockquote>
+:ET

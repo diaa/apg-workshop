@@ -1,0 +1,78 @@
+I"ø
+<h5 id="service">Service</h5>
+
+<p>Save the YAML below as <code class="language-plaintext highlighter-rouge">frontend-service.yaml</code> or download it from <a href="yaml-solutions/01. challenge-02/frontend-service.yaml">frontend-service.yaml</a></p>
+
+<blockquote>
+  <p><strong>Note</strong> Since youâ€™re going to expose the deployment using an Ingress, there is no need to use a public IP for the Service, hence you can set the type of the service to be <code class="language-plaintext highlighter-rouge">ClusterIP</code> instead of <code class="language-plaintext highlighter-rouge">LoadBalancer</code>.</p>
+</blockquote>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Service</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">frontend</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">app</span><span class="pi">:</span> <span class="s">frontend</span>
+  <span class="na">ports</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">protocol</span><span class="pi">:</span> <span class="s">TCP</span>
+    <span class="na">port</span><span class="pi">:</span> <span class="m">80</span>
+    <span class="na">targetPort</span><span class="pi">:</span> <span class="m">8080</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">ClusterIP</span>
+</code></pre></div></div>
+
+<p>And deploy it using</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> frontend-service.yaml
+</code></pre></div></div>
+
+<h5 id="deploy-the-ingress-controller-with-helm">Deploy the ingress controller with Helm</h5>
+
+<p>Create a namespace for the ingress</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create namespace ingress
+</code></pre></div></div>
+
+<p>NGINX ingress controller is easily deployed with Helm:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm repo update
+
+helm <span class="nb">install </span>ingress stable/nginx-ingress <span class="nt">--namespace</span> ingress
+</code></pre></div></div>
+
+<p>In a couple of minutes, a public IP address will be allocated to the ingress controller, retrieve with:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get svc  <span class="nt">-n</span> ingress    ingress-nginx-ingress-controller <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s2">"{.status.loadBalancer.ingress[*].ip}"</span>
+</code></pre></div></div>
+
+<h5 id="ingress">Ingress</h5>
+
+<p>Create an Ingress resource that is annotated with the required annotation and make sure to replace <code class="language-plaintext highlighter-rouge">_INGRESS_CONTROLLER_EXTERNAL_IP_</code> with the IP address  you retrieved from the previous command.</p>
+
+<p>Additionally, make sure that the <code class="language-plaintext highlighter-rouge">serviceName</code> and <code class="language-plaintext highlighter-rouge">servicePort</code> are pointing to the correct values as the Service you deployed previously.</p>
+
+<p>Save the YAML below as <code class="language-plaintext highlighter-rouge">frontend-ingress.yaml</code> or download it from <a href="yaml-solutions/01. challenge-02/frontend-ingress.yaml">frontend-ingress.yaml</a></p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">extensions/v1beta1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Ingress</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">frontend</span>
+  <span class="na">annotations</span><span class="pi">:</span>
+    <span class="s">kubernetes.io/ingress.class</span><span class="pi">:</span> <span class="s">nginx</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">rules</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">host</span><span class="pi">:</span> <span class="s">frontend._INGRESS_CONTROLLER_EXTERNAL_IP_.nip.io</span>
+    <span class="na">http</span><span class="pi">:</span>
+      <span class="na">paths</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">backend</span><span class="pi">:</span>
+          <span class="na">serviceName</span><span class="pi">:</span> <span class="s">frontend</span>
+          <span class="na">servicePort</span><span class="pi">:</span> <span class="m">80</span>
+        <span class="na">path</span><span class="pi">:</span> <span class="s">/</span>
+</code></pre></div></div>
+
+<p>And create it using</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> frontend-ingress.yaml
+</code></pre></div></div>
+
+:ET

@@ -1,0 +1,7 @@
+I"
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create secret generic mongodb <span class="nt">--from-literal</span><span class="o">=</span><span class="nv">mongoHost</span><span class="o">=</span><span class="s2">"orders-mongo-mongodb.default.svc.cluster.local"</span> <span class="nt">--from-literal</span><span class="o">=</span><span class="nv">mongoUser</span><span class="o">=</span><span class="s2">"orders-user"</span> <span class="nt">--from-literal</span><span class="o">=</span><span class="nv">mongoPassword</span><span class="o">=</span><span class="s2">"orders-password"</span>
+</code></pre></div></div>
+
+<p>You’ll need to reference this secret when configuring the Order Capture application later on.</p>
+
+:ET

@@ -1,0 +1,16 @@
+I"�
+<blockquote>
+  <p><strong>Note</strong> If you’re using the provided lab environment, you’ll not be able to create the Log Analytics workspace required to enable monitoring while creating the cluster from the Azure Portal unless you manually create the workspace in your assigned resource group. Additionally, if you’re running this on an Azure Pass, please add <code class="language-plaintext highlighter-rouge">--load-balancer-sku basic</code> to the flags, as the Azure Pass only supports the basic Azure Load Balancer. Additionaly, please pass in the service prinipal and secret provided.</p>
+</blockquote>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  az aks create <span class="nt">--resource-group</span> &lt;resource-group&gt; <span class="se">\</span>
+    <span class="nt">--name</span> &lt;unique-aks-cluster-name&gt; <span class="se">\</span>
+    <span class="nt">--location</span> &lt;region&gt; <span class="se">\</span>
+    <span class="nt">--kubernetes-version</span> <span class="nv">$version</span> <span class="se">\</span>
+    <span class="nt">--generate-ssh-keys</span> <span class="se">\</span>
+    <span class="nt">--load-balancer-sku</span> basic <span class="se">\</span>
+    <span class="nt">--service-principal</span> &lt;APP_ID&gt; <span class="se">\</span>
+    <span class="nt">--client-secret</span> &lt;APP_SECRET&gt;
+</code></pre></div></div>
+
+:ET

@@ -1,0 +1,333 @@
+I"U<p>You would like to monitor the performance of different components in your application, view logs and get alerts whenever your application availability goes down or some components fail.</p>
+
+<p>Use a combination of the available tools to setup alerting capabilities for your application.</p>
+
+<h3 id="tasks">Tasks</h3>
+
+<h4 id="create-log-analytics-workspace">Create Log Analytics workspace</h4>
+
+<p><strong>Task Hints</strong></p>
+<ul>
+  <li>To store monitoring data, events and metrics from your Kubernetes cluster and the applications, Azure Monitor can be used. Specifically a component of Azure Monitor called <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/log-query/get-started-portal">Log Analytics</a>.</li>
+  <li>The Azure documentation has <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/learn/quick-create-workspace">guidance on how to create a new Log Analytics workspace</a> using the portal.</li>
+</ul>
+
+<!-- Begin collapsible container div -->
+<div class="collapsible-content-container">
+  <!-- Begin collapsible container button -->
+  <button class="toggle-collapsible">Toggle solution</button>
+  <!-- Begin collapsible container content div -->
+  <div class="collapsible-content">
+    <!-- Begin parsedText -->
+    
+<p>If you are running this lab as part of the managed lab environment, you may not be able to create the required resources to enable monitoring due to insufficient permissions on the subscription. You’ll need to pre-create the Log Analytics workspace in your assigned environment resource group.</p>
+
+<p>Follow the <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/learn/quick-create-workspace">Create a Log Analytics workspace in the Azure portal</a> instructions.</p>
+
+<p>Alternatively you can create the workspace using the CLI with the command below, ensure you pick a unique name for the workspace</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>az resource create <span class="nt">--resource-type</span> Microsoft.OperationalInsights/workspaces <span class="se">\</span>
+ <span class="nt">--name</span> &lt;workspace-name&gt; <span class="se">\</span>
+ <span class="nt">--resource-group</span> &lt;resource-group&gt; <span class="se">\</span>
+ <span class="nt">--location</span> &lt;region&gt; <span class="se">\</span>
+ <span class="nt">--properties</span> <span class="s1">'{}'</span> <span class="nt">-o</span> table
+</code></pre></div></div>
+
+
+    <!-- End parsedText -->
+  </div>
+  <!-- End collapsible container content div -->
+</div>
+<!-- End collapsible container div -->
+
+<h4 id="enable-the-monitoring-addon">Enable the monitoring addon</h4>
+
+<p><strong>Task Hints</strong></p>
+<ul>
+  <li>The monitoring add-on, also known as “Azure Monitor for containers” is <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-overview">a comprehensive monitoring solution for Kubernetes</a></li>
+  <li>To enable the add-on you can use the portal or the Azure CLI, and <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-enable-existing-clusters#integrate-with-an-existing-workspace">integrate with the existing workspace you created in the last task</a></li>
+</ul>
+
+<!-- Begin collapsible container div -->
+<div class="collapsible-content-container">
+  <!-- Begin collapsible container button -->
+  <button class="toggle-collapsible">Toggle solution</button>
+  <!-- Begin collapsible container content div -->
+  <div class="collapsible-content">
+    <!-- Begin parsedText -->
+    
+<p>First get the resource id of the workspace you created, by running</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>az resource show <span class="nt">--resource-type</span> Microsoft.OperationalInsights/workspaces <span class="nt">--resource-group</span> &lt;resource-group&gt; <span class="nt">--name</span> &lt;workspace-name&gt; <span class="nt">--query</span> <span class="s2">"id"</span> <span class="nt">-o</span> tsv
+</code></pre></div></div>
+
+<p>Next enable the monitoring add-on by running the command below, replace the placeholder values and the <em>workspace-resource-id</em> value with the output from the previous command</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>az aks enable-addons <span class="nt">--resource-group</span> &lt;resource-group&gt; <span class="nt">--name</span> &lt;unique-aks-cluster-name&gt; <span class="nt">--addons</span> monitoring <span class="nt">--workspace-resource-id</span> &lt;workspace-resource-id&gt;
+</code></pre></div></div>
+
+
+    <!-- End parsedText -->
+  </div>
+  <!-- End collapsible container content div -->
+</div>
+<!-- End collapsible container div -->
+
+<h4 id="leverage-integrated-azure-kubernetes-service-monitoring-to-figure-out-if-requests-are-failing-inspect-kubernetes-events-or-logs-and-monitor-your-cluster-health">Leverage integrated Azure Kubernetes Service monitoring to figure out if requests are failing, inspect Kubernetes events or logs and monitor your cluster health</h4>
+
+<p><strong>Task Hints</strong></p>
+<ul>
+  <li>View the utilization reports and charts in the Azure portal, via the “Insights” view on your AKS cluster</li>
+  <li>It might be several minutes before the data appears</li>
+</ul>
+
+<!-- Begin collapsible container div -->
+<div class="collapsible-content-container">
+  <!-- Begin collapsible container button -->
+  <button class="toggle-collapsible">Toggle solution</button>
+  <!-- Begin collapsible container content div -->
+  <div class="collapsible-content">
+    <!-- Begin parsedText -->
+    
+<ul>
+  <li>
+    <p>Check the cluster utilization under load
+<img src="media/clusterutilization.png" alt="Cluster utilization" /></p>
+  </li>
+  <li>
+    <p>Identify which pods are causing trouble
+<img src="media/podmetrics.png" alt="Pod utilization" /></p>
+  </li>
+</ul>
+
+
+    <!-- End parsedText -->
+  </div>
+  <!-- End collapsible container content div -->
+</div>
+<!-- End collapsible container div -->
+
+<h4 id="view-the-live-container-logs-and-kubernetes-events">View the live container logs and Kubernetes events</h4>
+
+<p><strong>Task Hints</strong></p>
+<ul>
+  <li>You can view live log data from the ‘Containers’ tab in the Insights view, with the “View live data (preview)” button.</li>
+  <li>You will get an error which can be fixed by setting up some RBAC roles and accounts in your cluster. <a href="https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-live-logs">This is covered in the AKS documentation</a>. You might need to refresh the page in the portal for the changes to take effect.</li>
+</ul>
+
+<!-- Begin collapsible container div -->
+<div class="collapsible-content-container">
+  <!-- Begin collapsible container button -->
+  <button class="toggle-collapsible">Toggle solution</button>
+  <!-- Begin collapsible container content div -->
+  <div class="collapsible-content">
+    <!-- Begin parsedText -->
+    
+<p><strong>If the cluster is RBAC enabled, which is the default</strong>, you have to create the appropriate <code class="language-plaintext highlighter-rouge">ClusterRole</code> and <code class="language-plaintext highlighter-rouge">ClusterRoleBinding</code>.</p>
+
+<p>Save the YAML below as <code class="language-plaintext highlighter-rouge">logreader-rbac.yaml</code> or download it from <a href="yaml-solutions/01. challenge-03/logreader-rbac.yaml">logreader-rbac.yaml</a></p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">rbac.authorization.k8s.io/v1</span> 
+<span class="na">kind</span><span class="pi">:</span> <span class="s">ClusterRole</span> 
+<span class="na">metadata</span><span class="pi">:</span> 
+   <span class="na">name</span><span class="pi">:</span> <span class="s">containerHealth-log-reader</span> 
+<span class="na">rules</span><span class="pi">:</span> 
+    <span class="pi">-</span> <span class="na">apiGroups</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">metrics.k8s.io"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">extensions"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">apps"</span><span class="pi">]</span>
+      <span class="na">resources</span><span class="pi">:</span>
+         <span class="pi">-</span> <span class="s2">"</span><span class="s">pods/log"</span>
+         <span class="pi">-</span> <span class="s2">"</span><span class="s">events"</span>
+         <span class="pi">-</span> <span class="s2">"</span><span class="s">nodes"</span>
+         <span class="pi">-</span> <span class="s2">"</span><span class="s">pods"</span>
+         <span class="pi">-</span> <span class="s2">"</span><span class="s">deployments"</span>
+         <span class="pi">-</span> <span class="s2">"</span><span class="s">replicasets"</span>
+      <span class="na">verbs</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">get"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">list"</span><span class="pi">]</span>
+<span class="nn">---</span> 
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">rbac.authorization.k8s.io/v1</span> 
+<span class="na">kind</span><span class="pi">:</span> <span class="s">ClusterRoleBinding</span> 
+<span class="na">metadata</span><span class="pi">:</span> 
+   <span class="na">name</span><span class="pi">:</span> <span class="s">containerHealth-read-logs-global</span> 
+<span class="na">roleRef</span><span class="pi">:</span> 
+    <span class="na">kind</span><span class="pi">:</span> <span class="s">ClusterRole</span> 
+    <span class="na">name</span><span class="pi">:</span> <span class="s">containerHealth-log-reader</span> 
+    <span class="na">apiGroup</span><span class="pi">:</span> <span class="s">rbac.authorization.k8s.io</span> 
+<span class="na">subjects</span><span class="pi">:</span> 
+   <span class="pi">-</span> <span class="na">kind</span><span class="pi">:</span> <span class="s">User</span> 
+     <span class="na">name</span><span class="pi">:</span> <span class="s">clusterUser</span> 
+     <span class="na">apiGroup</span><span class="pi">:</span> <span class="s">rbac.authorization.k8s.io</span>
+</code></pre></div></div>
+
+<p>And deploy it using</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> logreader-rbac.yaml
+</code></pre></div></div>
+
+<p>If you have a Kubernetes cluster that is not configured with Kubernetes RBAC authorization or integrated with Azure AD single-sign on, you do not need to follow the steps above. Because Kubernetes authorization uses the kube-api, contributor access is required.</p>
+
+<p>Head over to the AKS cluster on the Azure portal, click on <strong>Insights</strong> under <strong>Monitoring</strong>, click on the <strong>Controllers</strong> tab and pick a container to view its live logs or event logs and debug what is going on.</p>
+
+<p><img src="media/livelogs.png" alt="Azure Monitor for Containers: Live Logs" /></p>
+
+
+    <!-- End parsedText -->
+  </div>
+  <!-- End collapsible container content div -->
+</div>
+<!-- End collapsible container div -->
+
+<h4 id="collect-prometheus-metrics-optional">Collect Prometheus metrics (optional)</h4>
+
+<!-- Begin collapsible container div -->
+<div class="collapsible-content-container">
+  <!-- Begin collapsible container button -->
+  <button class="toggle-collapsible">Toggle solution</button>
+  <!-- Begin collapsible container content div -->
+  <div class="collapsible-content">
+    <!-- Begin parsedText -->
+    
+<blockquote>
+  <p><strong>Note</strong> The minimum agent version supported by this feature is microsoft/oms:ciprod07092019 or later.</p>
+</blockquote>
+
+<ol>
+  <li>Run an demo application called “prommetrics-demo” which already has the Prometheus endpoint exposed.
+Save the YAML below as <code class="language-plaintext highlighter-rouge">prommetrics-demo.yaml</code> or download it from <a href="yaml-solutions/01. challenge-03/prommetrics-demo.yaml">prommetrics-demo.yaml</a></li>
+</ol>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+  <span class="na">kind</span><span class="pi">:</span> <span class="s">Service</span>
+  <span class="na">metadata</span><span class="pi">:</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">prommetrics-demo</span>
+    <span class="na">labels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">prommetrics-demo</span>
+  <span class="na">spec</span><span class="pi">:</span>
+    <span class="na">selector</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">prommetrics-demo</span>
+    <span class="na">ports</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">metrics</span>
+      <span class="na">port</span><span class="pi">:</span> <span class="m">8000</span>
+      <span class="na">protocol</span><span class="pi">:</span> <span class="s">TCP</span>
+      <span class="na">targetPort</span><span class="pi">:</span> <span class="m">8000</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">http</span>
+      <span class="na">port</span><span class="pi">:</span> <span class="m">8080</span>
+      <span class="na">protocol</span><span class="pi">:</span> <span class="s">TCP</span>
+      <span class="na">targetPort</span><span class="pi">:</span> <span class="m">8080</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">ClusterIP</span>
+  <span class="s">---</span>
+  <span class="na">apiVersion</span><span class="pi">:</span> <span class="s">apps/v1</span>
+  <span class="na">kind</span><span class="pi">:</span> <span class="s">Deployment</span>
+  <span class="na">metadata</span><span class="pi">:</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">prommetrics-demo</span>
+    <span class="na">labels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">prommetrics-demo</span>
+  <span class="na">spec</span><span class="pi">:</span>
+    <span class="na">replicas</span><span class="pi">:</span> <span class="m">4</span>
+    <span class="na">selector</span><span class="pi">:</span>
+      <span class="na">matchLabels</span><span class="pi">:</span>
+        <span class="na">app</span><span class="pi">:</span> <span class="s">prommetrics-demo</span>
+    <span class="na">template</span><span class="pi">:</span>
+      <span class="na">metadata</span><span class="pi">:</span>
+        <span class="na">annotations</span><span class="pi">:</span>
+          <span class="s">prometheus.io/scrape</span><span class="pi">:</span> <span class="s2">"</span><span class="s">true"</span>
+          <span class="s">prometheus.io/path</span><span class="pi">:</span> <span class="s2">"</span><span class="s">/"</span>
+          <span class="s">prometheus.io/port</span><span class="pi">:</span> <span class="s2">"</span><span class="s">8000"</span>
+        <span class="na">labels</span><span class="pi">:</span>
+          <span class="na">app</span><span class="pi">:</span> <span class="s">prommetrics-demo</span>
+      <span class="na">spec</span><span class="pi">:</span>
+        <span class="na">containers</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">prommetrics-demo</span>
+          <span class="na">image</span><span class="pi">:</span> <span class="s">vishiy/tools:prommetricsv5</span>
+          <span class="na">imagePullPolicy</span><span class="pi">:</span> <span class="s">Always</span>
+          <span class="na">ports</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">containerPort</span><span class="pi">:</span> <span class="m">8000</span>
+          <span class="pi">-</span> <span class="na">containerPort</span><span class="pi">:</span> <span class="m">8080</span>
+</code></pre></div></div>
+<p>And deploy it using</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  kubectl apply <span class="nt">-f</span> prommetrics-demo.yaml
+</code></pre></div></div>
+<p>This application on purpose generates <em>“Bad Request 500”</em> when traffic is generated and it exposes a Prometheus metric called <strong>prommetrics_demo_requests_counter_total.</strong></p>
+
+<ol>
+  <li>Generate traffic to the application by running curl.</li>
+</ol>
+
+<p>Find the pods you just created.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  kubectl get pods | <span class="nb">grep </span>prommetrics-demo
+
+  prommetrics-demo-7f455766c4-gmpjb   1/1       Running   0          2m
+  prommetrics-demo-7f455766c4-n7554   1/1       Running   0          2m
+  prommetrics-demo-7f455766c4-q756r   1/1       Running   0          2m
+  prommetrics-demo-7f455766c4-vqncw   1/1       Running   0          2m
+</code></pre></div></div>
+<p>Select one of the pods and login.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  kubectl <span class="nb">exec</span> <span class="nt">-it</span> prommetrics-demo-7f455766c4-gmpjb bash
+</code></pre></div></div>
+
+<p>While logged on, execute curl to generate traffic.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="k">while</span> <span class="o">(</span><span class="nb">true</span><span class="o">)</span><span class="p">;</span> <span class="k">do </span>curl <span class="s1">'http://prommetrics-demo.default.svc.cluster.local:8080'</span><span class="p">;</span> <span class="nb">sleep </span>5<span class="p">;</span> <span class="k">done</span> 
+</code></pre></div></div>
+
+<blockquote>
+  <p><strong>Note</strong> Leave the window open and keep running this. You will see <strong>“Internal Server Error”</strong> but do not close the window.</p>
+</blockquote>
+
+<ol>
+  <li>Download the configmap template yaml file and apply to start scraping the metrics.</li>
+</ol>
+
+<p>This configmap is pre-configured to scrape the application pods and collect Prometheus metric <strong>“prommetrics_demo_requests_counter_total”</strong> from the demo application in 1min interval.</p>
+
+<p>Download configmap from <a href="yaml-solutions/01. challenge-03/configmap.yaml">configmap.yaml</a></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  interval = "1m"
+  fieldpass = ["prommetrics_demo_requests_counter_total"]
+  monitor_kubernetes_pods = true
+</code></pre></div></div>
+<p>And deploy it using</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  kubectl apply <span class="nt">-f</span> configmap.yaml
+</code></pre></div></div>
+
+<ol>
+  <li>Query the Prometheus metrics and plot a chart.</li>
+</ol>
+
+<p>To access Log Analytics, go to the overview page for your AKS cluster and click <code class="language-plaintext highlighter-rouge">Logs</code> in the list of options on the left hand side under Monitor.</p>
+
+<p>Copy the query below and run.</p>
+
+<blockquote>
+  <p><strong>Note</strong> It can take several minutes for the log data to appear in Log Analytics. If you see “NO RESULTS FOUND”, maybe try the next exercise and return later to view the data.</p>
+</blockquote>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  InsightsMetrics
+  | where Name == "prommetrics_demo_requests_counter_total"
+  | extend dimensions=parse_json(Tags)
+  | extend request_status = tostring(dimensions.request_status)
+  | where request_status == "bad"
+  | project request_status, Val, TimeGenerated | render timechart
+</code></pre></div></div>
+<p>You should be able to plot a chart based on the Prometheus metrics collected.</p>
+
+<p><img src="media/prommetric.png" alt="Azure Monitor for Containers: Prometheus" /></p>
+
+
+    <!-- End parsedText -->
+  </div>
+  <!-- End collapsible container content div -->
+</div>
+<!-- End collapsible container div -->
+
+<blockquote>
+  <p><strong>Resources</strong></p>
+  <ul>
+    <li><a href="https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-overview">https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-overview</a></li>
+    <li><a href="https://docs.microsoft.com/en-us/azure/azure-monitor/learn/quick-create-workspace">https://docs.microsoft.com/en-us/azure/azure-monitor/learn/quick-create-workspace</a></li>
+    <li><a href="https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-live-logs">https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-live-logs</a></li>
+    <li><a href="https://docs.microsoft.com/en-us/azure/monitoring/monitoring-container-insights-overview">https://docs.microsoft.com/en-us/azure/monitoring/monitoring-container-insights-overview</a></li>
+    <li><a href="https://coreos.com/operators/prometheus/docs/latest/">https://coreos.com/operators/prometheus/docs/latest/</a></li>
+  </ul>
+</blockquote>
+:ET

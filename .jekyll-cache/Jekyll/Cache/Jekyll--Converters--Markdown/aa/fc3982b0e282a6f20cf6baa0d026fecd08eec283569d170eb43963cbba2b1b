@@ -1,0 +1,36 @@
+I"•
+
+<p>Save the YAML below as <code class="language-plaintext highlighter-rouge">frontend-ingress-tls.yaml</code> or download it from <a href="yaml-solutions/advanced/frontend-ingress-tls.yaml">frontend-ingress-tls.yaml</a>.</p>
+
+<blockquote>
+  <p><strong>Note</strong> Make sure to replace <code class="language-plaintext highlighter-rouge">_INGRESS_CONTROLLER_EXTERNAL_IP_</code> with your cluster ingress controller external IP. Also make note of the <code class="language-plaintext highlighter-rouge">secretName: frontend-tls-secret</code> as this is where the issued certificate will be stored as a Kubernetes secret.</p>
+</blockquote>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">extensions/v1beta1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Ingress</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">frontend</span>
+  <span class="na">annotations</span><span class="pi">:</span>
+    <span class="s">kubernetes.io/ingress.class</span><span class="pi">:</span> <span class="s">nginx</span>
+    <span class="s">cert-manager.io/cluster-issuer</span><span class="pi">:</span> <span class="s">letsencrypt</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">tls</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">hosts</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">frontend._INGRESS_CONTROLLER_EXTERNAL_IP_.nip.io</span>
+    <span class="na">secretName</span><span class="pi">:</span> <span class="s">frontend-tls-secret</span>
+  <span class="na">rules</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">host</span><span class="pi">:</span> <span class="s">frontend._INGRESS_CONTROLLER_EXTERNAL_IP_.nip.io</span>
+    <span class="na">http</span><span class="pi">:</span>
+      <span class="na">paths</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">backend</span><span class="pi">:</span>
+          <span class="na">serviceName</span><span class="pi">:</span> <span class="s">frontend</span>
+          <span class="na">servicePort</span><span class="pi">:</span> <span class="m">80</span>
+        <span class="na">path</span><span class="pi">:</span> <span class="s">/</span>
+</code></pre></div></div>
+
+<p>And apply it using</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> frontend-ingress-tls.yaml
+</code></pre></div></div>
+
+:ET

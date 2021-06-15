@@ -1,0 +1,32 @@
+I"U
+<h5 id="service">Service</h5>
+
+<p>Save the YAML below as <code class="language-plaintext highlighter-rouge">captureorder-service.yaml</code> or download it from <a href="yaml-solutions/01. challenge-02/captureorder-service.yaml">captureorder-service.yaml</a></p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Service</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">captureorder</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">app</span><span class="pi">:</span> <span class="s">captureorder</span>
+  <span class="na">ports</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">protocol</span><span class="pi">:</span> <span class="s">TCP</span>
+    <span class="na">port</span><span class="pi">:</span> <span class="m">80</span>
+    <span class="na">targetPort</span><span class="pi">:</span> <span class="m">8080</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">LoadBalancer</span>
+</code></pre></div></div>
+
+<p>And deploy it using</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> captureorder-service.yaml
+</code></pre></div></div>
+
+<h5 id="retrieve-the-external-ip-of-the-service">Retrieve the External-IP of the Service</h5>
+
+<p>Use the command below. <strong>Make sure to allow a couple of minutes</strong> for the Azure Load Balancer to assign a public IP.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get service captureorder <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s2">"{.status.loadBalancer.ingress[*].ip}"</span> <span class="nt">-w</span>
+</code></pre></div></div>
+
+:ET

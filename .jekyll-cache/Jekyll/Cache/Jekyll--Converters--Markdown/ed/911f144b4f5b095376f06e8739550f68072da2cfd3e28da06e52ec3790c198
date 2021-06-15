@@ -1,0 +1,61 @@
+I"ª
+
+<p>Letâ€™s Encrypt should automatically verify the hostname in a few seconds. Make sure that the certificate has been issued by running:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl describe certificate frontend
+</code></pre></div></div>
+
+<p>You should get back something like:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Name:         frontend-tls-secret
+Namespace:    default
+Labels:       &lt;none&gt;
+Annotations:  &lt;none&gt;
+API Version:  cert-manager.io/v1alpha2
+Kind:         Certificate
+Metadata:
+  Creation Timestamp:  2020-01-30T14:14:53Z
+  Generation:          2
+  Owner References:
+    API Version:           extensions/v1beta1
+    Block Owner Deletion:  <span class="nb">true
+    </span>Controller:            <span class="nb">true
+    </span>Kind:                  Ingress
+    Name:                  frontend
+    UID:                   069293aa-68a8-4d63-8093-9b82f018f985
+  Resource Version:        326924
+  Self Link:               /apis/cert-manager.io/v1alpha2/namespaces/default/certificates/frontend-tls-secret
+  UID:                     acf4834f-5ad7-42da-b660-be0dfed7eae0
+Spec:
+  Dns Names:
+    frontend.51.105.126.236.nip.io
+  Issuer Ref:
+    Group:      cert-manager.io
+    Kind:       ClusterIssuer
+    Name:       letsencrypt
+  Secret Name:  frontend-tls-secret
+Status:
+  Conditions:
+    Last Transition Time:  2020-01-30T14:19:32Z
+    Message:               Certificate is up to <span class="nb">date </span>and has not expired
+    Reason:                Ready
+    Status:                True
+    Type:                  Ready
+  Not After:               2020-04-29T13:19:31Z
+Events:
+  Type    Reason        Age    From          Message
+  <span class="nt">----</span>    <span class="nt">------</span>        <span class="nt">----</span>   <span class="nt">----</span>          <span class="nt">-------</span>
+  Normal  GeneratedKey  6m23s  cert-manager  Generated a new private key
+  Normal  Requested     6m23s  cert-manager  Created new CertificateRequest resource <span class="s2">"frontend-tls-secret-21669938"</span>
+  Normal  Requested     2m11s  cert-manager  Created new CertificateRequest resource <span class="s2">"frontend-tls-secret-253990887"</span>
+  Normal  Issued        104s   cert-manager  Certificate issued successfully
+
+</code></pre></div></div>
+
+<p>Verify that the frontend is accessible over HTTPS and that the certificate is valid.</p>
+
+<p><img src="media/ssl-certificate.png" alt="Let's Encrypt SSL certificate" /></p>
+
+<p>Note: even if the certificate is valid, you may still get a warning in your browser because of the unsafe cross-site scripting.</p>
+
+:ET

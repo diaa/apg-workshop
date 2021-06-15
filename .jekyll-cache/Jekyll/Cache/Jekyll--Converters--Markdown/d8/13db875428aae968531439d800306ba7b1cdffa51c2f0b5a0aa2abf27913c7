@@ -1,0 +1,263 @@
+I"�L<p>You need to deploy the <strong>Frontend</strong> application (<a href="https://hub.docker.com/r/azch/frontend/">azch/frontend</a>). This requires an external endpoint, exposing the website on port 80 and it needs to connect to the Order Capture API’s public IP address so that it can display the number of orders in the system.</p>
+
+<p>We want to access the Frontend application using a DNS hostname rather than an IP address.</p>
+
+<h3 id="container-images-and-source-code">Container images and source code</h3>
+
+<p>In the table below, you will find the Docker container images provided by the development team on Docker Hub as well as their corresponding source code on GitHub.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Docker Image</th>
+      <th>Source Code</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Frontend</td>
+      <td><a href="https://hub.docker.com/r/azch/frontend/">azch/frontend</a></td>
+      <td><a href="https://github.com/Azure/azch-frontend">source-code</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="environment-variables">Environment variables</h3>
+
+<p>The frontend requires the <code class="language-plaintext highlighter-rouge">CAPTUREORDERSERVICEIP</code> environment variable to be set to the external public IP address of the <code class="language-plaintext highlighter-rouge">captureorder</code> <a href="#retrieve-the-external-ip-of-the-service">service deployed in the previous step</a>. <strong>Make sure you set this environment variable in your deployment file.</strong></p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">CAPTUREORDERSERVICEIP="&lt;public IP of order capture service&gt;"</code></li>
+</ul>
+
+<h3 id="tasks">Tasks</h3>
+
+<h4 id="deploy-the-frontend-application">Deploy the <code class="language-plaintext highlighter-rouge">frontend</code> application</h4>
+
+<p><strong>Task Hints</strong></p>
+<ul>
+  <li>As with the captureorder deployment you will need to create a YAML file which describes your deployment. Making a copy of your captureorder deployment YAML would be a good start, but beware you will need to change
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">image</code></li>
+      <li><code class="language-plaintext highlighter-rouge">readinessProbe</code> endpoint, if you have one (clue use the root url ‘/’)</li>
+      <li><code class="language-plaintext highlighter-rouge">livenessProbe</code> endpoint, if you have one (clue use the root url ‘/’)</li>
+    </ul>
+  </li>
+  <li>As before you need to provide environmental variables to your container using <code class="language-plaintext highlighter-rouge">env</code>, but this time nothing is stored in a secret</li>
+  <li>The container listens on port 8080</li>
+  <li>If your pods are not starting, not ready or are crashing, you can view their logs and detailed status information using <code class="language-plaintext highlighter-rouge">kubectl logs &lt;pod name&gt;</code> and/or <code class="language-plaintext highlighter-rouge">kubectl describe pod &lt;pod name&gt;</code></li>
+</ul>
+
+<!-- Begin collapsible container div -->
+<div class="collapsible-content-container">
+  <!-- Begin collapsible container button -->
+  <button class="toggle-collapsible">Toggle solution</button>
+  <!-- Begin collapsible container content div -->
+  <div class="collapsible-content">
+    <!-- Begin parsedText -->
+    
+<h5 id="deployment">Deployment</h5>
+
+<p>Save the YAML below as <code class="language-plaintext highlighter-rouge">frontend-deployment.yaml</code> or download it from <a href="yaml-solutions/01. challenge-02/frontend-deployment.yaml">frontend-deployment.yaml</a></p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">apps/v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Deployment</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">frontend</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">selector</span><span class="pi">:</span>
+      <span class="na">matchLabels</span><span class="pi">:</span>
+        <span class="na">app</span><span class="pi">:</span> <span class="s">frontend</span>
+  <span class="na">replicas</span><span class="pi">:</span> <span class="m">1</span>
+  <span class="na">template</span><span class="pi">:</span>
+      <span class="na">metadata</span><span class="pi">:</span>
+        <span class="na">labels</span><span class="pi">:</span>
+            <span class="na">app</span><span class="pi">:</span> <span class="s">frontend</span>
+      <span class="na">spec</span><span class="pi">:</span>
+        <span class="na">containers</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">frontend</span>
+          <span class="na">image</span><span class="pi">:</span> <span class="s">azch/frontend</span>
+          <span class="na">imagePullPolicy</span><span class="pi">:</span> <span class="s">Always</span>
+          <span class="na">readinessProbe</span><span class="pi">:</span>
+            <span class="na">httpGet</span><span class="pi">:</span>
+              <span class="na">port</span><span class="pi">:</span> <span class="m">8080</span>
+              <span class="na">path</span><span class="pi">:</span> <span class="s">/</span>
+          <span class="na">livenessProbe</span><span class="pi">:</span>
+            <span class="na">httpGet</span><span class="pi">:</span>
+              <span class="na">port</span><span class="pi">:</span> <span class="m">8080</span>
+              <span class="na">path</span><span class="pi">:</span> <span class="s">/</span>
+          <span class="na">resources</span><span class="pi">:</span>
+            <span class="na">requests</span><span class="pi">:</span>
+              <span class="na">memory</span><span class="pi">:</span> <span class="s2">"</span><span class="s">128Mi"</span>
+              <span class="na">cpu</span><span class="pi">:</span> <span class="s2">"</span><span class="s">100m"</span>
+            <span class="na">limits</span><span class="pi">:</span>
+              <span class="na">memory</span><span class="pi">:</span> <span class="s2">"</span><span class="s">256Mi"</span>
+              <span class="na">cpu</span><span class="pi">:</span> <span class="s2">"</span><span class="s">500m"</span>
+          <span class="na">env</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">CAPTUREORDERSERVICEIP</span>
+            <span class="na">value</span><span class="pi">:</span> <span class="s2">"</span><span class="s">&lt;public</span><span class="nv"> </span><span class="s">IP</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">order</span><span class="nv"> </span><span class="s">capture</span><span class="nv"> </span><span class="s">service&gt;"</span> <span class="c1"># Replace with your captureorder service IP</span>
+          <span class="na">ports</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">containerPort</span><span class="pi">:</span> <span class="m">8080</span>
+</code></pre></div></div>
+
+<p>And deploy it using</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> frontend-deployment.yaml
+</code></pre></div></div>
+
+<h5 id="verify-that-the-pods-are-up-and-running">Verify that the pods are up and running</h5>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get pods <span class="nt">-l</span> <span class="nv">app</span><span class="o">=</span>frontend <span class="nt">-w</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p><strong>Hint</strong> If the pods are not starting, not ready or are crashing, you can view their logs and detailed status information using <code class="language-plaintext highlighter-rouge">kubectl logs &lt;pod name&gt;</code> and <code class="language-plaintext highlighter-rouge">kubectl describe pod &lt;pod name&gt;</code>.</p>
+</blockquote>
+
+
+    <!-- End parsedText -->
+  </div>
+  <!-- End collapsible container content div -->
+</div>
+<!-- End collapsible container div -->
+
+<h4 id="expose-the-frontend-using-a-hostname">Expose the frontend using a hostname</h4>
+
+<p>Instead of accessing the frontend through an IP address, you would like to expose the frontend using a hostname. Explore using <a href="https://kubernetes.io/docs/concepts/services-networking/ingress/">Kubernetes Ingress</a> to achieve this.</p>
+
+<p>There are many options when considering Kubernetes ingress controllers, including the <a href="https://docs.microsoft.com/en-us/azure/application-gateway/ingress-controller-overview">Azure Application Gateway Ingress Controller</a>  The most commonly used is the <a href="https://github.com/helm/charts/tree/master/stable/nginx-ingress">nginx-ingress</a> controller.</p>
+
+<blockquote>
+  <p>The Ingress controller is exposed to the internet by using a Kubernetes service of type LoadBalancer. The Ingress controller watches and implements Kubernetes Ingress resources, which creates routes to application endpoints.</p>
+</blockquote>
+
+<p>We can leverage the <a href="https://nip.io/">nip.io</a> reverse wildcard DNS resolver service to map our ingress controller’s <code class="language-plaintext highlighter-rouge">LoadBalancerIP</code> to a proper DNS name.</p>
+
+<p><strong>Task Hints</strong></p>
+<ul>
+  <li>When placing services behind an ingress you don’t expose them directly with the <code class="language-plaintext highlighter-rouge">LoadBalancer</code> type, instead you use a <code class="language-plaintext highlighter-rouge">ClusterIP</code>. In this network model, external clients access your service via public IP of the <em>ingress controller</em>, which then decides where to route the traffic within your Kubernetes cluster.</li>
+  <li><a href="media/architecture/ingress.png">This picture helps explain how this works</a></li>
+  <li>Use Helm to deploy The NGINX ingress controller. <a href="https://github.com/helm/charts/tree/master/stable/nginx-ingress">The Helm chart for the NGINX ingress controller</a> requires no options/values when deploying it.</li>
+  <li>ProTip: Place the ingress controller in a different namespace, e.g. <code class="language-plaintext highlighter-rouge">ingress</code> by using the <code class="language-plaintext highlighter-rouge">--namespace</code> option.</li>
+  <li>Use <code class="language-plaintext highlighter-rouge">kubectl get service</code> (add <code class="language-plaintext highlighter-rouge">--namespace</code> if you deployed it to a different namespace) to discover the public/external IP of your ingress controller, you will need to make a note of it. the</li>
+  <li><a href="https://nip.io">nip.io</a> is not related to Kubernetes or Azure, however it provides a useful service to map any IP Address to a hostname. This saves you having to create public DNS records. If your ingress controller had IP 12.34.56.78, you could access it via <code class="language-plaintext highlighter-rouge">http://anythingyouwant.12.34.56.78.nip.io</code></li>
+  <li>The <a href="https://kubernetes.io/docs/concepts/services-networking/ingress/#name-based-virtual-hosting">Kubernetes docs have an example of creating an Ingress object</a>, except you will only be specifying a single host rule. Use nip.io and your ingress controller IP to set the <code class="language-plaintext highlighter-rouge">host</code> field. As with the deployment and service, you create this object via a YAML file and <code class="language-plaintext highlighter-rouge">kubectl apply</code></li>
+</ul>
+
+<!-- Begin collapsible container div -->
+<div class="collapsible-content-container">
+  <!-- Begin collapsible container button -->
+  <button class="toggle-collapsible">Toggle solution</button>
+  <!-- Begin collapsible container content div -->
+  <div class="collapsible-content">
+    <!-- Begin parsedText -->
+    
+<h5 id="service">Service</h5>
+
+<p>Save the YAML below as <code class="language-plaintext highlighter-rouge">frontend-service.yaml</code> or download it from <a href="yaml-solutions/01. challenge-02/frontend-service.yaml">frontend-service.yaml</a></p>
+
+<blockquote>
+  <p><strong>Note</strong> Since you’re going to expose the deployment using an Ingress, there is no need to use a public IP for the Service, hence you can set the type of the service to be <code class="language-plaintext highlighter-rouge">ClusterIP</code> instead of <code class="language-plaintext highlighter-rouge">LoadBalancer</code>.</p>
+</blockquote>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Service</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">frontend</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">app</span><span class="pi">:</span> <span class="s">frontend</span>
+  <span class="na">ports</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">protocol</span><span class="pi">:</span> <span class="s">TCP</span>
+    <span class="na">port</span><span class="pi">:</span> <span class="m">80</span>
+    <span class="na">targetPort</span><span class="pi">:</span> <span class="m">8080</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">ClusterIP</span>
+</code></pre></div></div>
+
+<p>And deploy it using</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> frontend-service.yaml
+</code></pre></div></div>
+
+<h5 id="deploy-the-ingress-controller-with-helm">Deploy the ingress controller with Helm</h5>
+
+<p>Create a namespace for the ingress</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create namespace ingress
+</code></pre></div></div>
+
+<p>NGINX ingress controller is easily deployed with Helm:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm repo update
+
+helm <span class="nb">install </span>ingress stable/nginx-ingress <span class="nt">--namespace</span> ingress
+</code></pre></div></div>
+
+<p>In a couple of minutes, a public IP address will be allocated to the ingress controller, retrieve with:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get svc  <span class="nt">-n</span> ingress    ingress-nginx-ingress-controller <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s2">"{.status.loadBalancer.ingress[*].ip}"</span>
+</code></pre></div></div>
+
+<h5 id="ingress">Ingress</h5>
+
+<p>Create an Ingress resource that is annotated with the required annotation and make sure to replace <code class="language-plaintext highlighter-rouge">_INGRESS_CONTROLLER_EXTERNAL_IP_</code> with the IP address  you retrieved from the previous command.</p>
+
+<p>Additionally, make sure that the <code class="language-plaintext highlighter-rouge">serviceName</code> and <code class="language-plaintext highlighter-rouge">servicePort</code> are pointing to the correct values as the Service you deployed previously.</p>
+
+<p>Save the YAML below as <code class="language-plaintext highlighter-rouge">frontend-ingress.yaml</code> or download it from <a href="yaml-solutions/01. challenge-02/frontend-ingress.yaml">frontend-ingress.yaml</a></p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">extensions/v1beta1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Ingress</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">frontend</span>
+  <span class="na">annotations</span><span class="pi">:</span>
+    <span class="s">kubernetes.io/ingress.class</span><span class="pi">:</span> <span class="s">nginx</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">rules</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">host</span><span class="pi">:</span> <span class="s">frontend._INGRESS_CONTROLLER_EXTERNAL_IP_.nip.io</span>
+    <span class="na">http</span><span class="pi">:</span>
+      <span class="na">paths</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">backend</span><span class="pi">:</span>
+          <span class="na">serviceName</span><span class="pi">:</span> <span class="s">frontend</span>
+          <span class="na">servicePort</span><span class="pi">:</span> <span class="m">80</span>
+        <span class="na">path</span><span class="pi">:</span> <span class="s">/</span>
+</code></pre></div></div>
+
+<p>And create it using</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> frontend-ingress.yaml
+</code></pre></div></div>
+
+
+    <!-- End parsedText -->
+  </div>
+  <!-- End collapsible container content div -->
+</div>
+<!-- End collapsible container div -->
+
+<h4 id="browse-to-the-public-hostname-of-the-frontend-and-watch-as-the-number-of-orders-change">Browse to the public hostname of the frontend and watch as the number of orders change</h4>
+
+<p>Once the Ingress is deployed, you should be able to access the frontend at <a href="http://frontend.[cluster_specific_dns_zone]">http://frontend.[cluster_specific_dns_zone]</a>, for example <a href="http://frontend.52.255.217.198.nip.io">http://frontend.52.255.217.198.nip.io</a></p>
+
+<p>If it doesn’t work on the first attempt, give it a few more minutes or try a different browser.</p>
+
+<p>Note: you might need to enable cross-site scripting in your browser; click on the shield icon on the address bar (for Chrome) and allow unsafe script to be executed.</p>
+
+<p><img src="media/ordersfrontend.png" alt="Orders frontend" /></p>
+
+<blockquote>
+  <p><strong>Resources</strong></p>
+  <ul>
+    <li><a href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/">https://kubernetes.io/docs/concepts/workloads/controllers/deployment/</a></li>
+    <li><a href="https://kubernetes.io/docs/concepts/services-networking/service/">https://kubernetes.io/docs/concepts/services-networking/service/</a></li>
+    <li><a href="https://kubernetes.io/docs/concepts/services-networking/ingress/">https://kubernetes.io/docs/concepts/services-networking/ingress/</a></li>
+    <li><a href="https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/">https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/</a></li>
+  </ul>
+</blockquote>
+
+<h3 id="architecture-diagram">Architecture Diagram</h3>
+<p>Here’s a high level diagram of the components you will have deployed when you’ve finished this section (click the picture to enlarge)</p>
+
+<p><a href="media/architecture/frontend.png" target="_blank"><img src="media/architecture/frontend.png" style="width:500px" /></a></p>
+:ET

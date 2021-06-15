@@ -1,0 +1,22 @@
+I"
+<p>If you didn’t delete the load testing Azure Container Instance, delete it now</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>az container delete <span class="nt">-g</span> &lt;resource-group&gt; <span class="nt">-n</span> loadtest
+</code></pre></div></div>
+
+<p>Running the load test again</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>az container create <span class="nt">-g</span> &lt;resource-group&gt; <span class="nt">-n</span> loadtest <span class="nt">--image</span> azch/loadtest <span class="nt">--restart-policy</span> Never <span class="nt">-e</span> <span class="nv">SERVICE_ENDPOINT</span><span class="o">=</span>https://&lt;<span class="nb">hostname </span>order capture service&gt;
+</code></pre></div></div>
+
+<p>Observe your Kubernetes cluster reacting to the load by running</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get pods <span class="nt">-l</span>  <span class="nv">app</span><span class="o">=</span>captureorder
+</code></pre></div></div>
+
+<video width="100%" controls="">
+  <source src="media/autoscale-in-action.mp4" type="video/mp4" />
+Your browser does not support the video tag.
+</video>
+
+:ET

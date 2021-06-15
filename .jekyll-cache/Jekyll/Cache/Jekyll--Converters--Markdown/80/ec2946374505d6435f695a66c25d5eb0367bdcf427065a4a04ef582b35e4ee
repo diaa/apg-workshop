@@ -1,0 +1,18 @@
+I"È
+<blockquote>
+  <p><strong>Hint:</strong> You can test your deployed API with curl, the Order Capture APIâ€™s Swagger endpoint or a tool such as <a href="https://www.getpostman.com/">Postman</a></p>
+</blockquote>
+
+<p>Send a <code class="language-plaintext highlighter-rouge">POST</code> request using curl</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-d</span> <span class="s1">'{"EmailAddress": "email@domain.com", "Product": "prod-1", "Total": 100}'</span> <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="nt">-X</span> POST http://[Your Service Public LoadBalancer IP]/v1/order
+</code></pre></div></div>
+
+<p>You can expect the order ID returned by API once your order has been written into Mongo DB successfully</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"5beaa09a055ed200016e582f"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+:ET

@@ -1,0 +1,30 @@
+I"D
+<p>Save the YAML below as <code class="language-plaintext highlighter-rouge">letsencrypt-clusterissuer.yaml</code> or download it from <a href="yaml-solutions/advanced/letsencrypt-clusterissuer.yaml">letsencrypt-clusterissuer.yaml</a>.</p>
+
+<blockquote>
+  <p><strong>Note</strong> Make sure to replace <code class="language-plaintext highlighter-rouge">_YOUR_EMAIL_</code> with your email.</p>
+</blockquote>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">cert-manager.io/v1alpha2</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">ClusterIssuer</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">letsencrypt</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">acme</span><span class="pi">:</span>
+    <span class="na">server</span><span class="pi">:</span> <span class="s">https://acme-v02.api.letsencrypt.org/directory</span> <span class="c1"># production</span>
+    <span class="c1">#server: https://acme-staging-v02.api.letsencrypt.org/directory # staging</span>
+    <span class="na">email</span><span class="pi">:</span> <span class="s">_YOUR_EMAIL_</span> <span class="c1"># replace this with your email</span>
+    <span class="na">privateKeySecretRef</span><span class="pi">:</span>
+      <span class="na">name</span><span class="pi">:</span> <span class="s">letsencrypt</span>
+    <span class="na">solvers</span><span class="pi">:</span>
+       <span class="pi">-</span> <span class="na">http01</span><span class="pi">:</span>
+           <span class="na">ingress</span><span class="pi">:</span>
+             <span class="na">class</span><span class="pi">:</span>  <span class="s">nginx</span>
+</code></pre></div></div>
+
+<p>And apply it using</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> letsencrypt-clusterissuer.yaml
+</code></pre></div></div>
+
+:ET

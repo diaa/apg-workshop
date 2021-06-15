@@ -1,0 +1,87 @@
+I"
+<h4 id="create-a-new-kubernetes-ingress-resource-to-direct-traffic-to-the-captureorder-service">Create a new Kubernetes Ingress resource to direct traffic to the <code class="language-plaintext highlighter-rouge">captureorder</code> service</h4>
+
+<p>Save the YAML below as <code class="language-plaintext highlighter-rouge">captureorder-ingress-tls.yaml</code> or download it from <a href="yaml-solutions/advanced/captureorder-ingress-tls.yaml">captureorder-ingress-tls.yaml</a>.</p>
+
+<blockquote>
+  <p><strong>Note</strong> Make sure to replace <code class="language-plaintext highlighter-rouge">_INGRESS_CONTROLLER_EXTERNAL_IP_</code> with your cluster’s ingress controller external IP.</p>
+</blockquote>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: captureorder
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt
+    nginx.ingress.kubernetes.io/app-root: /v1/order
+spec:
+  tls:
+  - hosts:
+    - captureorder._INGRESS_CONTROLLER_EXTERNAL_IP_.nip.io
+    secretName: captureorder-tls-secret
+  rules:
+  - host: captureorder._INGRESS_CONTROLLER_EXTERNAL_IP_.nip.io
+    http:
+      paths:
+      - backend:
+          serviceName: captureorder
+          servicePort: 80
+        path: /
+</code></pre></div></div>
+
+<p>You should now be able to query the <code class="language-plaintext highlighter-rouge">/v1/orders</code> endpoint or open the <code class="language-plaintext highlighter-rouge">/swagger</code> endpoint using HTTPS.</p>
+
+<h4 id="update-the-frontend-deployment-to-use-https-to-access-the-capture-order-api">Update the Frontend deployment to use HTTPS to access the Capture Order API</h4>
+
+<p>We need to redeploy the Frontend application so that it accesses the Capture Order API via the newly created Ingress</p>
+
+<p>Save the YAML below as <code class="language-plaintext highlighter-rouge">frontend-deployment.yaml</code> or download it from <a href="yaml-solutions/advanced/frontend-deployment.yaml">frontend-deployment.yaml</a>.</p>
+
+<blockquote>
+  <p><strong>Note</strong> Make sure to replace <code class="language-plaintext highlighter-rouge">_INGRESS_CONTROLLER_EXTERNAL_IP_</code> with your cluster’s ingress controller external IP.</p>
+</blockquote>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  selector:
+      matchLabels:
+        app: frontend
+  replicas: 1
+  template:
+      metadata:
+        labels:
+            app: frontend
+      spec:
+        containers:
+        - name: frontend
+          image: azch/frontend
+          imagePullPolicy: Always
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /
+          resources:
+            requests:
+              memory: <span class="s2">"128Mi"</span>
+              cpu: <span class="s2">"100m"</span>
+            limits:
+              memory: <span class="s2">"256Mi"</span>
+              cpu: <span class="s2">"500m"</span>
+          <span class="nb">env</span>:
+          - name: CAPTUREORDERSERVICEIP
+            value: <span class="s2">"captureorder._INGRESS_CONTROLLER_EXTERNAL_IP_.nip.io"</span>
+          ports:
+          - containerPort: 8080
+</code></pre></div></div>
+
+<p>You should now be able to open the Frontend application and the order information should be displayed correctly.</p>
+
+:ET

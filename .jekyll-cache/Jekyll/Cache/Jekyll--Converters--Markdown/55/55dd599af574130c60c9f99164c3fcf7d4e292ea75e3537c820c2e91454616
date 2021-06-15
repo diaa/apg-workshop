@@ -1,0 +1,16 @@
+I"”
+<blockquote>
+  <p><strong>Note</strong> <code class="language-plaintext highlighter-rouge">kubectl</code>, the Kubernetes CLI, is already installed on the Azure Cloud Shell.</p>
+</blockquote>
+
+<p>Authenticate</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>az aks get-credentials <span class="nt">--resource-group</span> &lt;resource-group&gt; <span class="nt">--name</span> &lt;unique-aks-cluster-name&gt;
+</code></pre></div></div>
+
+<p>List the available nodes</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get nodes
+</code></pre></div></div>
+
+:ET

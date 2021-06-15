@@ -1,0 +1,75 @@
+I"I
+<h5 id="deployment">Deployment</h5>
+
+<p>Save the YAML below as <code class="language-plaintext highlighter-rouge">captureorder-deployment.yaml</code> or download it from <a href="yaml-solutions/01. challenge-02/captureorder-deployment.yaml">captureorder-deployment.yaml</a></p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">apps/v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Deployment</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">captureorder</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">selector</span><span class="pi">:</span>
+      <span class="na">matchLabels</span><span class="pi">:</span>
+        <span class="na">app</span><span class="pi">:</span> <span class="s">captureorder</span>
+  <span class="na">replicas</span><span class="pi">:</span> <span class="m">2</span>
+  <span class="na">template</span><span class="pi">:</span>
+      <span class="na">metadata</span><span class="pi">:</span>
+        <span class="na">labels</span><span class="pi">:</span>
+            <span class="na">app</span><span class="pi">:</span> <span class="s">captureorder</span>
+      <span class="na">spec</span><span class="pi">:</span>
+        <span class="na">containers</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">captureorder</span>
+          <span class="na">image</span><span class="pi">:</span> <span class="s">azch/captureorder</span>
+          <span class="na">imagePullPolicy</span><span class="pi">:</span> <span class="s">Always</span>
+          <span class="na">readinessProbe</span><span class="pi">:</span>
+            <span class="na">httpGet</span><span class="pi">:</span>
+              <span class="na">port</span><span class="pi">:</span> <span class="m">8080</span>
+              <span class="na">path</span><span class="pi">:</span> <span class="s">/healthz</span>
+          <span class="na">livenessProbe</span><span class="pi">:</span>
+            <span class="na">httpGet</span><span class="pi">:</span>
+              <span class="na">port</span><span class="pi">:</span> <span class="m">8080</span>
+              <span class="na">path</span><span class="pi">:</span> <span class="s">/healthz</span>
+          <span class="na">resources</span><span class="pi">:</span>
+            <span class="na">requests</span><span class="pi">:</span>
+              <span class="na">memory</span><span class="pi">:</span> <span class="s2">"</span><span class="s">128Mi"</span>
+              <span class="na">cpu</span><span class="pi">:</span> <span class="s2">"</span><span class="s">100m"</span>
+            <span class="na">limits</span><span class="pi">:</span>
+              <span class="na">memory</span><span class="pi">:</span> <span class="s2">"</span><span class="s">256Mi"</span>
+              <span class="na">cpu</span><span class="pi">:</span> <span class="s2">"</span><span class="s">500m"</span>
+          <span class="na">env</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">MONGOHOST</span>
+            <span class="na">valueFrom</span><span class="pi">:</span>
+              <span class="na">secretKeyRef</span><span class="pi">:</span>
+                <span class="na">name</span><span class="pi">:</span> <span class="s">mongodb</span>
+                <span class="na">key</span><span class="pi">:</span> <span class="s">mongoHost</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">MONGOUSER</span>
+            <span class="na">valueFrom</span><span class="pi">:</span>
+              <span class="na">secretKeyRef</span><span class="pi">:</span>
+                <span class="na">name</span><span class="pi">:</span> <span class="s">mongodb</span>
+                <span class="na">key</span><span class="pi">:</span> <span class="s">mongoUser</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">MONGOPASSWORD</span>
+            <span class="na">valueFrom</span><span class="pi">:</span>
+              <span class="na">secretKeyRef</span><span class="pi">:</span>
+                <span class="na">name</span><span class="pi">:</span> <span class="s">mongodb</span>
+                <span class="na">key</span><span class="pi">:</span> <span class="s">mongoPassword</span>
+          <span class="na">ports</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">containerPort</span><span class="pi">:</span> <span class="m">8080</span>
+</code></pre></div></div>
+
+<p>And deploy it using</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> captureorder-deployment.yaml
+</code></pre></div></div>
+
+<h5 id="verify-that-the-pods-are-up-and-running">Verify that the pods are up and running</h5>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get pods <span class="nt">-l</span> <span class="nv">app</span><span class="o">=</span>captureorder <span class="nt">-w</span>
+</code></pre></div></div>
+
+<p>Wait until you see pods are in the <code class="language-plaintext highlighter-rouge">Running</code> state.</p>
+
+<blockquote>
+  <p><strong>Hint</strong> If the pods are not starting, not ready or are crashing, you can view their logs and detailed status information using <code class="language-plaintext highlighter-rouge">kubectl logs &lt;pod name&gt;</code> and <code class="language-plaintext highlighter-rouge">kubectl describe pod &lt;pod name&gt;</code>.</p>
+</blockquote>
+
+:ET

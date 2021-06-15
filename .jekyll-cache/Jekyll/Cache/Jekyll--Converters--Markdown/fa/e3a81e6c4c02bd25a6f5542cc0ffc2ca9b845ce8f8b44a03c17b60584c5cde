@@ -1,0 +1,13 @@
+I"j
+<p>The recommended way to deploy MongoDB would be to use a Helm Chart.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm <span class="nb">install </span>orders-mongo stable/mongodb <span class="nt">--set</span> <span class="nv">mongodbUsername</span><span class="o">=</span>orders-user,mongodbPassword<span class="o">=</span>orders-password,mongodbDatabase<span class="o">=</span>akschallenge
+</code></pre></div></div>
+
+<blockquote>
+  <p><strong>Hint</strong> Using this command, the Helm Chart will expose the MongoDB instance as a Kubernetes Service accessible at <code class="language-plaintext highlighter-rouge">orders-mongo-mongodb.default.svc.cluster.local</code></p>
+</blockquote>
+
+<p>Remember to use the username and password from the command above when creating the Kubernetes secrets in the next step.</p>
+
+:ET
