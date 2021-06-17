@@ -1,11 +1,11 @@
 ---
 sectionid: deploy
 sectionclass: h2
-title: Deploy Kubernetes with Azure Kubernetes Service (AKS)
+title: Deploy Azure Database for PostgreSQL with Azure Portal
 parent-id: upandrunning
 ---
 
-Azure has a managed Kubernetes service, AKS (Azure Kubernetes Service), we'll use this to easily deploy and standup a Kubernetes cluster.
+Azure Database for PostgreSQL is a fully-managed database as a service with built-in capabilities, such as high availability and intelligence. 
 
 ### Tasks
 

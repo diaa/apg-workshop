@@ -3,10 +3,11 @@
 sectionid: db
 sectionclass: h2
 parent-id: upandrunning
-title: Deploy MongoDB
+title: Multiversion Concurrency Control, MVCC
 ---
 
-You need to deploy MongoDB in a way that is scalable and production ready.
+This section describes the behavior of the PostgreSQL database system when two or more sessions try to access the same data at the same time. The goals in that situation are to allow efficient access for all sessions while maintaining strict data integrity. Every developer of database applications and DBA should be familiar with the topics covered in this chapter.
+
 
 **Task Hints**
 * Use Helm and a standard provided Helm chart to deploy MongoDB.
