@@ -3,224 +3,197 @@
 sectionid: frontend
 sectionclass: h2
 parent-id: upandrunning
-title: Deploy the frontend using Ingress
+title: psql — PostgreSQL interactive terminal
 ---
 
-You need to deploy the **Frontend** application ([azch/frontend](https://hub.docker.com/r/azch/frontend/)). This requires an external endpoint, exposing the website on port 80 and it needs to connect to the Order Capture API's public IP address so that it can display the number of orders in the system.
+psql is a terminal-based front-end to PostgreSQL. It enables you to type in queries interactively, issue them to PostgreSQL, and see the query results. Alternatively, input can be from a file or from command line arguments. In addition, psql provides a number of meta-commands and various shell-like features to facilitate writing scripts and automating a wide variety of tasks.
+Anything you enter in psql that begins with an **unquoted backslash** (\\) is a psql meta-command that is processed by psql itself. These commands make psql more useful for administration or scripting. Meta-commands are often called slash or backslash commands. The format of a psql command is the backslash, followed immediately by a command verb, then any arguments. The arguments are separated from the command verb and each other by any number of whitespace characters.
 
-We want to access the Frontend application using a DNS hostname rather than an IP address. 
+List the databases in the cluster:
 
-### Container images and source code
-
-In the table below, you will find the Docker container images provided by the development team on Docker Hub as well as their corresponding source code on GitHub.
-
-| Component                    | Docker Image                                                     | Source Code                                                       | 
-|------------------------------|------------------------------------------------------------------|-------------------------------------------------------------------|
-| Frontend            | [azch/frontend](https://hub.docker.com/r/azch/frontend/) | [source-code](https://github.com/Azure/azch-frontend)         |
-
-### Environment variables
-
-The frontend requires the `CAPTUREORDERSERVICEIP` environment variable to be set to the external public IP address of the `captureorder` [service deployed in the previous step](#retrieve-the-external-ip-of-the-service). **Make sure you set this environment variable in your deployment file.**
-
-  * `CAPTUREORDERSERVICEIP="<public IP of order capture service>"`
-
-### Tasks
-
-#### Deploy the `frontend` application
-
-**Task Hints**
-* As with the captureorder deployment you will need to create a YAML file which describes your deployment. Making a copy of your captureorder deployment YAML would be a good start, but beware you will need to change
-  * `image`
-  * `readinessProbe` endpoint, if you have one (clue use the root url '/')
-  * `livenessProbe` endpoint, if you have one (clue use the root url '/')
-* As before you need to provide environmental variables to your container using `env`, but this time nothing is stored in a secret
-* The container listens on port 8080 
-* If your pods are not starting, not ready or are crashing, you can view their logs and detailed status information using `kubectl logs <pod name>` and/or `kubectl describe pod <pod name>`
-  
-{% collapsible %}
-
-##### Deployment
-
-Save the YAML below as `frontend-deployment.yaml` or download it from [frontend-deployment.yaml](yaml-solutions/01. challenge-02/frontend-deployment.yaml)
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: frontend
-spec:
-  selector:
-      matchLabels:
-        app: frontend
-  replicas: 1
-  template:
-      metadata:
-        labels:
-            app: frontend
-      spec:
-        containers:
-        - name: frontend
-          image: azch/frontend
-          imagePullPolicy: Always
-          readinessProbe:
-            httpGet:
-              port: 8080
-              path: /
-          livenessProbe:
-            httpGet:
-              port: 8080
-              path: /
-          resources:
-            requests:
-              memory: "128Mi"
-              cpu: "100m"
-            limits:
-              memory: "256Mi"
-              cpu: "500m"
-          env:
-          - name: CAPTUREORDERSERVICEIP
-            value: "<public IP of order capture service>" # Replace with your captureorder service IP
-          ports:
-          - containerPort: 8080
+```sh 
+postgres=> \l
 ```
 
-And deploy it using
+List the databases in the cluster with their sizes:
+```sh 
+postgres=> \l+
+```
+
+Copy and paste following statements:
+```sql
+CREATE DATABASE quiz;
+\connect quiz
+
+CREATE TABLE public.answers (
+    question_id serial NOT NULL,
+    answer text NOT NULL,
+    is_correct boolean NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE public.questions (
+    question_id integer NOT NULL,
+    question text NOT NULL
+);
+
+ALTER TABLE ONLY public.answers
+    ADD CONSTRAINT answers_pkey PRIMARY KEY (question_id, answer);
+
+ALTER TABLE ONLY public.questions
+    ADD CONSTRAINT questions_pkey PRIMARY KEY (question_id);
+
+ALTER TABLE ONLY public.answers
+    ADD CONSTRAINT question_id_answers_fk FOREIGN KEY (question_id) REFERENCES public.questions(question_id);
+
+CREATE SCHEMA calc;
+CREATE OR REPLACE FUNCTION calc.increment(i integer) RETURNS integer AS $$
+        BEGIN
+                RETURN i + 1;
+        END;
+$$ LANGUAGE plpgsql;
+
+CREATE VIEW calc.vista AS SELECT $$I'm in calc$$;
+
+CREATE VIEW public.vista AS SELECT $$I'm in public$$;
+
+INSERT INTO public.questions (question_id, question) VALUES (1, 'Jaki symbol chemiczny ma tlen?');
+
+INSERT INTO public.answers (question_id, answer, is_correct) VALUES (1, 'Au', false);
+INSERT INTO public.answers (question_id, answer, is_correct) VALUES (1, 'O', true);
+INSERT INTO public.answers (question_id, answer, is_correct) VALUES (1, 'Oxy', false);
+INSERT INTO public.answers (question_id, answer, is_correct) VALUES (1, 'Tl', false);
+```
+
+List the databases in the cluster:
+```sh 
+
+```
+
+Lists schemas (namespaces) in the current database:
+```sh 
+quiz=> \dn
+     List of schemas
+  Name  |     Owner
+--------+----------------
+ calc   | gustaw
+ public | azure_pg_admin
+(2 rows)
+```
+
+Check your current conection:
+```sh 
+quiz=> \conninfo
+You are connected to database "quiz" as user "gustaw" on host "demo.postgres.database.azure.com" (address "20.67.160.95") at port "5432".
+SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
+```
+
+Check what's going on on your database:
+```sh
+quiz=> TABLE pg_stat_activity;
+```
+
+It's unreadable, isn't it? Change the display format:
+```sh 
+quiz=> \x auto
+```
+
+And try to display the same view again:
+```sh
+quiz=> SELECT * FROM pg_stat_activity;
+```
+
+Display all relations (including tables, views, materialized views, indexes, sequences, or foreign tables) in your database:
+```sh
+quiz=> \d
+                   List of relations
+ Schema |          Name           |   Type   |  Owner
+--------+-------------------------+----------+----------
+ public | answers                 | table    | postgres
+ public | answers_question_id_seq | sequence | postgres
+ public | questions               | table    | postgres
+ public | vista                   | view     | postgres
+(4 rows)
+```
+
+Display all relations with their size and description:
+```sh
+quiz=> \d+
+                                 List of relations
+ Schema |          Name           |   Type   |  Owner   |    Size    | Description
+--------+-------------------------+----------+----------+------------+-------------
+ public | answers                 | table    | postgres | 16 kB      |
+ public | answers_question_id_seq | sequence | postgres | 8192 bytes |
+ public | questions               | table    | postgres | 16 kB      |
+ public | vista                   | view     | postgres | 0 bytes    |
+(4 rows)
+```
+
+Display information about one, specific table:
+```sh
+quiz=> \dt+ pg_class
+```
+
+Display tables, which names start with "pg_c[...]"
+```sh
+quiz=> \dt pg_c*
+```
+
+Check out help information:
 
 ```sh
-kubectl apply -f frontend-deployment.yaml
+quiz=> \?
 ```
 
-##### Verify that the pods are up and running
-
+Display the number of total connections to your database:
 ```sh
-kubectl get pods -l app=frontend -w
+quiz=> SELECT count(*) FROM pg_stat_activity;
 ```
 
-> **Hint** If the pods are not starting, not ready or are crashing, you can view their logs and detailed status information using `kubectl logs <pod name>` and `kubectl describe pod <pod name>`.
-
-{% endcollapsible %}
-
-#### Expose the frontend using a hostname
-
-Instead of accessing the frontend through an IP address, you would like to expose the frontend using a hostname. Explore using [Kubernetes Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) to achieve this.
-
-There are many options when considering Kubernetes ingress controllers, including the [Azure Application Gateway Ingress Controller](https://docs.microsoft.com/en-us/azure/application-gateway/ingress-controller-overview)  The most commonly used is the [nginx-ingress](https://github.com/helm/charts/tree/master/stable/nginx-ingress) controller.
-
-> The Ingress controller is exposed to the internet by using a Kubernetes service of type LoadBalancer. The Ingress controller watches and implements Kubernetes Ingress resources, which creates routes to application endpoints.
-
-We can leverage the [nip.io](https://nip.io/) reverse wildcard DNS resolver service to map our ingress controller's `LoadBalancerIP` to a proper DNS name.
-
-**Task Hints**
-* When placing services behind an ingress you don't expose them directly with the `LoadBalancer` type, instead you use a `ClusterIP`. In this network model, external clients access your service via public IP of the *ingress controller*, which then decides where to route the traffic within your Kubernetes cluster.
-* [This picture helps explain how this works](media/architecture/ingress.png)
-* Use Helm to deploy The NGINX ingress controller. [The Helm chart for the NGINX ingress controller](https://github.com/helm/charts/tree/master/stable/nginx-ingress) requires no options/values when deploying it.
-* ProTip: Place the ingress controller in a different namespace, e.g. `ingress` by using the `--namespace` option.
-* Use `kubectl get service` (add `--namespace` if you deployed it to a different namespace) to discover the public/external IP of your ingress controller, you will need to make a note of it. the
-* [nip.io](https://nip.io) is not related to Kubernetes or Azure, however it provides a useful service to map any IP Address to a hostname. This saves you having to create public DNS records. If your ingress controller had IP 12.34.56.78, you could access it via `http://anythingyouwant.12.34.56.78.nip.io`
-* The [Kubernetes docs have an example of creating an Ingress object](https://kubernetes.io/docs/concepts/services-networking/ingress/#name-based-virtual-hosting), except you will only be specifying a single host rule. Use nip.io and your ingress controller IP to set the `host` field. As with the deployment and service, you create this object via a YAML file and `kubectl apply`
-
-{% collapsible %}
-
-##### Service
-
-Save the YAML below as `frontend-service.yaml` or download it from [frontend-service.yaml](yaml-solutions/01. challenge-02/frontend-service.yaml)
-
-> **Note** Since you're going to expose the deployment using an Ingress, there is no need to use a public IP for the Service, hence you can set the type of the service to be `ClusterIP` instead of `LoadBalancer`.
-
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: frontend
-spec:
-  selector:
-    app: frontend
-  ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 8080
-  type: ClusterIP
-```
-
-And deploy it using
-
+Watch the change of the number over time:
 ```sh
-kubectl apply -f frontend-service.yaml
+quiz=> \watch
 ```
 
-##### Deploy the ingress controller with Helm
-
-Create a namespace for the ingress
-
+Stop the process:
 ```sh
-kubectl create namespace ingress
+quiz=> [Ctrl+c]
 ```
 
-NGINX ingress controller is easily deployed with Helm:
-
+Write the output of a query to a file:
 ```sh
-helm repo update
-
-helm install ingress stable/nginx-ingress --namespace ingress
+quiz=> \! cat /tmp/pg_stat_activity.txt
 ```
 
-In a couple of minutes, a public IP address will be allocated to the ingress controller, retrieve with:
-
-```sh
-kubectl get svc  -n ingress    ingress-nginx-ingress-controller -o jsonpath="{.status.loadBalancer.ingress[*].ip}"
+List all system views:
+```sh 
+quiz=> \dvS
 ```
 
-##### Ingress
-
-Create an Ingress resource that is annotated with the required annotation and make sure to replace `_INGRESS_CONTROLLER_EXTERNAL_IP_` with the IP address  you retrieved from the previous command.
-
-Additionally, make sure that the `serviceName` and `servicePort` are pointing to the correct values as the Service you deployed previously.
-
-Save the YAML below as `frontend-ingress.yaml` or download it from [frontend-ingress.yaml](yaml-solutions/01. challenge-02/frontend-ingress.yaml)
-
-```yaml
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: frontend
-  annotations:
-    kubernetes.io/ingress.class: nginx
-spec:
-  rules:
-  - host: frontend._INGRESS_CONTROLLER_EXTERNAL_IP_.nip.io
-    http:
-      paths:
-      - backend:
-          serviceName: frontend
-          servicePort: 80
-        path: /
+Turns displaying of how long each SQL statement takes on:
+```sh 
+quiz=> \timing
 ```
 
-And create it using
-
-```sh
-kubectl apply -f frontend-ingress.yaml
+List the system functions:
+```sh 
+quiz=> \dfS
 ```
 
-{% endcollapsible %}
+Fetch and display the definition of the chosen function, in the form of a CREATE OR REPLACE FUNCTION command:
+```sh 
+quiz=> \sf abs(bigint)
+```
 
-#### Browse to the public hostname of the frontend and watch as the number of orders change
+Print psql's command line history:
+```sh 
+quiz=> \s
+```
 
-Once the Ingress is deployed, you should be able to access the frontend at <http://frontend.[cluster_specific_dns_zone]>, for example <http://frontend.52.255.217.198.nip.io>
+Search for a specific command in the history:
+```sh 
+quiz=> [Ctrl+r + part of the command string]
+```
 
-If it doesn't work on the first attempt, give it a few more minutes or try a different browser.
 
-Note: you might need to enable cross-site scripting in your browser; click on the shield icon on the address bar (for Chrome) and allow unsafe script to be executed. 
 
-![Orders frontend](media/ordersfrontend.png)
 
-> **Resources**
-> * <https://kubernetes.io/docs/concepts/workloads/controllers/deployment/>
-> * <https://kubernetes.io/docs/concepts/services-networking/service/>
-> * <https://kubernetes.io/docs/concepts/services-networking/ingress/>
-> * <https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/>
-
-### Architecture Diagram
-Here's a high level diagram of the components you will have deployed when you've finished this section (click the picture to enlarge)
-
-<a href="media/architecture/frontend.png" target="_blank"><img src="media/architecture/frontend.png" style="width:500px"></a>

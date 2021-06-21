@@ -28,7 +28,7 @@ When the defaults aren't quite right, you can save yourself some typing by setti
         
         
 ### Getting the connection string from Azure Portal
-In this task, we will create a file in our Cloud Shell containing libpq environment variables (https://www.postgresql.org/docs/current/libpq-envars.html) that will be used to select default connection parameter values to PostgreSQL PaaS instance. These are useful to be able to connect to postgres in a fast and convenient way without hard-coding connection string.
+In this task, we will create a file in our Cloud Shell containing [libpq environment variables](https://www.postgresql.org/docs/current/libpq-envars.html) that will be used to select default connection parameter values to PostgreSQL PaaS instance. These are useful to be able to connect to postgres in a fast and convenient way without hard-coding connection string.
 
 Go to the "Connection Strings" tab on the left hand side of the Azure Portal and find **psql** connection string:
 
