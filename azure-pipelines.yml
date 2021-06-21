@@ -1,87 +1,36 @@
-# Docker
-# Build and push an image to Azure Container Registry
-# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
-
-name: $(build.sourceBranchName)-$(Date:yyyyMMdd)$(Rev:.r)
+# Ruby
+# Package your Ruby project.
+# Add steps that install rails, analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/ruby
 
 trigger:
-  batch: true
-  branches:
-    include: 
-    - master
-    - staging
-    - devsecops
-    - kubesec
-  paths:
-    exclude: 
-    # Exclude README.md from triggering content deployments
-    # Exclude the app folder from triggering content deployments, since it isn't included in the Dockerfile anyway
-    - README.md
-    - app/* 
+- master
 
-# no PR builds
-pr: none
+pool:
+  vmImage: 'ubuntu-latest'
 
-resources:
-- repo: self
+steps:
+- task: UseRubyVersion@0
+  inputs:
+    versionSpec: '>= 2.5'
 
-variables:
-  # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: '9157bf98-df3a-495a-89bf-451c9cb4d572'
-  imageRepository: 'aksworkshop'
-  containerRegistry: 'msworkshops.azurecr.io'
-  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
-  tag: '$(Build.BuildNumber)'
-  sourceVersion: '$(Build.SourceVersion)'
-  sourceBranch: '$(Build.SourceBranchName)'
-  
-  # Agent VM image name
-  vmImageName: 'ubuntu-latest'
+- script: |
+    gem install jekyll bundler
+    bundle install --retry=3 --jobs=4
+  displayName: 'bundle install'
+ 
+- script: |
+    bundle install
+    jekyll build
+  displayName: 'jekyll'
+ 
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+  inputs:
+    SourceFolder: '_site'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
-stages:
-- stage: Build
-  displayName: Build and push stage
-  jobs:  
-  - job: Build
-    displayName: Build job
-    pool:
-      vmImage: $(vmImageName)
-    steps:
-    - script: sed -i 's/#BUILD_ID#/$(tag)/g' _includes/nav.html
-      displayName: Update site with Build ID
-
-    - script: |
-          SHORTCOMMITID=$(echo $(sourceVersion) | cut -c1-7)  
-          sed -i "s/#COMMIT_ID#/$SHORTCOMMITID/g" _includes/nav.html
-      displayName: Update site with Commit ID
-
-    - task: Docker@2
-      displayName: Build and push an image to container registry
-      inputs:
-        command: buildAndPush
-        repository: $(imageRepository)
-        dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)
-        tags: |
-          $(tag)
-
-- stage: Deploy
-  displayName: Deploy to slot
-  jobs:
-  - job: Deploy
-    displayName: Deploy job
-    pool:
-      vmImage: $(vmImageName)
-    steps:
-    - task: AzureRmWebAppDeployment@4
-      inputs:
-        ConnectionType: 'AzureRM'
-        azureSubscription: 'AKS Workshop'
-        appType: 'webAppContainer'
-        WebAppName: 'aksworkshop'
-        deployToSlotOrASE: true
-        ResourceGroupName: 'workshops'
-        SlotName: '$(sourceBranch)'
-        DockerNamespace: '$(containerRegistry)'
-        DockerRepository: '$(imageRepository)'
-        DockerImageTag: '$(tag)'
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: site
