@@ -3,41 +3,46 @@
 sectionid: db
 sectionclass: h2
 parent-id: upandrunning
-title: Multiversion Concurrency Control, MVCC
+title: connect and create
+
 ---
 
 This section describes the behavior of the PostgreSQL database system when two or more sessions try to access the same data at the same time. The goals in that situation are to allow efficient access for all sessions while maintaining strict data integrity. Every developer of database applications and DBA should be familiar with the topics covered in this chapter.
 
 
 **Task Hints**
-* Use Helm and a standard provided Helm chart to deploy MongoDB.
-* Be careful with the authentication settings when creating MongoDB. It is recommended that you create a standalone username/password. The username and password can be anything you like, but make a note of them for the next task. 
+* Use [Azure Resource Manager](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/overview) to deploy Azure Database for PostgreSQL - single server.
+* Use [Azure Cloud Shell](https://docs.microsoft.com/en-us/azure/cloud-shell/overview) to connected to the created database instance.
 
-> **Important**: If you install using Helm and then delete the release, the MongoDB data and configuration persists in a Persistent Volume Claim. You may face issues if you redeploy again using the same release name because the authentication configuration will not match. If you need to delete the Helm deployment and start over, make sure you delete the Persistent Volume Claims created otherwise you'll run into issues with authentication due to stale configuration. Find those claims using `kubectl get pvc`.
 
 ### Tasks
 
-#### Setup Helm
+#### Setup Database
 
-Helm is an application package manager for Kubernetes, and a way to easily deploy applications and services into Kubernetes, via what are called charts. To use Helm you will need the `helm` command (This is already installed if you're using the Azure Cloud Shell).
+Azure Database for PostgreSQL is a managed service that you use to run, manage, and scale highly available PostgreSQL databases in the cloud. In this quickstart, you use an Azure Resource Manager template (ARM template) to create an Azure Database for PostgreSQL - single server in the Azure portal, PowerShell, or Azure CLI.
 
-**Task Hints**
-* These instructions use [Helm version 3](https://helm.sh/blog/helm-3-released/).
-* Helm version 3 does not come with any repositories predefined, so you'll need initialize the [stable chart repository](https://v3.helm.sh/docs/intro/quickstart/#initialize-a-helm-chart-repository)
-
+**Deploy DB using ARM**
 {% collapsible %}
 
-Add the `stable` Helm charts repository
-`helm repo add stable https://kubernetes-charts.storage.googleapis.com/`
+* If your environment meets the prerequisites and you're familiar with using ARM templates, [follow this link and a template will open in the Azure portal](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fazure-quickstart-templates%2Fmaster%2Fquickstarts%2Fmicrosoft.dbforpostgresql%2Fmanaged-postgresql-with-vnet%2Fazuredeploy.json).
 
-Upate the repositories
-`helm repo update`
+![Create Azure DB](media/create-azure-db-pg.png)
+
+* Continue to the next page by clicking **Review + create**
+* The review page should look like the following:
+
+![Review Azure DB](media/review-pg-create.png)
+
 
 {% endcollapsible %}
 
 
 
-#### Deploy an instance of MongoDB to your cluster
+#### Connect to the database using Azure Cloud Shell (Bash)
+
+Azure Cloud Shell is an interactive, authenticated, browser-accessible shell for managing Azure resources. It provides the flexibility of choosing the shell experience that best suits the way you work, either Bash or PowerShell.
+
+If you have Azure Cloud Shell (Bash) configured you can skip the
 
 A standard repository of Helm charts is available for many different software packages, and it has one for [MongoDB](https://github.com/helm/charts/tree/master/stable/mongodb) that is easily replicated and horizontally scalable. 
 
