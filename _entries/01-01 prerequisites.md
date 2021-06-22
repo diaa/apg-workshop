@@ -10,6 +10,7 @@ parent-id: intro
 You can use the Azure Cloud Shell accessible at <https://shell.azure.com> once you login with an Azure subscription. The Azure Cloud Shell has the Azure CLI pre-installed and configured to connect to your Azure subscription as well as `psql` and other Postgres utilities like `pg_dump`, `createdb` or `createuser` that will be used throughout the training.
 
 
+
 ### Azure subscription
 
 #### If you have an Azure subscription

@@ -3,6 +3,8 @@ sectionid: challenges
 sectionclass: h2
 title: Tasks
 parent-id: intro
+hide: true
+published: false
 ---
 
 Useful resources are provided to help you work through each task. If you're working through this as part of a team based hack, ensure you make progress at a good pace by dividing the workload between team members where possible. This may mean anticipating work that might be required in a later task.

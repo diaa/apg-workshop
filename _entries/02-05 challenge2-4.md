@@ -3,6 +3,9 @@ sectionid: tls
 sectionclass: h2
 title: Enable TLS (SSL) on ingress
 parent-id: upandrunning
+hide: true
+published: false
+
 ---
 
 You want to enable secure connections to the Frontend website over TLS (SSL). In this task, you'll use [Let's Encrypt](https://letsencrypt.org/)'s free service to generate valid TLS certificates for your domains, and you'll integrate the certificate issuance workflow into Kubernetes.

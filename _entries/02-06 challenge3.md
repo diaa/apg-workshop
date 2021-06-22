@@ -3,6 +3,9 @@ sectionid: monitoring
 sectionclass: h2
 parent-id: upandrunning
 title: Monitoring
+hide: true
+published: false
+
 ---
 
 You would like to monitor the performance of different components in your application, view logs and get alerts whenever your application availability goes down or some components fail.

@@ -1,5 +1,0 @@
-I"ó
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>az group create <span class="nt">--name</span> &lt;resource-group&gt; <span class="nt">--location</span> &lt;region&gt;
-</code></pre></div></div>
-
-:ET
