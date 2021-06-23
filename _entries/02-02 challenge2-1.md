@@ -25,8 +25,18 @@ When the defaults aren't quite right, you can save yourself some typing by setti
     -U username
     --username=username
         Connect to the database as the user username instead of the default. (You must have permission to do so, of course.)
-        
-        
+    -W
+       --password
+        Force psql to prompt for a password before connecting to a database.
+
+
+**Using Azure Cloud Shell**
+
+Example (Please change these values to match with your setup)
+```sh   
+psql -U adminuser@postgresql-db -W -h postgresql-db.postgres.database.azure.com "dbname=postgres sslmode=require"
+```
+
 ### Getting the connection string from Azure Portal
 In this task, we will create a file in our Cloud Shell containing [libpq environment variables](https://www.postgresql.org/docs/current/libpq-envars.html) that will be used to select default connection parameter values to PostgreSQL PaaS instance. These are useful to be able to connect to postgres in a fast and convenient way without hard-coding connection string.
 

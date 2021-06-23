@@ -3,6 +3,8 @@ sectionid: scaling
 sectionclass: h2
 parent-id: upandrunning
 title: Scaling
+hide: true
+published: false
 ---
 
 As the popularity of the application grows, the application needs to scale appropriately as demand changes.
