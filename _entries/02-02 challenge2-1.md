@@ -44,11 +44,12 @@ Go to the "Connection Strings" tab on the left hand side of the Azure Portal and
 
 <a href="media/connectionString.png" target="_blank"><img src="media/connectionString.png" style="width:800px"></a>
 
-Open Cloud Shell and create a new *.pg_azure* file:
+Open Cloud Shell and create a new *.pg_azure* file using your favourite editor (if you are not compfortable with Vim you can use VSCode):
 
 ```sh
 vi .pg_azure
 ```
+
 Add the following parameters:
 
 ```sh
@@ -58,11 +59,26 @@ export PGUSER=your_user@hostname
 export PGPASSWORD=your_password
 export PGSSLMODE=require
 ```
+
+You might use **VSCode** instead of *Vim**
+
+```sh
+wget https://storageaccounthol.z6.web.core.windows.net/scripts/pg_azure -O .pg_azure
+```
+
+```sh
+code .pg_azure
+```
+
+Once the code pane opens, modify the paramerts to match with your setup, press **"CTRL+s"** to save the configuration file.
+
 Read the content of the file in the current session:
 
 ```sh
 source .pg_azure
 ```
+
+If you closed this bash session, you won't be able to login again to psql without reading .pg_azure.
 
 Let's connect to our Azure database with psql client:
 
@@ -78,3 +94,30 @@ psql
 You can also use the connection string shown in the Azure Portal in the Connection String tab. Using libpq variables is another option to ease your work with Postgres. 
 
 
+While you have the psql connected to the database, let's run some quries:
+
+```sql
+SELECT version();
+```
+You should be able to read the PostgreSQL version.
+
+Create table with some random data:
+
+```sql
+DROP TABLE random_data;
+
+CREATE TABLE random_data AS
+SELECT s                    AS first_column,
+   md5(random()::TEXT)      AS second_column,
+   md5((random()/2)::TEXT)  AS third_column
+FROM generate_series(1,500000) s;
+```
+
+Let's select some of the records that we generated:
+
+```sql
+SELECT * FROM random_data LIMIT 10;
+
+SELECT count(*) FROM random_data;
+
+```
