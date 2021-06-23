@@ -52,7 +52,7 @@ vi .pg_azure
 Add the following parameters:
 
 ```sh
-export PGDATABASE=ora2pg
+export PGDATABASE=postgres
 export PGHOST=HOSTNAME.postgres.database.azure.com
 export PGUSER=your_user@hostname
 export PGPASSWORD=your_password
