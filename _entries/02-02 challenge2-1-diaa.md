@@ -34,7 +34,7 @@ Go to the "Connection Strings" tab on the left hand side of the Azure Portal and
 
 <a href="media/connectionString.png" target="_blank"><img src="media/connectionString.png" style="width:800px"></a>
 
-Open Cloud Shell and create a new *.pg_azure* file
+Open Cloud Shell and create a new *.pg_azure* file:
 
 ```sh
 vi .pg_azure

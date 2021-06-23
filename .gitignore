@@ -11,3 +11,4 @@
 /.vscode
 
 /.jekyll-cache/Jekyll/Cache/
+/.jekyll-cache/*
