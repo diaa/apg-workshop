@@ -76,11 +76,6 @@ SELECT pg_relation_filepath('random_data');
 
       postgres=>
 
-Now, we want to see the size of the table
-
-```sql 
-SELECT pg_relation_size('random_data');
-```
 *Output*
 
 
@@ -89,6 +84,22 @@ SELECT pg_relation_size('random_data');
       ----------------------
       base/14417/16507
       (1 row)
+
+
+* Display the table size:
+
+```sql
+SELECT pg_relation_size('random_data');
+```
+
+*Output*
+
+      postgres=> SELECT pg_relation_size('random_data');
+      pg_relation_size
+      ------------------
+              50569216
+      (1 row)
+
 
 * Display the table size in MB:
 
@@ -160,6 +171,14 @@ DELETE from random_data;
 
       postgres=> DELETE from random_data;
       DELETE 1500000
+
+Checking the table size after deletion of the records:
+```sql
+SELECT pg_size_pretty(pg_relation_size('random_data'));
+
+```
+*Output*
+
       postgres=> SELECT pg_size_pretty(pg_relation_size('random_data'));
       pg_size_pretty
       ----------------
@@ -210,7 +229,8 @@ VACUUM VERBOSE random_data;
 
 *Output*
 
-      postgres=> UPDATE random_data SET second_column = second_column;
-      UPDATE 0
-      postgres=>
-
+      postgres=> SELECT pg_size_pretty(pg_relation_size('random_data'));
+      pg_size_pretty
+      ----------------
+      0 bytes
+      (1 row)
