@@ -4,8 +4,6 @@ sectionid: frontend
 sectionclass: h2
 parent-id: upandrunning
 title: psql — PostgreSQL interactive terminal
-hide: true
-published: false
 ---
 
 psql is a terminal-based front-end to PostgreSQL. It enables you to type in queries interactively, issue them to PostgreSQL, and see the query results. Alternatively, input can be from a file or from command line arguments. In addition, psql provides a number of meta-commands and various shell-like features to facilitate writing scripts and automating a wide variety of tasks.
@@ -68,7 +66,7 @@ INSERT INTO public.answers (question_id, answer, is_correct) VALUES (1, 'Tl', fa
 
 List the databases in the cluster:
 ```sh 
-
+postgres=> \l
 ```
 
 Lists schemas (namespaces) in the current database:
@@ -82,7 +80,7 @@ quiz=> \dn
 (2 rows)
 ```
 
-Check your current conection:
+Check your current connection:
 ```sh 
 quiz=> \conninfo
 You are connected to database "quiz" as user "gustaw" on host "demo.postgres.database.azure.com" (address "20.67.160.95") at port "5432".
