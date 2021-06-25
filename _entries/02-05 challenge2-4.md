@@ -12,30 +12,30 @@ Connect to the PostgreSQL instance
 psql (11.5)
 Type "help" for help.
 
-postgres=# 
+postgres=> 
 ```
 
 Create new group
 ```sh 
-postgres=# CREATE GROUP monty_python;
+postgres=> CREATE GROUP monty_python;
 ```
 
 Create a new user Graham that belongs to monty_python group and doesn't inherit any privileges from the group. Allow the user to have maximum 2 active connection.
 
 ```sh 
-postgres=# CREATE USER Graham CONNECTION LIMIT 2 IN ROLE monty_python NOINHERIT;
+postgres=> CREATE USER Graham CONNECTION LIMIT 2 IN ROLE monty_python NOINHERIT;
 ```
 
 Create a new user Eric that belongs to monty_python group and inherits privileges from the group. Allow the user to have maximum 2 active connection.
 
 ```sh 
-postgres=# CREATE USER Eric CONNECTION LIMIT 2 IN ROLE monty_python INHERIT;
+postgres=> CREATE USER Eric CONNECTION LIMIT 2 IN ROLE monty_python INHERIT;
 ```
 
 Display all the roles available in the cluster
 
 ```sh 
-postgres=# \dg
+postgres=> \dg
                                         List of roles
    Role name    |                         Attributes                         |   Member of
 ----------------+------------------------------------------------------------+----------------
@@ -49,13 +49,13 @@ postgres=# \dg
 Connect to the quiz database
 
 ```sh 
-postgres=# \c quiz
+postgres=> \c quiz
 ```
 
 Grant all privileges for all tables in schema public to group monty_python
 
 ```sh 
-quiz=# GRANT ALL ON ALL TABLES IN SCHEMA public TO monty_python;
+quiz=> GRANT ALL ON ALL TABLES IN SCHEMA public TO monty_python;
 GRANT
 ```
 
@@ -68,7 +68,7 @@ GRANT graham to adminuser;
 Switch to the Graham user
 
 ```sh 
-quiz=# SET ROLE TO graham;
+quiz=> SET ROLE TO graham;
 SET
 ```
 
@@ -111,14 +111,14 @@ Switch back to the superuser account and try again.
 ```sh
 quiz=> SET ROLE TO adminuser;
 SET
-quiz=# GRANT SELECT ON TABLE answers TO Graham;
+quiz=> GRANT SELECT ON TABLE answers TO Graham;
 GRANT
 ```
 
 Check if user Graham is able to query the table.
 
 ```sh
-quiz=# SET ROLE TO graham;
+quiz=> SET ROLE TO graham;
 SET
 quiz=> TABLE answers;
  question_id | answer | is_correct
@@ -158,21 +158,21 @@ As adminuser copy all privileges from user eric to user graham.
 ```sh
 quiz=> \c
 You are now connected to database "quiz" as user "postgres".
-quiz=# GRANT eric TO graham ;
+quiz=> GRANT eric TO graham ;
 GRANT ROLE
 ```
 
 As user Graham try to DELETE all records from table answers.
 
 ```sh
-quiz=# set role to graham;
+quiz=> set role to graham;
 SET
 quiz=> DELETE FROM answers ;
 ERROR:  permission denied for table answers
 quiz=> SET ROLE TO adminuser;
 quiz=> GRANT DELETE ON TABLE answers TO graham;
 GRANT
-quiz=# SET role TO Graham;
+quiz=> SET role TO Graham;
 SET
 quiz=> DELETE FROM answers ;
 ```
@@ -210,7 +210,7 @@ Without INHERIT, membership in another role only grants the ability to SET ROLE 
 Revoke DELETE privilege from eric.
 
 ```sh
-quiz=# \c
+quiz=> \c
 You are now connected to database "quiz" as user "adminuser".
 quiz=> REVOKE DELETE ON TABLE answers FROM eric;
 REVOKE
