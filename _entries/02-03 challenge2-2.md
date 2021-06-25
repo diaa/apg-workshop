@@ -4,96 +4,233 @@ sectionid: db
 sectionclass: h2
 parent-id: upandrunning
 title: Multiversion Concurrency Control, MVCC
+hide: false
+published: true
 ---
 
 This section describes the behavior of the PostgreSQL database system when two or more sessions try to access the same data at the same time. The goals in that situation are to allow efficient access for all sessions while maintaining strict data integrity. Every developer of database applications and DBA should be familiar with the topics covered in this chapter.
 
 
 **Task Hints**
-* Use Helm and a standard provided Helm chart to deploy MongoDB.
-* Be careful with the authentication settings when creating MongoDB. It is recommended that you create a standalone username/password. The username and password can be anything you like, but make a note of them for the next task. 
+* We will use the portal to change the PostgreSQL parameters.
+* Inspect the table size and see the impact of autovacuum.
 
-> **Important**: If you install using Helm and then delete the release, the MongoDB data and configuration persists in a Persistent Volume Claim. You may face issues if you redeploy again using the same release name because the authentication configuration will not match. If you need to delete the Helm deployment and start over, make sure you delete the Persistent Volume Claims created otherwise you'll run into issues with authentication due to stale configuration. Find those claims using `kubectl get pvc`.
 
 ### Tasks
 
-#### Setup Helm
+#### Inspect and change server paramerters
 
-Helm is an application package manager for Kubernetes, and a way to easily deploy applications and services into Kubernetes, via what are called charts. To use Helm you will need the `helm` command (This is already installed if you're using the Azure Cloud Shell).
+You can list, show, and update configuration parameters for an Azure Database for PostgreSQL server through the Azure portal.
 
-**Task Hints**
-* These instructions use [Helm version 3](https://helm.sh/blog/helm-3-released/).
-* Helm version 3 does not come with any repositories predefined, so you'll need initialize the [stable chart repository](https://v3.helm.sh/docs/intro/quickstart/#initialize-a-helm-chart-repository)
+* Go to the Azure PostgreSQL resource
 
-{% collapsible %}
+![Go PostgreSQL server parameteres](media/mvcc-postgres-server-params-2.png)
 
-Add the `stable` Helm charts repository
-`helm repo add stable https://kubernetes-charts.storage.googleapis.com/`
+* Change Autovacuum server paramerter to off and **Save**
 
-Upate the repositories
-`helm repo update`
-
-{% endcollapsible %}
+![Go PostgreSQL server parameteres](media/mvcc-postgres-autovacuum-off-3.png)
 
 
+On **psql** or your faviourt IDE/GUI
 
-#### Deploy an instance of MongoDB to your cluster
+* Check if Autovacuum settings
 
-A standard repository of Helm charts is available for many different software packages, and it has one for [MongoDB](https://github.com/helm/charts/tree/master/stable/mongodb) that is easily replicated and horizontally scalable. 
+```sql
+SHOW AUTOVACUUM ;
 
-**Task Hints**
-* When installing a chart, Helm uses a concept called a "release" and each release needs a name. We recommend you name your release `orders-mongo` to make it easier to follow later steps in this workshop
-* When deploying a chart you provide parameters with the `--set` switch and a comma separated list of `key=value` pairs. There are MANY parameters you can provide to the MongoDB chart, but pay attention to the `mongodbUsername`, `mongodbPassword` and `mongodbDatabase` parameters 
+```
+It should return this:
 
-> **Note** The application expects a database named `akschallenge`. Using a different database name will cause the application to fail!
+      postgres=> SHOW AUTOVACUUM ;
+      autovacuum
+      ------------
+      off
+      (1 row)
 
-{% collapsible %}
-The recommended way to deploy MongoDB would be to use a Helm Chart. 
+      postgres=>
 
-```sh
-helm install orders-mongo stable/mongodb --set mongodbUsername=orders-user,mongodbPassword=orders-password,mongodbDatabase=akschallenge
+Make sure that you have the *random_data* table
+
+```sql
+drop TABLE IF EXISTS random_data;
+
+CREATE TABLE random_data AS
+SELECT s                    AS first_column,
+   md5(random()::TEXT)      AS second_column,
+   md5((random()/2)::TEXT)  AS third_column
+FROM generate_series(1,500000) s;
 ```
 
-> **Hint** Using this command, the Helm Chart will expose the MongoDB instance as a Kubernetes Service accessible at ``orders-mongo-mongodb.default.svc.cluster.local``
+In case you wanted to see the path of the table:
 
-Remember to use the username and password from the command above when creating the Kubernetes secrets in the next step.
+```sql
+SELECT pg_relation_filepath('random_data');
+```
+*Output*
 
-{% endcollapsible %}
 
-#### Create a Kubernetes secret to hold the MongoDB details
+      pg_relation_filepath
+      ----------------------
+      base/14417/16507
+      (1 row)
 
-In the previous step, you installed MongoDB using Helm, with a specified username, password and a hostname where the database is accessible. You'll now create a Kubernetes secret called `mongodb` to hold those details, so that you don't need to hard-code them in the YAML files.
+      postgres=>
 
-**Task Hints**
-* A Kubernetes secret can hold several items, indexed by key. The name of the secret isn't critical, but you'll need three keys to store your secret data:
-  * `mongoHost`
-  * `mongoUser`
-  * `mongoPassword`
-* The values for the username & password will be those you used with the `helm install` command when deploying MongoDB.
-* Run `kubectl create secret generic -h` for help on how to create a secret, clue: use the `--from-literal` parameter to allow you to provide the secret values directly on the command in plain text.
-* The value of `mongoHost`, will be dependent on the name of the MongoDB service. The service was created by the Helm chart and will start with the release name you gave. Run `kubectl get service` and you should see it listed, e.g. `orders-mongo-mongodb`
-* All services in Kubernetes get DNS names, this is assigned automatically by Kubernetes, there's no need for you to configure it. You can use the short form which is simply the service name, e.g. `orders-mongo-mongodb` or better to use the "fully qualified" form `orders-mongo-mongodb.default.svc.cluster.local`
-  
-{% collapsible %}
+*Output*
 
-```sh
-kubectl create secret generic mongodb --from-literal=mongoHost="orders-mongo-mongodb.default.svc.cluster.local" --from-literal=mongoUser="orders-user" --from-literal=mongoPassword="orders-password"
+
+      postgres=> SELECT pg_relation_filepath('random_data');
+      pg_relation_filepath
+      ----------------------
+      base/14417/16507
+      (1 row)
+
+
+* Display the table size:
+
+```sql
+SELECT pg_relation_size('random_data');
 ```
 
-You'll need to reference this secret when configuring the Order Capture application later on.
+*Output*
 
-{% endcollapsible %}
+      postgres=> SELECT pg_relation_size('random_data');
+      pg_relation_size
+      ------------------
+              50569216
+      (1 row)
 
-> **Resources**
-> * <https://helm.sh/docs/intro/using_helm/>
-> * <https://github.com/helm/charts/tree/master/stable/mongodb>
-> * <https://kubernetes.io/docs/concepts/configuration/secret/>
 
-### Architecture Diagram
-Here's a high level diagram of the components you will have deployed when you've finished this section (click the picture to enlarge)
+* Display the table size in MB:
 
-<a href="media/architecture/mongo.png" target="_blank"><img src="media/architecture/mongo.png" style="width:500px"></a>
+```sql
+SELECT pg_size_pretty(pg_relation_size('random_data'));
+```
+*Output*
 
-* The **pod** holds the containers that run MongoDB
-* The **deployment** manages the pod
-* The **service** exposes the pod to the Internet using a public IP address and a specified port
+      postgres=> SELECT pg_size_pretty(pg_relation_size('random_data'));
+      pg_size_pretty
+      ----------------
+      48 MB
+      (1 row)
+
+      postgres=>
+
+
+Inserting more records in the *random_data*
+```sql
+INSERT INTO random_data
+SELECT s,
+       md5(random() :: TEXT),
+       md5((random() / 2) :: TEXT)
+FROM generate_series(1, 1000000) s;
+
+SELECT count(*) FROM random_data;
+```
+
+*Output*
+
+      postgres=> INSERT INTO random_data
+      postgres-> SELECT s,
+      postgres->        md5(random() :: TEXT),
+      postgres->        md5((random() / 2) :: TEXT)
+      postgres-> FROM generate_series(1, 1000000) s;
+      INSERT 0 1000000
+      postgres=>
+      postgres=> SELECT count(*) FROM random_data;
+        count
+      ---------
+      1500000
+      (1 row)  
+
+
+Check the table size after the insersion
+
+```sql
+
+SELECT pg_size_pretty(pg_relation_size('random_data'));
+```
+
+*Output*
+
+      postgres=> SELECT pg_size_pretty(pg_relation_size('random_data'));
+      pg_size_pretty
+      ----------------
+      145 MB
+      (1 row)
+
+      postgres=>
+
+Notice, that there is a signigcant increase in the table size. Now, delete all the recrods:
+
+```sql
+DELETE from random_data;
+```
+
+*Output*
+
+      postgres=> DELETE from random_data;
+      DELETE 1500000
+
+Checking the table size after deletion of the records:
+```sql
+SELECT pg_size_pretty(pg_relation_size('random_data'));
+
+```
+*Output*
+
+      postgres=> SELECT pg_size_pretty(pg_relation_size('random_data'));
+      pg_size_pretty
+      ----------------
+      145 MB
+      (1 row)  
+
+You can see that the table size is still 145 MB, if we started the VACUUM process things would change:
+
+```sql
+VACUUM VERBOSE random_data;
+```
+*Output*
+
+    postgres=> VACUUM VERBOSE random_data;
+    INFO:  vacuuming "public.random_data"
+    INFO:  "random_data": removed 1500000 row versions in 18519 pages
+    INFO:  "random_data": found 1500000 removable, 0 nonremovable row versions in 18519 out of 18519 pages
+    DETAIL:  0 dead row versions cannot be removed yet, oldest xmin: 595
+    There were 0 unused item pointers.
+    Skipped 0 pages due to buffer pins, 0 frozen pages.
+    0 pages are entirely empty.
+    CPU: user: 0.25 s, system: 0.00 s, elapsed: 0.23 s.
+    INFO:  "random_data": truncated 18519 to 0 pages
+    DETAIL:  CPU: user: 0.06 s, system: 0.01 s, elapsed: 0.04 s
+    INFO:  vacuuming "pg_toast.pg_toast_16507"
+    INFO:  index "pg_toast_16507_index" now contains 0 row versions in 1 pages
+    DETAIL:  0 index row versions were removed.
+    0 index pages have been deleted, 0 are currently reusable.
+    CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s.
+    INFO:  "pg_toast_16507": found 0 removable, 0 nonremovable row versions in 0 out of 0 pages
+    DETAIL:  0 dead row versions cannot be removed yet, oldest xmin: 596
+    There were 0 unused item pointers.
+    Skipped 0 pages due to buffer pins, 0 frozen pages.
+    0 pages are entirely empty.
+    CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s.
+    VACUUM
+    postgres=> SELECT pg_size_pretty(pg_relation_size('random_data'));
+    pg_size_pretty
+    ----------------
+    0 bytes
+    (1 row)
+
+* Check the table size after applying the Vacuum process:
+
+```sql
+ SELECT pg_size_pretty(pg_relation_size('random_data'));
+```
+
+*Output*
+
+      postgres=> SELECT pg_size_pretty(pg_relation_size('random_data'));
+      pg_size_pretty
+      ----------------
+      0 bytes
+      (1 row)

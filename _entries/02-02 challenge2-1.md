@@ -34,7 +34,8 @@ When the defaults aren't quite right, you can save yourself some typing by setti
 
 Example (Please change these values to match with your setup)
 ```sh   
-psql -U adminuser@postgresql-db -W -h postgresql-db.postgres.database.azure.com "dbname=postgres sslmode=require"
+psql -U adminuser@postgresql-db -h postgresql-db.postgres.database.azure.com postgres
+
 ```
 
 ### Getting the connection string from Azure Portal
@@ -104,7 +105,7 @@ You should be able to read the PostgreSQL version.
 Create table with some random data:
 
 ```sql
-DROP TABLE random_data;
+DROP TABLE IF EXISTS random_data;
 
 CREATE TABLE random_data AS
 SELECT s                    AS first_column,
