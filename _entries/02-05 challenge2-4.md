@@ -59,6 +59,12 @@ quiz=# GRANT ALL ON ALL TABLES IN SCHEMA public TO monty_python;
 GRANT
 ```
 
+In order to be able to switch to another role you need to grant this permission to the current user:
+```sh
+GRANT graham to adminuser;
+GRANT graham to adminuser;
+```
+
 Switch to the Graham user
 
 ```sh 
@@ -96,14 +102,14 @@ Grant the SELECT privilege on table answers to user Graham.
 
 ```sh
 quiz=> GRANT SELECT ON TABLE answers TO Graham;
-OSTRZEŻENIE:  nie przyznano żadnych uprawnień do "answers"
+WARNING:  no privileges were granted for "answers"
 GRANT
 ```
 
 Switch back to the superuser account and try again.
 
 ```sh
-quiz=> SET ROLE TO postgres;
+quiz=> SET ROLE TO adminuser;
 SET
 quiz=# GRANT SELECT ON TABLE answers TO Graham;
 GRANT
@@ -114,7 +120,7 @@ Check if user Graham is able to query the table.
 ```sh
 quiz=# SET ROLE TO graham;
 SET
-quiz=> table answers;
+quiz=> TABLE answers;
  question_id | answer | is_correct
 -------------+--------+------------
            1 | Au     | f
@@ -147,7 +153,7 @@ quiz=> DELETE FROM answers ;
 ERROR:  permission denied for table answers
 ```
 
-As superuser copy all privileges from user eric to user graham.
+As adminuser copy all privileges from user eric to user graham.
 
 ```sh
 quiz=> \c
@@ -163,12 +169,12 @@ quiz=# set role to graham;
 SET
 quiz=> DELETE FROM answers ;
 ERROR:  permission denied for table answers
-quiz=# GRANT DELETE ON TABLE answers TO eric;
+quiz=> SET ROLE TO adminuser;
+quiz=> GRANT DELETE ON TABLE answers TO graham;
 GRANT
 quiz=# SET role TO Graham;
 SET
 quiz=> DELETE FROM answers ;
-ERROR:  permission denied for table answers
 ```
 
 Display permissions granted to objects and information about roles.
@@ -205,7 +211,13 @@ Revoke DELETE privilege from eric.
 
 ```sh
 quiz=# \c
-You are now connected to database "quiz" as user "postgres".
-quiz=# REVOKE DELETE ON TABLE answers FROM eric;
+You are now connected to database "quiz" as user "adminuser".
+quiz=> REVOKE DELETE ON TABLE answers FROM eric;
 REVOKE
+quiz=> set role to eric;
+SET
+quiz=> delete from answers ;
+DELETE 0
 ```
+
+As you see user Eric is still able to perform DELETE operation because of his membership in role monty_python.
