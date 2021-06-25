@@ -32,7 +32,6 @@ az login
 
 You can use the Azure Cloud Shell accessible at <https://shell.azure.com> once you login with an Azure subscription.
 
-{% collapsible %}
 
 Head over to <https://shell.azure.com> and sign in with your Azure Subscription details.
 
@@ -52,7 +51,6 @@ You should now have access to the Azure Cloud Shell
 
 ![Set the storage account and fileshare names](media/cloudshell/3-cloudshell.png)
 
-{% endcollapsible %}
 
 #### Tips for uploading and editing files in Azure Cloud Shell
 
