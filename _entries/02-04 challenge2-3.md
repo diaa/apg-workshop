@@ -159,11 +159,6 @@ Stop the process:
 quiz=> [Ctrl+c]
 ```
 
-Write the output of a query to a file:
-```sh
-quiz=> \! cat /tmp/pg_stat_activity.txt
-```
-
 List all system views:
 ```sh 
 quiz=> \dvS
