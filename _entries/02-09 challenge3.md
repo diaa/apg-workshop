@@ -215,3 +215,46 @@ Execution Time: 287.901 ms
 ```
 
 Which algorithm was the fastest for this query and why?
+
+### work_mem Setting
+Run EXPLAIN command to see what's the execution plan of the SELECT query that requires sorting:
+```sql
+EXPLAIN ANALYSE SELECT second_column FROM random_data ORDER BY 1 DESC;
+```
+
+Output:
+```sql
+Sort  (cost=73824.53..75136.30 rows=524705 width=32) (actual time=10705.361..14201.555 rows=500000 loops=1)
+  Sort Key: second_column DESC
+  Sort Method: external merge  Disk: 21096kB
+  ->  Seq Scan on random_data  (cost=0.00..11420.05 rows=524705 width=32) (actual time=0.018..808.240 rows=500000 loops=1)
+Planning Time: 0.087 ms
+Execution Time: 14378.488 ms
+```
+
+As you see external merge was used as a sort method. It means that your data were sorted on the disk. This is because work_mem value was to small to sort the data in memory.
+
+Check the current value of work_mem:
+```sql
+SHOW work_mem;
+```
+
+How much memory do you need to sort the data in RAM?
+
+You can change the work_mem value just for the session to try it out. Set the proper value and try to rerun the query.
+```sql
+SET work_mem = '10MB';
+```
+
+After chosing the right work_mem value you will see that execution plan has changed:
+```sql
+Sort  (cost=61270.03..62581.80 rows=524705 width=32) (actual time=11884.004..12146.057 rows=500000 loops=1)
+  Sort Key: second_column DESC
+  Sort Method: quicksort  Memory: 51351kB
+  ->  Seq Scan on random_data  (cost=0.00..11420.05 rows=524705 width=32) (actual time=0.013..579.455 rows=500000 loops=1)
+Planning Time: 0.051 ms
+Execution Time: 12206.274 ms
+```
+
+Now quicksort Memory was used instead of external merge. Why more memory is needed for the same sort operation in memory than on the disk?
+
