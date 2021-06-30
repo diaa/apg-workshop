@@ -1,5 +1,6 @@
 ---
-sectionid: monitoring
+sectionid: SQLCharacteristic
+
 sectionclass: h2
 parent-id: upandrunning
 title: SQL Characteristic

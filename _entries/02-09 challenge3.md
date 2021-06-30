@@ -1,5 +1,5 @@
 ---
-sectionid: monitoring
+sectionid: Statistics
 sectionclass: h2
 parent-id: upandrunning
 title: Statistics and Query Planning
