@@ -1,16 +1,5 @@
-# PLEASE NOTE: CONTENT MIGRATED
 
-**Please note that AKS workshop is now hosted on [Microsoft Learn](https://aka.ms/learn/aksworkshop). You may continue to fork this repository, but future updates will be done on the Microsoft Learn platform. To access the new location, please use the following link: <https://aka.ms/learn/aksworkshop>**
-
-## Technology
-
-- The website is statically built using Jekyll and you'll find the different pages inside the `_entries` folder
-- You can preview your edits locally if you run `make build-run` inside the repository root
-- The build pipeline builds Docker images of the site and hosts it on a private repository on Azure Container Registry (`msworkshops.azurecr.io`)
-- The `master` branch gets deployed to the production slot [aksworkshop.io](https://aksworkshop.io)
-- The `staging` branch gets deployed to the staging slot [staging.aksworkshop.io](https://staging.aksworkshop.io)
-- The `devsecops` branch gets deployed to the devsecops slot [devsecops.aksworkshop.io](https://devsecops.aksworkshop.io)
-- The `kubesec` branch gets deployed to the kubesec slot [kubesec.aksworkshop.io](https://kubesec.aksworkshop.io)
+# apg-workshop
 
 ## Contributing
 
@@ -49,4 +38,4 @@ Privacy information can be found at https://privacy.microsoft.com/en-us/
 
 Microsoft and any contributors reserve all other rights, whether under their respective copyrights, patents,
 or trademarks, whether by implication, estoppel or otherwise.
-# apg-workshop
+

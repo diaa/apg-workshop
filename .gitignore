@@ -9,6 +9,6 @@
 /.brackets.json
 .DS_Store
 /.vscode
-
+/.jekyll-cache/Jekyll/Cache
 /.jekyll-cache/Jekyll/Cache/
 /.jekyll-cache/*
