@@ -64,7 +64,7 @@ param privateIPAllocationMethod string = 'Static'
 // Virtual Machine
 @secure()
 param vmAdminPassword string
-param vmAdminUsername string = 'mac' 
+param vmAdminUsername string 
 param imageOffer string = 'CentOS'
 param imagePublisher string = 'OpenLogic'
 param imageSku string = '8_5-gen2'
@@ -97,7 +97,7 @@ param targetVnets array = [
 ]
 
 // PostgreSQL
-param postgreSqlAdministratorLogin string = 'mac'
+param postgreSqlAdministratorLogin string
 @secure()
 param postgreSqlAdministratorLoginPassword string
 param postgreSqlAvailabilityZone string = '1'
