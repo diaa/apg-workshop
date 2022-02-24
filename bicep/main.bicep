@@ -62,9 +62,9 @@ param privateIPAddress string = '192.168.0.4'
 param privateIPAllocationMethod string = 'Static'
 
 // Virtual Machine
+param vmAdminUsername string 
 @secure()
 param vmAdminPassword string
-param vmAdminUsername string 
 param imageOffer string = 'CentOS'
 param imagePublisher string = 'OpenLogic'
 param imageSku string = '8_5-gen2'
