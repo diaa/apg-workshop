@@ -6,6 +6,7 @@ param subnetName string
 param isLoadBalanced string
 param loadBalancerName string = ''
 param backendPoolName string = ''
+param publicIPAddressName string = 'diaa'
 
 // Virtual Machine
 param vmName string
@@ -33,6 +34,19 @@ resource loadBalancer 'Microsoft.Network/loadBalancers@2021-03-01' existing = if
   name: loadBalancerName
 }
 
+resource publicIP 'Microsoft.Network/publicIPAddresses@2020-06-01' = {
+  name: publicIPAddressName
+  location: resourceGroup().location
+  properties: {
+    publicIPAllocationMethod: 'Static'
+    publicIPAddressVersion: 'IPv4'
+    idleTimeoutInMinutes: 4
+  }
+  sku: {
+    name: 'Standard'
+  }
+}
+
 resource nic 'Microsoft.Network/networkInterfaces@2021-03-01' = {
   name: '${vmName}-nic'
   location: resourceGroup().location
@@ -49,6 +63,9 @@ resource nic 'Microsoft.Network/networkInterfaces@2021-03-01' = {
           privateIPAddressVersion: 'IPv4'
           subnet: {
             id: subnet.id
+          }
+          publicIPAddress: {
+          id: publicIP.id
           }
           loadBalancerBackendAddressPools: bool(isLoadBalanced) ? [
             {
