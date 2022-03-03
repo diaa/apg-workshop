@@ -2,9 +2,10 @@ param virtualNetworkName string
 param addressPrefixes array
 param dnsServers array = []
 param subnets array
+
 resource nsg 'Microsoft.Network/networkSecurityGroups@2021-03-01' existing = [ for subnet in subnets: if (contains(subnet, 'networkSecurityGroupName')) {
   name: subnet.networkSecurityGroupName
-  scope: resourceGroup(subnet.networkSecurityGroupNameResourceGroupName)
+  scope: resourceGroup(subnet.networkSecurityGroupResourceGroupName)
 }]
 
 resource vnet 'Microsoft.Network/virtualNetworks@2021-02-01' = {
