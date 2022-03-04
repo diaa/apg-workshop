@@ -28,6 +28,8 @@ param spokeSubnetsConfig array = [
   {
     name: 'subnet-01'
     addressPrefix: '192.168.1.0/25'
+    networkSecurityGroupName: 'subnet-01-nsg'
+    networkSecurityGroupResourceGroupName: resourceGroup().name
   }
   {
     name: 'subnet-02'
@@ -60,6 +62,33 @@ param enableAcceleratedNetworking bool = false
 param enableIPForwarding bool = false
 param privateIPAddress string = '192.168.0.4'
 param privateIPAllocationMethod string = 'Static'
+
+// Public IP Address
+
+param publicIpAddressSkuName string = 'Standard'
+param publicIpAddressSkuTier string = 'Regional'
+param publicIPAllocationMethod string = 'Static'
+
+// Network Security Group
+param nsgName string = 'subnet-01-nsg'
+param securityRules array = [
+  {
+    name: 'Allow-SSH'
+    protocol: 'TCP'
+    direction: 'Inbound'
+    access: 'Allow'
+    priority: 100
+    sourceAddressPrefix: '*'
+    sourceAddressPrefixes: []
+    sourcePortRange: '*'
+    sourcePortRanges: []
+    destinationAddressPrefix: '*'
+    destinationAddressPrefixes: []
+    destinationPortRange: 22
+    destinationPortRanges: []
+    description: 'Allow SSH access from the internet'
+  }
+]
 
 // Virtual Machine
 param vmAdminUsername string 
@@ -126,8 +155,18 @@ module hubVnet './modules/virtualnetwork.bicep' = {
     subnets: hubSubnetsConfig
   }
 }
-
+module nsg 'modules/networksecuritygroup.bicep' = {
+  name: 'nsgDeployment'
+  params: {
+    location: location
+    name: nsgName
+    securityRules: securityRules
+  }
+}
 module spokeVnet './modules/virtualnetwork.bicep' = {
+  dependsOn: [
+    nsg
+  ]
   name: 'spokeVnetDeployment'
   params: {
     addressPrefixes: spokeAddressPrefixes
@@ -171,12 +210,25 @@ module spokePeering './modules/virtualNetwork.peering.bicep' = {
   }
 }
 
+module publicIp 'modules/publicip.bicep' = {
+  name: 'publicIpDeployment'
+  params: {
+    location: location
+    name: vmName
+    skuName: publicIpAddressSkuName
+    skuTier: publicIpAddressSkuTier
+    publicIPAllocationMethod: publicIPAllocationMethod
+  }
+}
+
 module dnsNic './modules/networkinterface.bicep' = {
   dependsOn: [
     spokeVnet
+    publicIp
   ]
   name: 'dnsNicDeployment'
   params: {
+    location: location
     isLoadBalanced: isLoadBalanced
     subnetName: subnetName
     vmName: vmName
@@ -185,6 +237,7 @@ module dnsNic './modules/networkinterface.bicep' = {
     enableIPForwarding: enableIPForwarding
     privateIPAddress: privateIPAddress
     privateIPAllocationMethod: privateIPAllocationMethod
+    publicIpAddressName: '${vmName}-ip'
   }
 }
 

@@ -1,3 +1,5 @@
+param location string
+
 // Virtual Network
 param vnetName string
 param subnetName string
@@ -6,6 +8,9 @@ param subnetName string
 param isLoadBalanced string
 param loadBalancerName string = ''
 param backendPoolName string = ''
+
+// Public IP
+param publicIpAddressName string = ''
 
 // Virtual Machine
 param vmName string
@@ -33,9 +38,13 @@ resource loadBalancer 'Microsoft.Network/loadBalancers@2021-03-01' existing = if
   name: loadBalancerName
 }
 
+resource publicIp 'Microsoft.Network/publicIPAddresses@2021-05-01' existing = {
+  name: publicIpAddressName
+}
+
 resource nic 'Microsoft.Network/networkInterfaces@2021-03-01' = {
   name: '${vmName}-nic'
-  location: resourceGroup().location
+  location: location
   properties: {
     enableAcceleratedNetworking: enableAcceleratedNetworking
     enableIPForwarding: enableIPForwarding
@@ -46,6 +55,9 @@ resource nic 'Microsoft.Network/networkInterfaces@2021-03-01' = {
           primary: true
           privateIPAllocationMethod: privateIPAllocationMethod
           privateIPAddress: privateIPAllocationMethod == 'Static' ? privateIPAddress : null
+          publicIPAddress: {
+            id: !empty(publicIpAddressName) ? publicIp.id : null
+          }
           privateIPAddressVersion: 'IPv4'
           subnet: {
             id: subnet.id
