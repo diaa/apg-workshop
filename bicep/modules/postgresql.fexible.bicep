@@ -29,7 +29,7 @@ resource delegatedSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' 
   name: delegatedSubnetName
 }
 
-resource serverName_resource 'Microsoft.DBforPostgreSQL/flexibleServers@2021-06-01' = {
+resource postgres 'Microsoft.DBforPostgreSQL/flexibleServers@2021-06-01' = {
   location: location
   name: serverName
   properties: {
@@ -57,3 +57,5 @@ resource serverName_resource 'Microsoft.DBforPostgreSQL/flexibleServers@2021-06-
     tier: tier
   }
 }
+
+output fqdn string = postgres.properties.fullyQualifiedDomainName

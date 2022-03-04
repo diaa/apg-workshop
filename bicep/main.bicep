@@ -58,7 +58,7 @@ param spokePeeringName string = 'peering-hub'
 param isLoadBalanced string =  'false'
 param subnetName string = 'subnet-01'
 param vnetName string = hubVirtualNetworkName
-param enableAcceleratedNetworking bool = false
+param enableAcceleratedNetworking bool = true
 param enableIPForwarding bool = false
 param privateIPAddress string = '192.168.0.4'
 param privateIPAllocationMethod string = 'Static'
@@ -100,7 +100,7 @@ param imageSku string = '8_5-gen2'
 param osType string = 'Linux'
 param storageSku string = 'Premium_LRS'
 param vmName string = 'dns'
-param vmSize string = 'Standard_B1s'
+param vmSize string = 'Standard_D2as_v5'
 param zone string = '1'
 
 // Virtual Machine Extension
@@ -315,3 +315,8 @@ module postgreSqlFlex './modules/postgresql.fexible.bicep' = {
     version: postgreSqlVersion
   }
 }
+
+output vmUsername string = vmAdminUsername
+output vmPublicIp string = publicIp.outputs.publicIpAddress
+output postgreSqlUsername string = postgreSqlAdministratorLogin
+output postgreSqlFqdn string = postgreSqlFlex.outputs.fqdn
