@@ -28,3 +28,5 @@ resource publicip 'Microsoft.Network/publicIPAddresses@2021-05-01' = {
     publicIPAllocationMethod: publicIPAllocationMethod
   }
 }
+
+output publicIpAddress string = publicip.properties.ipAddress
