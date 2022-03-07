@@ -1,8 +1,7 @@
 ---
 sectionid: SQLCharacteristic
-
 sectionclass: h2
-parent-id: upandrunning
+parent-id: day2
 title: SQL Characteristic
 
 ---

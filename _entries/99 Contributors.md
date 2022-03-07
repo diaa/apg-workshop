@@ -10,4 +10,5 @@ The following people have contributed to this workshop, thanks!
 <div class="github-contributors">
 {% githubauthor AwdotiaRomanowna  %}
 {% githubauthor diaa %}
+{% githubauthor damaccar %}
 </div>

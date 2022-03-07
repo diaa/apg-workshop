@@ -1,10 +1,11 @@
 ---
-sectionid: monitoring
+sectionid: logicalbackup
 sectionclass: h2
-parent-id: upandrunning
+parent-id: businesscont-sec
 title: Logical Backup
 
 ---
+
 ### Plain pg_dump
 Make sure you have sourced the file with libpq variables on your current session:
 ```sh 

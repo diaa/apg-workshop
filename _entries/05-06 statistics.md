@@ -1,7 +1,7 @@
 ---
-sectionid: Statistics
+sectionid: statistics
 sectionclass: h2
-parent-id: upandrunning
+parent-id: day2
 title: Statistics and Query Planning
 ---
 ### EXPLAIN

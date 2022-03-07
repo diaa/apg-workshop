@@ -1,7 +1,7 @@
 ---
 sectionid: backupandresotre
 sectionclass: h2
-parent-id: upandrunning
+parent-id: businesscont-sec
 title: Physical Backup and Point in Time Restore
 hide: false
 published: true

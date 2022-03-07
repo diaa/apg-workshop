@@ -1,6 +1,6 @@
 ---
 
-sectionid: api
+sectionid: connecting-db
 sectionclass: h2
 parent-id: upandrunning
 title: Connecting to PostgreSQL
