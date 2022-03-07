@@ -9,26 +9,76 @@ Azure Database for PostgreSQL is a fully-managed database as a service with buil
 
 ### Tasks
 
-* Use [Azure Resource Manager](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/overview) to deploy Azure Database for PostgreSQL - single server.
+* Use [Bicep](https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview?tabs=bicep) to deploy Azure Database for PostgreSQL - Flexible server.
 * Use [Azure Cloud Shell](https://docs.microsoft.com/en-us/azure/cloud-shell/overview) to connected to the created database instance.
 
 #### Setup Database
 
-**Deploy DB using ARM**
+**Deploy DB using Bicep**
 
 Deploy Azure Database for PostgreSQL, which is managed service that you can use to run, manage, and scale in the cloud.
 
-{% collapsible %}
 
-* If your environment meets the prerequisites and you're familiar with using ARM templates, [follow this link and a template will open in the Azure portal](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fazure-quickstart-templates%2Fmaster%2Fquickstarts%2Fmicrosoft.dbforpostgresql%2Fmanaged-postgresql-with-vnet%2Fazuredeploy.json).
+Based in the previous section, the cloudshell enviroment should be available, log to your cloudshell - bash. the next step is to install **bicep**  
 
-![Create Azure DB](media/create-azure-db-pg.png)
+```sh
+az bicep install
+```
 
-* Continue to the next page by clicking **Review + create**
+![Install Bicep](media/bicep/1-bicep-install.png)
 
-* The review page should look like the following:
+Download the bicep templates for the workshop
 
-![Review Azure DB](media/review-pg-create.png)
+```sh
+wget https://storageaccounthol.z6.web.core.windows.net/scripts/bicep.zip
+```
+![Download Bicep Templates](media/bicep/2-download-bicep-zip.png)
 
-{% endcollapsible %}
+Uncompress the the downloaded file
 
+```sh
+unzip bicep
+```
+![Uncompress the downloaded file Templates](media/bicep/3-unzip-bicep.png)
+
+
+
+Create a new [azure resource group](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal) to deploy the workshop resource in this resource group. Please take note of the resource group name in this below command it will be **PG-Workshop**.
+
+```sh
+az group create -l Eastus -n PG-Workshop
+```
+[Create PG workshop resource group]](media/bicep/4-create-resource-group.png)
+
+In this step we will deploy the bicep template to the resource group that we created in the previous step
+
+```sh 
+az deployment group create --resource-group Eastus --template-file bicep/main.bicep
+```
+
+You will be asked for 4 questions
+- Admin username for the Jump-box (DNS)
+- Admin password for the Jump-box 
+- Admin username for the PostgreSQL database (use your name rather than admin/root)
+- Admin password for the PostgreSQL database (Please use strong password)
+
+![Create PG workshop resource group](media/bicep/5-bicep-deploy.png)
+
+
+After the creation process finished you should be able to see the resource in the resource groups, go to Resource Groups
+
+![Resource Groups](media/bicep/6-resource-groups.png)
+
+Click on the resource group name that we created, PG-Workshop if you didn't change it.
+
+![Resource Groups](media/bicep/7-resources-dns-pg.png)
+
+Visit both DNS VM to get the public IP and the PostgreSQL Flexible Server to get the endpoint
+
+![Resource Groups](media/bicep/8-dns-publicip.png)
+
+![Resource Groups](media/bicep/9-pg-endpoint.png)
+
+
+
+Now we move the next section to connect to the DB.

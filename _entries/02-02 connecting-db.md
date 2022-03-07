@@ -32,7 +32,20 @@ When the defaults aren't quite right, you can save yourself some typing by setti
 
 **Using Azure Cloud Shell**
 
-Example (Please change these values to match with your setup)
+Example (Please change these values to match with your setup) from the cloudshell
+
+```sh
+ssh username@<jumpbox-ip
+```
+In the first time acessing the jumpbox make sure that you have psql installed use the following commands once you logon 
+```
+sudo dnf module enable -y postgresql:12
+sudo dnf install -y postgresql
+
+```
+
+Then connect to the database
+
 ```sh   
 psql -U adminuser@postgresql-db -h postgresql-db.postgres.database.azure.com postgres
 
