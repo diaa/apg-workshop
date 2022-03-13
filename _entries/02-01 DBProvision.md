@@ -53,7 +53,7 @@ az group create -l Eastus -n PG-Workshop
 In this step we will deploy the bicep template to the resource group that we created in the previous step
 
 ```sh 
-az deployment group create --resource-group Eastus --template-file bicep/main.bicep
+az deployment group create --resource-group PG-Workshop --template-file bicep/main.bicep
 ```
 
 You will be asked for 4 questions
