@@ -48,7 +48,7 @@ Create a new [azure resource group](https://docs.microsoft.com/en-us/azure/azure
 ```sh
 az group create -l Eastus -n PG-Workshop
 ```
-[Create PG workshop resource group]](media/bicep/4-create-resource-group.png)
+![Create PG workshop resource group](media/bicep/4-create-resource-group.png)
 
 In this step we will deploy the bicep template to the resource group that we created in the previous step
 
