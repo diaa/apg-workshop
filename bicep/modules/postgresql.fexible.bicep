@@ -16,6 +16,13 @@ param privateDnsZoneName string
 param virtualNetworkName string
 param delegatedSubnetName string
 
+param isLogEnabled bool = false
+param storageAccountName string = ''
+
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' existing = if(isLogEnabled) {
+  name: storageAccountName
+}
+
 resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
   name: privateDnsZoneName
 }
@@ -55,6 +62,20 @@ resource postgres 'Microsoft.DBforPostgreSQL/flexibleServers@2021-06-01' = {
   sku: {
     name: skuName
     tier: tier
+  }
+}
+
+resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if(isLogEnabled) {
+  scope: postgres
+  name: 'diagnostic'
+  properties: {
+    storageAccountId: isLogEnabled ? storageAccount.id : null
+    logs: [
+      {
+        category: 'PostgreSQLLogs'
+        enabled: true
+      }
+    ]
   }
 }
 
