@@ -1,5 +1,6 @@
 // Global
 param location string = resourceGroup().location
+param randomString string = uniqueString(subscription().subscriptionId, resourceGroup().id, deployment().name)
 
 // Hub VNet
 param hubVirtualNetworkName string = 'hub-vnet'
@@ -102,8 +103,8 @@ param imageSku string = '8_5-gen2'
 param osType string = 'Linux'
 param storageSku string = 'Premium_LRS'
 param vmName string = 'dns'
-param vmSize string = 'Standard_D2as_v5'
-param zone string = '1'
+param vmSize string = 'Standard_D2s_v3'
+param zone string = ''
 
 // Virtual Machine Extension
 param extensionName string = 'installCustomScript'
@@ -127,6 +128,11 @@ param targetVnets array = [
   }
 ]
 
+// Storage Account
+param storageAccountName string = '${randomString}stg'
+param storageAccountSku string = 'Standard_LRS'
+param vnetIntegrated bool = false
+
 // PostgreSQL
 param postgreSqlAdministratorLogin string
 @secure()
@@ -138,7 +144,6 @@ param postgreSqlVirtualNetworkName string = spokeVirtualNetworkName
 param postgreSqlGeoRedundantBackup string = 'Disabled'
 param postgreSqlHaEnabled string = 'Disabled'
 
-param randomString string = uniqueString(resourceGroup().id, deployment().name)
 param postgreSqlServerNamePrefix string = 'psqlflex'
 param postgreSqlServerName string = '${postgreSqlServerNamePrefix}${randomString}'
 
@@ -146,6 +151,7 @@ param postgreSqlSkuName string = 'Standard_D2ds_v4'
 param postgreSqlStorageSizeGB int = 128
 param postgreSqlTier string = 'GeneralPurpose'
 param postgreSqlVersion string = '13'
+param isLogEnabled bool = true
 
 //// MAIN ////
 
@@ -295,11 +301,22 @@ module dnsZone './modules/privatednszone.bicep' = {
   }
 }
 
+module storage 'modules/storageAccount.bicep' = {
+  name: 'storageDeployment'
+  params: {
+    location: location
+    storageAccountName: storageAccountName
+    storageAccountSku: storageAccountSku
+    vnetIntegrated: vnetIntegrated
+  }
+}
+
 module postgreSqlFlex './modules/postgresql.fexible.bicep' = {
   dependsOn: [
     dnsExtension
     spokeVnet
     dnsZone
+    storage
   ]
   name: 'postgreSqlFlexDeployment'
   params: {
@@ -318,6 +335,8 @@ module postgreSqlFlex './modules/postgresql.fexible.bicep' = {
     storageSizeGB: postgreSqlStorageSizeGB
     tier: postgreSqlTier
     version: postgreSqlVersion
+    isLogEnabled: isLogEnabled
+    storageAccountName: storageAccountName
   }
 }
 
