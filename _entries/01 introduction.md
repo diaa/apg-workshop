@@ -6,28 +6,22 @@ type: nocount
 is-parent: yes
 ---
 
-Welcome to the Azure PostgreSQL Workshop. In this lab, you'll go through tasks that will help you master the basic and more advanced topics required to deploy and operate a PostgreSQL enviroment on [Azure Database for PostgreSQL)](https://azure.microsoft.com/en-us/services/postgresql/). 
+Welcome to the Azure PostgreSQL Workshop. In this lab, you'll go through tasks that will help you master the basic and more advanced topics required to deploy and operate a PostgreSQL environment on [Azure Database for PostgreSQL)](https://azure.microsoft.com/en-us/services/postgresql/). 
 
 You can use this guide as a PostgreSQL tutorial and as study material to help you get started to learn PostgreSQL.
 
 **Theme: Deployment**
 - Azure Database for PostgreSQL Provisioning 
-    - Introduction to PG 
-    - Logical Architecture
-    - Physical Layout
-- Data import and environment prep.  
+- Data import and environment preparation  
 - Access and basic Administration in Azure Database for PostgreSQL
     - Managing database 
 	- Roles and Permissions 
 
-
-**Theme: Accessibility and Business Continuity)**
-- HA/DR 
-- Back-ups/restore   
+**Theme: Accessibility and Business Continuity**
 - Logical backup
+- Back-ups/restore   
+- HA/DR 
 - Azure Backup
-- Cloning alternatives, integration with CI/CD, CLI/API interaction 
-- DNS resolution/Secrets manager  
 - Patching and maintenance windows
 - Security Management in Azure Database for PostgreSQL 
 
@@ -39,5 +33,4 @@ You can use this guide as a PostgreSQL tutorial and as study material to help yo
     - SQL characteristic
     - Statistics and Query
 - Extensions 
-    - Time-series database on PostgreSQL 
-
+    - Time-series database on PostgreSQL

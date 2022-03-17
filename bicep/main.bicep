@@ -11,6 +11,8 @@ param hubSubnetsConfig array = [
   {
     name: 'subnet-01'
     addressPrefix: '192.168.0.0/24'
+    networkSecurityGroupName: 'subnet-01-nsg'
+    networkSecurityGroupResourceGroupName: resourceGroup().name
   }
 ]
 // Hub VNet - Peering
@@ -154,6 +156,9 @@ param isLogEnabled bool = true
 //// MAIN ////
 
 module hubVnet './modules/virtualnetwork.bicep' = {
+  dependsOn: [
+    nsg
+  ]
   name: 'hubVnetDeployment'
   params: {
     addressPrefixes: hubAddressPrefixes
