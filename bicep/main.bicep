@@ -25,6 +25,7 @@ param hubPeeringName string = 'peering-spoke'
 param spokeVirtualNetworkName string = 'spoke-vnet'
 param spokeAddressPrefixes array = [
   '192.168.1.0/24'
+  '192.168.2.0/24'
 ]
 param spokeSubnetsConfig array = [
   {
@@ -44,6 +45,10 @@ param spokeSubnetsConfig array = [
         }
       }
     ]
+  }
+  {
+    name: 'subnet-03'
+    addressPrefix: '192.168.2.0/24'
   }
 ]
 param spokeDnsServers array = [

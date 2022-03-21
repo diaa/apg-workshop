@@ -1,6 +1,4 @@
 # VARIABLES
-SUBSCRIPTION_ID=""
-RESOURCE_GROUP="example-rg"
 LOCATION="eastus"
 CLUSTER_NAME="aks-monitoring"
 VNET_NAME="spoke-vnet"
