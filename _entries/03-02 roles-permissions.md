@@ -59,7 +59,8 @@ quiz=> GRANT ALL ON ALL TABLES IN SCHEMA public TO monty_python;
 GRANT
 ```
 
-In order to be able to switch to another role you need to grant this permission to the current user:
+In order to be able to switch to another role you need to grant this permission to the current user. Replace *adminuser* with your pg admin:
+
 ```sh
 GRANT graham to adminuser;
 GRANT graham to adminuser;
