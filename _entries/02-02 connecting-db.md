@@ -32,7 +32,7 @@ When the defaults aren't quite right, you can save yourself some typing by setti
 
 **Using Azure Cloud Shell**
 
-Example (Please change these values to match with your setup) from the cloudshell
+Example (please change these values to match with your setup) from the cloudshell
 
 ```sh
 ssh username@<jumpbox-ip
@@ -47,7 +47,7 @@ sudo dnf install -y postgresql
 Then connect to the database
 
 ```sh   
-psql -U adminuser@postgresql-db -h postgresql-db.postgres.database.azure.com postgres
+psql -U adminuser -h postgresql-db.postgres.database.azure.com postgres
 
 ```
 
@@ -69,7 +69,7 @@ Add the following parameters:
 ```sh
 export PGDATABASE=postgres
 export PGHOST=HOSTNAME.postgres.database.azure.com
-export PGUSER=your_user@hostname
+export PGUSER=adminuser
 export PGPASSWORD=your_password
 export PGSSLMODE=require
 ```

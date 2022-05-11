@@ -65,7 +65,7 @@ Output will be in an HTML format, copy the IP address:
 
 
 Preload the time TimescaleDB using the azure portal, 
-in the azure portal under servers parameters, chack the TimescaleDB in the **shared_preload_libraries** once done seave the change and restrt the server 
+in the azure portal under servers parameters, check the TimescaleDB in the **shared_preload_libraries** once done seave the change and restrt the server 
 
 Using the [Azure portal](https://portal.azure.com/):
 
@@ -78,10 +78,10 @@ Using the [Azure portal](https://portal.azure.com/):
 6.	After the notification, restart the server to apply these changes.
 
 ### step #2
-connect to the PostgreSSQL Server using the psql command:
+connect to the Postgres Server using the psql command:
 ```bash
-psql "host=singelservuser.postgres.database.azure.com port=5432 dbname=postgres user=user@singelservuser"
-Password for user user@singelservuser:
+psql "host=singelservuser.postgres.database.azure.com port=5432 dbname=postgres user=user"
+Password for user user:
 ```
 Output:
 
@@ -91,7 +91,7 @@ Type "help" for help.
 
 execute the command to validate the the TimescaleDb is avilable
 ```sql
-Select * from pg_available_extensions
+SELECT * FROM pg_available_extensions;
 ```
 |name                 |version | Comment |                                                       
 |---------------------|--------|------------------------------------------------------------|
@@ -105,7 +105,7 @@ Select * from pg_available_extensions
 (38 rows)
 
 ### step #3
-Create the Timescale Extention
+Create the Timescale Extension
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
@@ -143,7 +143,7 @@ CREATE TABLE sensors(
   location VARCHAR(50)
 );
 ```
-#### Create the sensors datat table
+#### Create the sensors data table
 ```sql
 CREATE TABLE sensor_data (
   time TIMESTAMPTZ NOT NULL,
@@ -241,6 +241,6 @@ GROUP BY period, sensors.location;
 
 
 
-***If you'd like to experiance and test the full extention you can run the New Yort IOT lab***
+***If you'd like to experience and test the full extention you can run the New Yort IOT lab***
 
  [IoT New York City Taxicabs case study](https://docs.timescale.com/timescaledb/latest/tutorials/nyc-taxi-cab/#introduction-to-iot-new-york-city-taxicabs)
