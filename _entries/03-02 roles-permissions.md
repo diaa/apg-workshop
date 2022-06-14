@@ -64,7 +64,7 @@ In order to be able to switch to another role you need to grant this permission 
 
 ```sh
 GRANT graham to adminuser;
-GRANT graham to adminuser;
+GRANT eric to adminuser;
 ```
 
 Switch to the Graham user
