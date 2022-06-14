@@ -21,7 +21,6 @@ You can use this guide as a PostgreSQL tutorial and as study material to help yo
 - Logical backup
 - Back-ups/restore   
 - HA/DR 
-- Azure Backup
 - Patching and maintenance windows
 - Security Management in Azure Database for PostgreSQL 
 
@@ -32,5 +31,4 @@ You can use this guide as a PostgreSQL tutorial and as study material to help yo
     - Daemons & Tuning
     - SQL characteristic
     - Statistics and Query
-- Extensions 
-    - Time-series database on PostgreSQL
+

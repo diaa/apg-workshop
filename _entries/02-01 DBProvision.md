@@ -10,7 +10,7 @@ Azure Database for PostgreSQL is a fully-managed database as a service with buil
 ### Tasks
 
 * Use [Bicep](https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview?tabs=bicep) to deploy Azure Database for PostgreSQL - Flexible server.
-* Use [Azure Cloud Shell](https://docs.microsoft.com/en-us/azure/cloud-shell/overview) to connected to the created database instance.
+* Use [Azure Cloud Shell](https://docs.microsoft.com/en-us/azure/cloud-shell/overview) to connect to **DNS VM** then you can access the Azure PostgreSQL database..
 
 #### Setup Database
 
@@ -19,7 +19,7 @@ Azure Database for PostgreSQL is a fully-managed database as a service with buil
 Deploy Azure Database for PostgreSQL, which is managed service that you can use to run, manage, and scale in the cloud.
 
 
-Based in the previous section, the cloudshell enviroment should be available, log to your cloudshell - bash. the next step is to install **bicep**  
+Based on the previous section, the cloudshell environment should be available, log to your cloudshell - bash. the next step is to install **bicep**  
 
 ```sh
 az bicep install
@@ -64,21 +64,24 @@ You will be asked for 4 questions
 
 ![Create PG workshop resource group](media/bicep/5-bicep-deploy.png)
 
+It will take a while to deploy the environment, when it finish you should see long output mentioning **succeeded** in the last 10 lines. 
+
+![Created PG workshop resource group](media/resource-groups-sucess.png)
+
 
 After the creation process finished you should be able to see the resource in the resource groups, go to Resource Groups
 
 ![Resource Groups](media/bicep/6-resource-groups.png)
 
-Click on the resource group name that we created, PG-Workshop if you didn't change it.
+Click on the resource group name that we created, **PG-Workshop** if you didn't change the az command to create the resource group.
 
 ![Resource Groups](media/bicep/7-resources-dns-pg.png)
 
-Visit both DNS VM to get the public IP and the PostgreSQL Flexible Server to get the endpoint
+Visit both **DNS VM** to get the public IP and the PostgreSQL Flexible Server to get the **access endpoint**, please keep them as we will use them during the workshop.
 
 ![Resource Groups](media/bicep/8-dns-publicip.png)
 
 ![Resource Groups](media/bicep/9-pg-endpoint.png)
-
 
 
 Now we move the next section to connect to the DB.

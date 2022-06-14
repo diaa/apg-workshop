@@ -1,5 +1,5 @@
 ---
-sectionid: tls
+sectionid: roles
 sectionclass: h2
 title: Roles and Permissions
 parent-id: basicadmin
@@ -8,8 +8,9 @@ parent-id: basicadmin
 
 Connect to the PostgreSQL instance
 ```sh 
-[postgres@localhost ~]$ psql
-psql (11.5)
+[diaa@dns ~]$ psql 
+psql (13.5, server 13.6)
+SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
 Type "help" for help.
 
 postgres=> 

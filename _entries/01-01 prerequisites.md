@@ -13,7 +13,7 @@ You can use the Azure Cloud Shell accessible at <https://shell.azure.com> once y
 
 ### Azure subscription
 
-#### If you have an Azure subscription
+#### If the workshop will run on your Azure subscription
 
 {% collapsible %}
 
@@ -28,6 +28,20 @@ az login
 
 {% endcollapsible %}
 
+
+#### If the workshop will run on [Azure Pass](https://www.microsoftazurepass.com/)
+{% collapsible %}
+
+* Login with a github account with the provided link: https://azcheck.in/xxxxxxx (Please use the provided one)
+    ![Azure Cloud Shell](media/1-az-checkin.png)
+* Follow the instructions, basically copy the code and go to: <https://www.microsoftazurepass.com/> to redeem the voucher and click on **Start>**.
+
+    ![Azure Cloud Shell](media/2-azure-pass.png)
+
+
+For more information follow : <https://www.microsoftazurepass.com/Home/HowTo?Length=5>
+
+{% endcollapsible %}
 #### Azure Cloud Shell
 
 You can use the Azure Cloud Shell accessible at <https://shell.azure.com> once you login with an Azure subscription.

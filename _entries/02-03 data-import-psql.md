@@ -6,10 +6,18 @@ parent-id: upandrunning
 title: Data import and environment preparation
 ---
 
-psql is a terminal-based front-end to PostgreSQL. It enables you to type in queries interactively, issue them to PostgreSQL, and see the query results. Alternatively, input can be from a file or from command line arguments. In addition, psql provides a number of meta-commands and various shell-like features to facilitate writing scripts and automating a wide variety of tasks.
-Anything you enter in psql that begins with an **unquoted backslash** (\\) is a psql meta-command that is processed by psql itself. These commands make psql more useful for administration or scripting. Meta-commands are often called slash or backslash commands. The format of a psql command is the backslash, followed immediately by a command verb, then any arguments. The arguments are separated from the command verb and each other by any number of whitespace characters.
+psql is a terminal-based front-end to PostgreSQL. It enables you to type in queries interactively, issue them to PostgreSQL, and see the query results. 
+
+Anything you enter in psql that begins with an **unquoted backslash** (\\) is a psql meta-command that is processed by psql itself.
+
+ These commands make psql more useful for administration or scripting. Meta-commands are often called slash or backslash commands. The format of a psql command is the backslash, followed immediately by a command verb, then any arguments. The arguments are separated from the command verb and each other by any number of whitespace characters.
 
 List the databases in the cluster:
+
+
+```sh 
+psql
+```
 
 ```sh 
 postgres=> \l
@@ -70,12 +78,17 @@ postgres=> \l
 ```
 
 Lists schemas (namespaces) in the current database:
+quiz-> \l
+
+![Schenma list](media/schema-list.png)
+
+
 ```sh 
 quiz=> \dn
      List of schemas
   Name  |     Owner
 --------+----------------
- calc   | gustaw
+ calc   | masteruser
  public | azure_pg_admin
 (2 rows)
 ```
@@ -83,7 +96,7 @@ quiz=> \dn
 Check your current connection:
 ```sh 
 quiz=> \conninfo
-You are connected to database "quiz" as user "gustaw" on host "demo.postgres.database.azure.com" (address "20.67.160.95") at port "5432".
+You are connected to database "quiz" as user "masteruser" on host "psqlflexlekjqqdqpcfja.postgres.database.azure.com" (address "192.168.1.132") at port "5432".
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
 ```
 
