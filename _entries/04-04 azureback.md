@@ -6,7 +6,7 @@ parent-id: businesscont-sec
 
 ---
 
-##Backup and restore in Azure Database for PostgreSQL - Flexible Server
+### Backup and restore in Azure Database for PostgreSQL - Flexible Server
 
 Azure Database for PostgreSQL - Flexible Server automatically performs regular backups of your server. You can then do a point-in-time recovery (PITR) as seen in the previous section, within a retention period that you specify.
 

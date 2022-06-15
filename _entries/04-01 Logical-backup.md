@@ -14,11 +14,6 @@ source .pg_azure
 
 pg_dump like other native postgres utilities is able to use them to connect to your database instance.
 
-Run pg_dump:
-```sh 
-pg_dump
-```
-
 Run pg_dump against quiz database:
 ```sh 
 pg_dump quiz

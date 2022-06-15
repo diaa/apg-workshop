@@ -80,7 +80,7 @@ postgres=> \l
 Lists schemas (namespaces) in the current database:
 quiz-> \l
 
-![Schenma list](media/schema-list.png)
+![Schema list](media/schema-list.png)
 
 
 ```sh 

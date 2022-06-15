@@ -11,23 +11,30 @@ published: true
 While creating a server through the Azure portal, the **Pricing Tier** window is where you select either **Locally Redundant** or **Geographically Redundant** backups for your server. This window is also where you select the **Backup Retention Period** - how long (in number of days) you want the server backups stored for.
 
 
-![Azure backup](media/azure_postgresql-backup.png)
+![Azure backup](media/backup-retention.png)
 
 
 
 The backup retention period governs how far back in time a point-in-time restore can be retrieved, since it's based on backups available. Point-in-time restore is described further in the following section.
 
-![Azure backup](media/azure_postgresql-backup-increase.png)
+![Azure backup](media/backup-retention-2.png)
+
+After changing the retention period make sure to click **Save**
+
+When you see the deployment finished, it means that retention period has changed
+
+![Azure backup](media/backup-retention-done.png)
+
 
 ### Point-in-time restore
 
-Azure Database for PostgreSQL allows you to restore the server back to a point-in-time and into to a new copy of the server. You can use this new server to recover your data, or have your client applications point to this new server.
+Azure Database for PostgreSQL Flexible server allows you to restore the server back to a point-in-time and into to a new copy of the server. You can use this new server to recover your data, or have your client applications point to this new server.
 
 For example, if a table was accidentally dropped at noon today, you could restore to the time just before noon and retrieve the missing table and data from that new copy of the server. Point-in-time restore is at the server level, not at the database level.
 
 The following steps restore the sample server to a point-in-time:
 
-* In the Azure portal, select your Azure Database for PostgreSQL server.
+* In the Azure portal, select your Azure Database for PostgreSQL Flexible server.
 
 * In the toolbar of the server's Overview page, select Restore.
 
