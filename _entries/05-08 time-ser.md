@@ -89,7 +89,7 @@ psql (14.2 (Ubuntu 14.2-1.pgdg20.04+1), server 11.12)
 SSL connection (protocol: TLSv1.2, cipher: ECDHE-RSA-AES256-GCM-SHA384, bits: 256, compression: off)
 Type "help" for help.
 
-execute the command to validate the the TimescaleDb is avilable
+execute the command to validate the the TimescaleDB is available:
 ```sql
 SELECT * FROM pg_available_extensions;
 ```
