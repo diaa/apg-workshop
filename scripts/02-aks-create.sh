@@ -93,7 +93,7 @@ wget https://raw.githubusercontent.com/msdevengers/kubernetes-essentials/master/
 
 
 read -p 'PostgreSQL Username: ' POSTGRESQL_USER
-read -p 'PostgreSQL Username: ' POSTGRESQL_PASSWORD
+read -s -p 'PostgreSQL Password: ' POSTGRESQL_PASSWORD
 sed -i "s/#POSTGRESQL_SERVER_URI#/$POSTGRESQL_IP/g" 01-postgresql-exporter.yaml
 sed -i "s/#USER_NAME#/$POSTGRESQL_USER/g" 01-postgresql-exporter.yaml
 sed -i "s/#PASSWORD#/$POSTGRESQL_PASSWORD/g" 01-postgresql-exporter.yaml
