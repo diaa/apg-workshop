@@ -28,8 +28,8 @@
                 name: pgwatch2-config
               - mountPath: /var/lib/postgresql
                 name: pgwatch2-postgresql
-              - mountPath: /var/lib/grafana
-                name: pgwatch2-grafana
+ #             - mountPath: /var/lib/grafana
+ #               name: pgwatch2-grafana
             livenessProbe:
               exec:
                 command:
@@ -45,9 +45,9 @@
           - name: pgwatch2-postgresql
             persistentVolumeClaim:
               claimName: pgwatch2-postgresql
-          - name: pgwatch2-grafana
-            persistentVolumeClaim:
-              claimName: pgwatch2-grafana
+#          - name: pgwatch2-grafana
+#            persistentVolumeClaim:
+#              claimName: pgwatch2-grafana
 ---
   kind: PersistentVolumeClaim
   apiVersion: v1
@@ -86,7 +86,7 @@
       - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
+        storage: 10Gi
 ---
 kind: Service
 apiVersion: v1
