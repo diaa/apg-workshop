@@ -14,7 +14,7 @@ You can use this guide as a PostgreSQL tutorial and as study material to help yo
 - Azure Database for PostgreSQL Provisioning 
 - Data import and environment preparation  
 - Access and basic Administration in Azure Database for PostgreSQL
-    - Managing database 
+    - Managing databases
 	- Roles and Permissions 
 
 **Theme: Accessibility and Business Continuity**
@@ -30,5 +30,5 @@ You can use this guide as a PostgreSQL tutorial and as study material to help yo
     - Multiversion Concurrency Control, MVCC
     - Daemons & Tuning
     - SQL characteristic
-    - Statistics and Query
+    - Statistics and Queries
 

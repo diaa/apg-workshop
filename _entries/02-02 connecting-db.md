@@ -74,7 +74,7 @@ Open Cloud Shell and create a new *.pg_azure* file using your favourite editor (
 vi .pg_azure
 ```
 
-Add the following parameters:
+Add the following parameters or use the below **wget** command to download the file:
 
 ```sh
 export PGDATABASE=postgres
@@ -84,17 +84,11 @@ export PGPASSWORD=your_password
 export PGSSLMODE=require
 ```
 
-You might use **VSCode** instead of **Vim**
+**Using Wget**
 
 ```sh
 wget https://storageaccounthol.z6.web.core.windows.net/scripts/pg_azure -O .pg_azure
 ```
-
-```sh
-code .pg_azure
-```
-
-Once the code pane opens, modify the parameters to match with your setup, press **"CTRL+s"** to save the configuration file.
 
 Read the content of the file in the current session:
 
