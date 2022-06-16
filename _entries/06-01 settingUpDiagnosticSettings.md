@@ -1,8 +1,10 @@
 ---
-sectionid: diagnosticsettings
+sectionid: pgBadger
 sectionclass: h2
 parent-id: pgBadger
 title: Configuring PgBadger
+published: false
+
 ---
 
 ### Configuring Server Parameters

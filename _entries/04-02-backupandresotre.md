@@ -8,7 +8,7 @@ published: true
 ---
 
 ### Backup
-While creating a server through the Azure portal, the **Pricing Tier** window is where you select either **Locally Redundant** or **Geographically Redundant** backups for your server. This window is also where you select the **Backup Retention Period** - how long (in number of days) you want the server backups stored for.
+While creating a server through the Azure portal, the **Compute tier** tab is where you select either **Burstable **, **"General purpose"** or **Memory Optimized** backups for your server. This window is also where you select the **Backup Retention Period** - how long (in number of days) you want the server backups stored for.
 
 
 ![Azure backup](media/backup-retention.png)

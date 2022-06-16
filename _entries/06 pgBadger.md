@@ -1,7 +1,9 @@
 ---
-sectionid: pgBadger
+sectionid: day2
 sectionclass: h1
 title:  pgBadger
 type: nocount
-is-parent: yes
+parent-id: day2
+published: false
+
 ---

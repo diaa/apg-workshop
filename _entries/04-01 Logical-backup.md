@@ -151,4 +151,9 @@ pg_dumpall -g > /tmp/globals.plain.dump
 less /tmp/globals.plain.dump
 ```
 
+You will encounter errors because you don't have access to export the passwords, if you run the following command you won't see the errors:
+
+```sh
+pg_dumpall -g --no-role-passwords > /tmp/globals.plain.dump
+```
 
