@@ -84,7 +84,7 @@ kubectl create ns monitoring
 helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --set grafana.service.type=LoadBalancer
 
 #Extract PostgreSQL IP Address
-export POSTGRESQL_IP=$(az network private-dns record-set a list -g example-rg --zone-name private.postgres.database.azure.com -o json | jq -r '.[].aRecords[0].ipv4Address')
+export POSTGRESQL_IP=$(az network private-dns record-set a list -g $RESOURCE_GROUP --zone-name private.postgres.database.azure.com -o json | jq -r '.[].aRecords[0].ipv4Address')
 rm -f *.yaml
 wget https://raw.githubusercontent.com/msdevengers/kubernetes-essentials/master/10-monitoring/postgresql/01-postgresql-exporter.yaml
 wget https://raw.githubusercontent.com/msdevengers/kubernetes-essentials/master/10-monitoring/postgresql/02-postgresql-exporter-svc.yaml
@@ -93,7 +93,7 @@ wget https://raw.githubusercontent.com/msdevengers/kubernetes-essentials/master/
 
 
 read -p 'PostgreSQL Username: ' POSTGRESQL_USER
-read -p 'PostgreSQL Password: ' POSTGRESQL_PASSWORD
+read -s -p 'PostgreSQL Password: ' POSTGRESQL_PASSWORD
 sed -i "s/#POSTGRESQL_SERVER_URI#/$POSTGRESQL_IP/g" 01-postgresql-exporter.yaml
 sed -i "s/#USER_NAME#/$POSTGRESQL_USER/g" 01-postgresql-exporter.yaml
 sed -i "s/#PASSWORD#/$POSTGRESQL_PASSWORD/g" 01-postgresql-exporter.yaml
