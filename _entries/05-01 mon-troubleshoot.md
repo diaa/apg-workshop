@@ -3,18 +3,48 @@ sectionid: monitoring-easy
 sectionclass: h2
 parent-id: day2
 title: Monitoring and Troubleshooting - Automated
+published: false
+
 ---
 There are several ways to monitor PostgreSQL Server. In this workshop we will study on both monitoring Azure Flexible PostgreSQL Server with opensource tools such as prometheus, grafana and also integrate opensource tools with Azure Monitor.
 
 Sometimes kubernetes clusters can be used to as a monitoring solution. In this section we will install Azure Kubernetes Services (AKS) and install prometheus and grafana to monitor Azure PostgreSQL Server solutions from the easy way.
 
 #### AKS Installation
-From Cloud Shell
+
+Before the installation, have the resource group that we've created in the previous sections.
+The resource group name was created using the following command unless you changed the name:
+
+```sh
+az group create -l Eastus -n PG-Workshop
+```
+Resource group name **PG-Workshop**
+
+
+On the  CloudShell run the following
+
+In this step we will deploy additional resources in the resource group that we created in the previous sections
+
+
+```sh 
+rm bicep.zip
+```
+
+Download the bicep templates for the workshop
+
+```sh
+wget https://storageaccounthol.z6.web.core.windows.net/scripts/bicep.zip
+```
+az deployment group create --resource-group PG-Workshop --template-file bicep/main.bicep
+```
+
 ```bash
 export SUBSCRIPTION_ID=$(az account show --query id --output tsv)
-export RESOURCE_GROUP="<YourResourceGroup>" # az group create -l Eastus -n PG-Workshop
-./scripts/02-aks-create.sh
+export RESOURCE_GROUP="<YourResourceGroup>" 
+
+bash 02-aks-create.sh
 ```
+
 ```bash
 kubectl get svc -n monitoring
 ```
@@ -29,6 +59,7 @@ prometheus-kube-state-metrics                     ClusterIP   10.41.102.217   <n
 prometheus-operated                               ClusterIP   None            <none>        9090/TCP                     26d
 prometheus-prometheus-node-exporter               ClusterIP   10.41.235.18    <none>        9100/TCP                     26d
 ```
+Copy the IP address that you found on the line **prometheus-grafana** 4th column.
 
 #### Grafana Dashboard
 Open grafana from browser and search for postgresql dashboard for postgresql
