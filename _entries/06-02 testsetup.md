@@ -27,4 +27,6 @@ You are ready to generate your first pgBadger report:
 
 Now you can download your report either from Azure Portal or by using scp command:
 
+![Server Parameters](media/pgbadger-download.png)
+
 
