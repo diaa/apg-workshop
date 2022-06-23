@@ -1,3 +1,4 @@
+#!/bin/bash
 # VARIABLES
 LOCATION="eastus"
 CLUSTER_NAME="aks-monitoring"
@@ -10,7 +11,6 @@ SYSTEM_NODE_VM_SIZE="Standard_D4ds_v4"
 SYSTEM_NODE_OS_DISK_SIZE=100
 
 # LOGIN TO THE SUBSCRIPTION
-az login 
 az account set --subscription $SUBSCRIPTION_ID
 
 # REGISTER THE AZURE POLICY PROVIDER
@@ -86,23 +86,24 @@ helm install prometheus prometheus-community/kube-prometheus-stack --namespace m
 #Extract PostgreSQL IP Address
 export POSTGRESQL_IP=$(az network private-dns record-set a list -g $RESOURCE_GROUP --zone-name private.postgres.database.azure.com -o json | jq -r '.[].aRecords[0].ipv4Address')
 rm -f *.yaml
-wget https://raw.githubusercontent.com/msdevengers/kubernetes-essentials/master/10-monitoring/postgresql/01-postgresql-exporter.yaml
-wget https://raw.githubusercontent.com/msdevengers/kubernetes-essentials/master/10-monitoring/postgresql/02-postgresql-exporter-svc.yaml
-wget https://raw.githubusercontent.com/msdevengers/kubernetes-essentials/master/10-monitoring/postgresql/03-postgresql-exporter-svc-monitor.yaml
-wget https://raw.githubusercontent.com/msdevengers/kubernetes-essentials/master/10-monitoring/postgresql/04-postgresql-dashboard.yaml
+wget https://pg.azure-workshops.cloud/scripts/yaml/01-postgresql-exporter.yaml
+wget https://pg.azure-workshops.cloud/scripts/yaml/02-postgresql-exporter-svc.yaml
+wget https://pg.azure-workshops.cloud/scripts/yaml/03-postgresql-exporter-svc-monitor.yaml
+wget https://pg.azure-workshops.cloud/scripts/yaml/04-postgresql-dashboard.yaml
+wget https://pg.azure-workshops.cloud/scripts/yaml/pgwatch2.yaml
 
-
-read -p 'PostgreSQL Username: ' POSTGRESQL_USER
-read -s -p 'PostgreSQL Password: ' POSTGRESQL_PASSWORD
-sed -i "s/#POSTGRESQL_SERVER_URI#/$POSTGRESQL_IP/g" 01-postgresql-exporter.yaml
-sed -i "s/#USER_NAME#/$POSTGRESQL_USER/g" 01-postgresql-exporter.yaml
-sed -i "s/#PASSWORD#/$POSTGRESQL_PASSWORD/g" 01-postgresql-exporter.yaml
+#read -p 'PostgreSQL Username: ' POSTGRESQL_USER
+#read -p 'PostgreSQL Password: ' POSTGRESQL_PASSWORD
+#sed -i "s/#POSTGRESQL_SERVER_URI#/$POSTGRESQL_IP/g" 01-postgresql-exporter.yaml
+#sed -i "s/#USER_NAME#/$POSTGRESQL_USER/g" 01-postgresql-exporter.yaml
+#sed -i "s/#PASSWORD#/$POSTGRESQL_PASSWORD/g" 01-postgresql-exporter.yaml
 
 kubectl apply -f 01-postgresql-exporter.yaml -n monitoring
 kubectl apply -f 02-postgresql-exporter-svc.yaml -n monitoring
 kubectl apply -f 03-postgresql-exporter-svc-monitor.yaml -n monitoring
 kubectl apply -f 04-postgresql-dashboard.yaml -n monitoring
+kubectl apply -f pgwatch2.yaml
 
-
+rm -f *.yaml
 
 

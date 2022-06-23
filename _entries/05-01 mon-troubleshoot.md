@@ -2,8 +2,7 @@
 sectionid: monitoring-easy
 sectionclass: h2
 parent-id: day2
-title: Monitoring and Troubleshooting - Automated
-published: false
+title: Monitoring and Troubleshooting
 
 ---
 There are several ways to monitor PostgreSQL Server. In this workshop we will study on both monitoring Azure Flexible PostgreSQL Server with opensource tools such as prometheus, grafana and also integrate opensource tools with Azure Monitor.
@@ -33,19 +32,41 @@ rm bicep.zip
 Download the bicep templates for the workshop
 
 ```sh
-wget https://storageaccounthol.z6.web.core.windows.net/scripts/bicep.zip
+wget https://pg.azure-workshops.cloud/scripts/bicep.zip
+```
+
+Uncompress the the downloaded file
+
+```sh
+unzip bicep
+```
+Use bicep to deploy or update your environment
+
 ```
 az deployment group create --resource-group PG-Workshop --template-file bicep/main.bicep
 ```
 
-```bash
+```sh
 export SUBSCRIPTION_ID=$(az account show --query id --output tsv)
 export RESOURCE_GROUP="<YourResourceGroup>" 
+wget https://pg.azure-workshops.cloud/scripts/02-aks-create.sh
+chmod +x 02-aks-create.sh
+./02-aks-create.sh
+```
+If you found AAD propagation taking more than 5 minutes, cancel by pressing CTRL+C.
 
-bash 02-aks-create.sh
+![AAD Propagation](../media/AAD-propagation.png)
+
+and run again
+```sh
+./02-aks-create.sh
+aks-script-output.png
 ```
 
-```bash
+![AKS installation](../media/aks-script-output.png)
+
+
+```sh
 kubectl get svc -n monitoring
 ```
 #### Expected output
@@ -61,10 +82,69 @@ prometheus-prometheus-node-exporter               ClusterIP   10.41.235.18    <n
 ```
 Copy the IP address that you found on the line **prometheus-grafana** 4th column.
 
-#### Grafana Dashboard
-Open grafana from browser and search for postgresql dashboard for postgresql
+#### Grafana Dashboard (Optional)
+Open grafana make sure it is up and running using username: **admin** and password **prom-operator**
 
 ![Grafana](../media/postgresql-monitoring-grafana2.png)
 
 
+#### Configure pgwatch2
+
+Get kubernetes running services
+
+```sh
+kubectl get svc
+```
+
+The output should be similar to the following, copy the external IP of the **pgwatch2-webui** and the **port**
+
+```
+diaa@Azure:~/foo$ kubectl get svc
+NAME               TYPE           CLUSTER-IP    EXTERNAL-IP      PORT(S)          AGE
+kubernetes         ClusterIP      10.0.0.1      <none>           443/TCP          24m
+pgwatch2-grafana   LoadBalancer   10.0.121.14   20.121.149.26    3000:32162/TCP   9m55s
+pgwatch2-webui     LoadBalancer   10.0.43.177 **20.121.151.255** **8080**:31360/TCP   9m55s
+```
+Open browser and access your external IP and the port in this case the url is **20.121.151.255:8080**.
+![pgwatch2](../media/pgwatch-ui.png)
+
+```note
+For simplicity we should disable the SSL requirement on the server parameters - please go to server parameters and disable SSL.
+```
+![Disable SSL](../media/disable-ssl.png)
+
+Return back to the resource groups and go to the private.postgres.database.azure.com
+![Private IP](../media/get-private-db-ip.png)
+
+Copy the private IP and keep it as it will be used to in configuring the pgwatch2
+
+![Private IP](../media/get-private-db-ip2.png)
+
+
+Now we return back to configuration page of the pgwatch2
+
+we need to fill the following
+
+* **Unique name** Type a unique name of your choice 
+* **DB host** The hostname or the IP address that we got from the previous steps
+* **DB user** The PostgreSQL username for your installation
+* **DB password** The PostgreSQL password for your installation
+* **Preset metrics config** Select Azure
+
+Then press **New** It should list the databases.
+
+Return back to the cloudshell and run:
+
+
+```sh
+kubectl get svc
+```
+
+Use the external IP and port of the **pgwatch2-grafana**
+
+![pgwatch2 IP](../media/get-grafana-dashboard-pgwatch2.png)
+
+Go to the web and use the url from the previous step, you will see the metrics coming in 3 minutes.
+
+![pgwatch2 IP](../media/pgwatch-ui-configured.png)
 

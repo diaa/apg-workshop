@@ -6,9 +6,9 @@ parent-id: businesscont-sec
 
 ---
 
-##Scheduled maintenance in Azure Database for PostgreSQL – Flexible server
+### Scheduled maintenance in Azure Database for PostgreSQL – Flexible server
 
-Azure Database for PostgreSQL - Flexible server performs periodic maintenance to keep your managed database secure, stable, and up-to-date. During maintenance, the server gets new features, updates, and patches. You can configure custom maintenence schedules for your server.
+Azure Database for PostgreSQL - Flexible server performs periodic maintenance to keep your managed database secure, stable, and up-to-date. During maintenance, the server gets new features, updates, and patches. You can configure custom maintenance schedules for your server.
 
 
 Tasks:
