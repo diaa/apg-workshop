@@ -60,7 +60,6 @@ If you found AAD propagation taking more than 5 minutes, cancel by pressing CTRL
 and run again
 ```sh
 ./02-aks-create.sh
-aks-script-output.png
 ```
 
 ![AKS installation](../media/aks-script-output.png)
