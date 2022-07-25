@@ -6,7 +6,7 @@ parent-id: basicadmin
 
 ---
 
-Connect to the PostgreSQL instance
+Connect to the PostgreSQL instance:
 ```sh 
 [diaa@dns ~]$ psql 
 psql (13.5, server 13.6)
@@ -16,24 +16,24 @@ Type "help" for help.
 postgres=> 
 ```
 
-Create new group
+Create new group:
 ```sh 
 postgres=> CREATE GROUP monty_python;
 ```
 
-Create a new user Graham that belongs to monty_python group and doesn't inherit any privileges from the group. Allow the user to have maximum 2 active connection.
+Create a new user Graham that belongs to monty_python group and doesn't inherit any privileges from the group. Allow the user to have maximum 2 active connection:
 
 ```sh 
 postgres=> CREATE USER Graham CONNECTION LIMIT 2 IN ROLE monty_python NOINHERIT;
 ```
 
-Create a new user Eric that belongs to monty_python group and inherits privileges from the group. Allow the user to have maximum 2 active connection.
+Create a new user Eric that belongs to monty_python group and inherits privileges from the group. Allow the user to have maximum 2 active connections:
 
 ```sh 
 postgres=> CREATE USER Eric CONNECTION LIMIT 2 IN ROLE monty_python INHERIT;
 ```
 
-Display all the roles available in the cluster
+Display all the roles available in the cluster:
 
 ```sh 
 postgres=> \dg
@@ -47,41 +47,41 @@ postgres=> \dg
  postgres       | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
 ```
 
-Connect to the quiz database
+Connect to the quiz database:
 
 ```sh 
 postgres=> \c quiz
 ```
 
-Grant all privileges for all tables in schema public to group monty_python
+Grant all privileges for all tables in schema public to group monty_python:
 
 ```sh 
 quiz=> GRANT ALL ON ALL TABLES IN SCHEMA public TO monty_python;
 GRANT
 ```
 
-In order to be able to switch to another role you need to grant this permission to the current user. Replace *adminuser* with your pg admin:
+In order to be able to switch to another role you need to grant this permission to the current user. Replace *adminuser* with your pg admin user name:
 
 ```sh
 GRANT graham to adminuser;
 GRANT eric to adminuser;
 ```
 
-Switch to the Graham user
+Switch to the Graham user:
 
 ```sh 
 quiz=> SET ROLE TO graham;
 SET
 ```
 
-Try to check the content of answers table as user Graham
+Try to check the content of answers table as user Graham:
 
 ```sh 
 quiz=> TABLE answers;
 ERROR:  permission denied for table answers
 ```
 
-Change the user and try to query the table again
+Change the user and try to query the table again:
 
 ```sh 
 quiz=> SET ROLE TO eric;
@@ -96,11 +96,11 @@ quiz=> table answers;
 (4 rows)
 ```
 
-Why user Graham doesn't have permission to view the content of answer table?
+Why user Graham doesn't have permission to view the content of answer table?:
 
 Changing permissions
 
-Grant the SELECT privilege on table answers to user Graham.
+Grant the SELECT privilege on table answers to user Graham:
 
 ```sh
 quiz=> GRANT SELECT ON TABLE answers TO Graham;
@@ -108,7 +108,7 @@ WARNING:  no privileges were granted for "answers"
 GRANT
 ```
 
-Switch back to the superuser account and try again.
+Switch back to the superuser account and try again:
 
 ```sh
 quiz=> SET ROLE TO adminuser;
@@ -117,7 +117,7 @@ quiz=> GRANT SELECT ON TABLE answers TO Graham;
 GRANT
 ```
 
-Check if user Graham is able to query the table.
+Check if user Graham is able to query the table:
 
 ```sh
 quiz=> SET ROLE TO graham;
@@ -132,7 +132,7 @@ quiz=> TABLE answers;
 (4 rows)
 ```
 
-Display all granted privileges.
+Display all granted privileges:
 
 ```sh
 quiz=> \dp
@@ -148,14 +148,14 @@ quiz=> \dp
 ```
 
 Granting roles
-As user Graham try to DELETE all records from table answers.
+As user Graham try to DELETE all records from table answers:
 
 ```sh
 quiz=> DELETE FROM answers ;
 ERROR:  permission denied for table answers
 ```
 
-As adminuser copy all privileges from user eric to user graham.
+As adminuser copy all privileges from user eric to user graham:
 
 ```sh
 quiz=> \c
@@ -164,7 +164,7 @@ quiz=> GRANT eric TO graham ;
 GRANT ROLE
 ```
 
-As user Graham try to DELETE all records from table answers.
+As user Graham try to DELETE all records from table answers:
 
 ```sh
 quiz=> set role to graham;
@@ -179,7 +179,7 @@ SET
 quiz=> DELETE FROM answers ;
 ```
 
-Display permissions granted to objects and information about roles.
+Display permissions granted to objects and information about roles:
 
 ```sh
 quiz=> \dp
@@ -209,7 +209,7 @@ quiz=> \dg
 
 Without INHERIT, membership in another role only grants the ability to SET ROLE to that other role; the privileges of the other role are only available after having done so.
 
-Revoke DELETE privilege from eric.
+Revoke DELETE privilege from eric:
 
 ```sh
 quiz=> \c

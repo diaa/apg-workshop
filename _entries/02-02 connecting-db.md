@@ -67,7 +67,7 @@ Go to the "Connection Strings" tab on the left hand side of the Azure Portal and
 
 <a href="media/connectionString.png" target="_blank"><img src="media/connectionString.png" style="width:800px"></a>
 
-Open Cloud Shell and create a new *.pg_azure* file using your favourite editor (if you are not compfortable with Vim you can use VSCode):
+Open Cloud Shell and create a new *.pg_azure* file using your favourite editor (if you are not comfortable with Vim you can use VSCode):
 
 **Using VIM**
 ```sh

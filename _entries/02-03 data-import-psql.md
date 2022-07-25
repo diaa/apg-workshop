@@ -77,11 +77,9 @@ List the databases in the cluster:
 postgres=> \l
 ```
 
-Lists schemas (namespaces) in the current database:
-quiz-> \l
-
 ![Schema list](media/schema-list.png)
 
+Lists schemas (namespaces) in the current database:
 
 ```sh 
 quiz=> \dn
@@ -100,7 +98,7 @@ You are connected to database "quiz" as user "masteruser" on host "psqlflexlekjq
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
 ```
 
-Check what's going on on your database:
+Check what's going on in your instance:
 ```sh
 quiz=> TABLE pg_stat_activity;
 ```
@@ -128,7 +126,7 @@ quiz=> \d
 (4 rows)
 ```
 
-Display all relations with their size and description:
+Display all relations with their sizes and description:
 ```sh
 quiz=> \d+
                                  List of relations
@@ -162,7 +160,7 @@ Display the number of total connections to your database:
 quiz=> SELECT count(*) FROM pg_stat_activity;
 ```
 
-Watch the change of the number over time:
+Watch the change of the count over time:
 ```sh
 quiz=> \watch
 ```
