@@ -48,9 +48,53 @@ CREATE TABLE a(id int);
 INSERT into a SELECT generate_series(1,1000);
 ```
 
-From the second terminal go to your mounted container location as described in the **Configure PgBadger** chapter, for instance:
+From the second terminal configure a mounted container location so you can have the storage account mounted on your filesystem:
+
+### Mounting Storage Account to VM
+In this section you will mount Storage Account to your dns VM to be able to easier manipulate on log files.
+
+First let's download and install necessary packages. Feel free to simply copy and paste the following commands:
+
+```sh
+sudo rpm -Uvh https://packages.microsoft.com/config/rhel/8/packages-microsoft-prod.rpm
+sudo dnf -y install blobfuse
+sudo mkdir /mnt/ramdisk
+sudo mount -t tmpfs -o size=16g tmpfs /mnt/ramdisk
+sudo mkdir /mnt/ramdisk/blobfusetmp
+sudo chown <your VM admin> /mnt/ramdisk/blobfusetmp
+```
+
+#### Authorize access to your storage account
+You can authorize access to your storage account by using the account access key, a shared access signature, a managed identity, or a service principal. Authorization information can be provided on the command line, in a config file, or in environment variables. 
+
+For this exercise we will authorize with the account access keys and storing them in a config file. The config file should have the following format:
+
 ```shell
-cd mycontainer/resourceId\=/SUBSCRIPTIONS/<your subscription id>/RESOURCEGROUPS/PG-WORKSHOP/PROVIDERS/MICROSOFT.DBFORPOSTGRESQL/FLEXIBLESERVERS/PSQLFLEXIKHLYQLERJGTM/y\=2022/m\=05/d\=16/h\=09/m\=00/
+accountName myaccount
+accountKey storageaccesskey
+containerName insights-logs-postgresqllogs
+```
+
+Please prepare the following file in editor of your choice. Values for the accountName and accountKey you will find in the Azure Portal. 
+Please navigate to your storage account in the portal and then choose Access keys page:
+
+![Server Parameters](media/sa-accesskeys.png)
+
+Copy accountName and accountKey and paste it to the file. Copy the content of your file and paste it to the ***fuse_connection.cfg*** file in your home directory, then mount your storage account container onto the directory in your VM: 
+
+```shell
+vi fuse_connection.cfg
+chmod 600 fuse_connection.cfg
+mkdir ~/mycontainer
+sudo blobfuse ~/mycontainer --tmp-path=/mnt/resource/blobfusetmp  --config-file=/home/<your VM admin>/fuse_connection.cfg -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120
+
+sudo -i
+cd /home/<your VM admin>/mycontainer/
+ls # check if you see mounted container
+# Please use tab key for directory autocompletion; do not copy and paste!
+cd resourceId\=/SUBSCRIPTIONS/<your subscription id>/RESOURCEGROUPS/PG-WORKSHOP/PROVIDERS/MICROSOFT.DBFORPOSTGRESQL/FLEXIBLESERVERS/PSQLFLEXIKHLYQLERJGTM/y\=2022/m\=06/d\=16/h\=09/m\=00/
+ls
+less
 ```
 
 and output appended data as the log file grows with the tail command:

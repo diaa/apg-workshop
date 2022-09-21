@@ -35,6 +35,8 @@ Choose a name of your choice for your setting, redirect the logs to the storage 
 Hit **save** button.
 
 ### Mounting Storage Account to VM
+*If you finished the pgaudit secion in the previous section you can skip to Install PgBadger*
+
 In this section you will mount Storage Account to your dns VM to be able to easier manipulate on log files.
 
 First let's download and install necessary packages. Feel free to simply copy and paste the following commands:
