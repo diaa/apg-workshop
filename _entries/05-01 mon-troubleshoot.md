@@ -3,7 +3,7 @@ sectionid: monitoring-easy
 sectionclass: h2
 parent-id: day2
 title: Monitoring and Troubleshooting
-published: false
+published: true
 
 ---
 There are several ways to monitor PostgreSQL Server. In this workshop we will study on both monitoring Azure Flexible PostgreSQL Server with opensource tools such as prometheus, grafana and also integrate opensource tools with Azure Monitor.
