@@ -276,23 +276,23 @@ module dnsVM './modules/virtualmachine.bicep' = {
   }
 }
 
-module dnsExtension './modules/virtualmachine.extension.bicep' = {
-  dependsOn: [
-    dnsVM
-  ]
-  name: 'dnsExtensionDeployment'
-  params: {
-    location: location
-    autoUpgradeMinorVersion: autoUpgradeMinorVersion
-    enableAutomaticUpgrade: enableAutomaticUpgrade
-    extensionName: extensionName
-    publisher: publisher
-    type: type
-    typeHandlerVersion: typeHandlerVersion
-    vmName: vmName
-    settings: settings
-  }
-}
+//module dnsExtension './modules/virtualmachine.extension.bicep' = {
+//  dependsOn: [
+//    dnsVM
+//  ]
+//  name: 'dnsExtensionDeployment'
+//  params: {
+//    location: location
+//    autoUpgradeMinorVersion: autoUpgradeMinorVersion
+//    enableAutomaticUpgrade: enableAutomaticUpgrade
+//    extensionName: extensionName
+//    publisher: publisher
+//   type: type
+//    typeHandlerVersion: typeHandlerVersion
+//    vmName: vmName
+//    settings: settings
+//  }
+//}
 
 module dnsZone './modules/privatednszone.bicep' = {
   dependsOn: [
@@ -318,7 +318,7 @@ module storage 'modules/storageAccount.bicep' = {
 
 module postgreSqlFlex './modules/postgresql.fexible.bicep' = {
   dependsOn: [
-    dnsExtension
+//    dnsExtension
     spokeVnet
     dnsZone
     storage
