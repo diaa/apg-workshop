@@ -30,7 +30,7 @@ az bicep install
 Download the bicep templates for the workshop
 
 ```sh
-wget https://storageaccounthol.z6.web.core.windows.net/scripts/bicep.zip
+wget https://pg.azure-workshops.cloud/scripts/bicep.zip
 ```
 ![Download Bicep Templates](media/bicep/2-download-bicep-zip.png)
 

@@ -102,12 +102,12 @@ param securityRules array = [
 param vmAdminUsername string 
 @secure()
 param vmAdminPassword string
-param imageOffer string = 'CentOS'
-param imagePublisher string = 'OpenLogic'
-param imageSku string = '8_5-gen2'
+param imageOffer string = 'Rocky-Linux'
+param imagePublisher string = 'TheRockyEnterpriseFoundation'
+param imageSku string = '9-gen2'
 param osType string = 'Linux'
 param storageSku string = 'Premium_LRS'
-param vmName string = 'dns'
+param vmName string = 'jumpbox'
 param vmSize string = 'Standard_D2s_v3'
 param zone string = ''
 
@@ -155,7 +155,7 @@ param postgreSqlServerName string = '${postgreSqlServerNamePrefix}${randomString
 param postgreSqlSkuName string = 'Standard_D2ds_v4'
 param postgreSqlStorageSizeGB int = 128
 param postgreSqlTier string = 'GeneralPurpose'
-param postgreSqlVersion string = '13'
+param postgreSqlVersion string = '17'
 param isLogEnabled bool = true
 
 //// MAIN ////

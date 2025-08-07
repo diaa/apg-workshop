@@ -87,7 +87,7 @@ export PGSSLMODE=require
 **Using Wget**
 
 ```sh
-wget https://storageaccounthol.z6.web.core.windows.net/scripts/pg_azure -O .pg_azure
+wget https://pg.azure-workshops.cloud/scripts/pg_azure -O .pg_azure
 ```
 
 Read the content of the file in the current session:
