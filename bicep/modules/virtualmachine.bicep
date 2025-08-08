@@ -1,3 +1,4 @@
+
 // Virtual Machine
 param vmName string
 param zone string
@@ -30,6 +31,11 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-07-01' = {
   zones: !empty(zone) ? [
     zone
   ] : []
+  plan: {
+    name: imageSku
+    product: imageOffer
+    publisher: imagePublisher
+  }
   properties: {
     hardwareProfile: {
       vmSize: vmSize
@@ -77,3 +83,4 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-07-01' = {
     }
   }
 }
+

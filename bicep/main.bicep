@@ -102,9 +102,9 @@ param securityRules array = [
 param vmAdminUsername string 
 @secure()
 param vmAdminPassword string
-param imageOffer string = 'Rocky-Linux'
-param imagePublisher string = 'TheRockyEnterpriseFoundation'
-param imageSku string = '9-gen2'
+param imageOffer string = 'rockylinux-x86_64'
+param imagePublisher string = 'resf'
+param imageSku string = '9-lvm'
 param osType string = 'Linux'
 param storageSku string = 'Premium_LRS'
 param vmName string = 'jumpbox'
@@ -274,6 +274,7 @@ module dnsVM './modules/virtualmachine.bicep' = {
     vmSize: vmSize
     zone: zone
   }
+
 }
 
 //module dnsExtension './modules/virtualmachine.extension.bicep' = {
