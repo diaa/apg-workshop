@@ -12,3 +12,5 @@
 /.jekyll-cache/Jekyll/Cache
 /.jekyll-cache/Jekyll/Cache/
 /.jekyll-cache/*
+/.vscode/
+/.idea/
