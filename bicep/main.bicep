@@ -102,9 +102,15 @@ param securityRules array = [
 param vmAdminUsername string 
 @secure()
 param vmAdminPassword string
+<<<<<<< HEAD
 param imageOffer string = 'resf'
 param imagePublisher string = 'rockylinux'
 param imageSku string = '9-lvm-gen2'
+=======
+param imageOffer string = 'rockylinux-x86_64'
+param imagePublisher string = 'resf'
+param imageSku string = '9-lvm'
+>>>>>>> 5bd865ced0bc2710ac8b97c23a91a3210e66b928
 param osType string = 'Linux'
 param storageSku string = 'Premium_LRS'
 param vmName string = 'jumpbox'
@@ -158,7 +164,11 @@ param postgreSqlServerName string = '${postgreSqlServerNamePrefix}${randomString
 param postgreSqlSkuName string = 'Standard_D2ds_v4'
 param postgreSqlStorageSizeGB int = 128
 param postgreSqlTier string = 'GeneralPurpose'
+<<<<<<< HEAD
 param postgreSqlVersion string = '16'
+=======
+param postgreSqlVersion string = '17'
+>>>>>>> 5bd865ced0bc2710ac8b97c23a91a3210e66b928
 param isLogEnabled bool = true
 
 //// MAIN ////
@@ -277,6 +287,7 @@ module dnsVM './modules/virtualmachine.bicep' = {
     vmSize: vmSize
     zone: zone
   }
+
 }
 
 //module dnsExtension './modules/virtualmachine.extension.bicep' = {
