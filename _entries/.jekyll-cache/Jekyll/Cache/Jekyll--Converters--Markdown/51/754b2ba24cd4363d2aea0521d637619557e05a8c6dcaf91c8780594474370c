@@ -1,0 +1,39 @@
+I"•<p>Welcome to the Azure PostgreSQL Workshop. In this lab, youâ€™ll go through tasks that will help you master the basic and more advanced topics required to deploy and operate a PostgreSQL environment on <a href="https://azure.microsoft.com/en-us/services/postgresql/">Azure Database for PostgreSQL)</a>.</p>
+
+<p>You can use this guide as a PostgreSQL tutorial and as study material to help you get started to learn PostgreSQL.</p>
+
+<p><strong>Theme: Deployment</strong></p>
+<ul>
+  <li>Azure Database for PostgreSQL Provisioning</li>
+  <li>Data import and environment preparation</li>
+  <li>Access and basic Administration in Azure Database for PostgreSQL
+    <ul>
+      <li>Managing databases</li>
+      <li>Roles and Permissions</li>
+    </ul>
+  </li>
+</ul>
+
+<p><strong>Theme: Accessibility and Business Continuity</strong></p>
+<ul>
+  <li>Logical backup</li>
+  <li>Back-ups/restore</li>
+  <li>HA/DR</li>
+  <li>Patching and maintenance windows</li>
+  <li>Security Management in Azure Database for PostgreSQL</li>
+</ul>
+
+<p><strong>Theme: Day two operations</strong></p>
+<ul>
+  <li>Monitoring and Troubleshooting in Azure Database for PostgreSQL</li>
+  <li>Deep dive into performance issue resolution and identify optimization fixes
+    <ul>
+      <li>Multiversion Concurrency Control, MVCC</li>
+      <li>Daemons &amp; Tuning</li>
+      <li>SQL characteristic</li>
+      <li>Statistics and Queries</li>
+    </ul>
+  </li>
+</ul>
+
+:ET

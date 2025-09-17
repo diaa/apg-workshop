@@ -3,223 +3,211 @@ sectionid: roles
 sectionclass: h2
 title: Roles and Permissions
 parent-id: basicadmin
-
 ---
 
-Connect to the PostgreSQL instance:
-```sh 
-[diaa@dns ~]$ psql 
+## Connecting to PostgreSQL
+
+Connect to your PostgreSQL instance:
+
+```sh
+psql
+```
+
+Example output:
+
+```
 psql (13.5, server 13.6)
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
 Type "help" for help.
 
-postgres=> 
+postgres=>
 ```
 
-Create new group:
-```sh 
-postgres=> CREATE GROUP monty_python;
-```
+## Creating Roles and Users
 
-Create a new user Graham that belongs to monty_python group and doesn't inherit any privileges from the group. Allow the user to have maximum 2 active connection:
-
-```sh 
-postgres=> CREATE USER Graham CONNECTION LIMIT 2 IN ROLE monty_python NOINHERIT;
-```
-
-Create a new user Eric that belongs to monty_python group and inherits privileges from the group. Allow the user to have maximum 2 active connections:
-
-```sh 
-postgres=> CREATE USER Eric CONNECTION LIMIT 2 IN ROLE monty_python INHERIT;
-```
-
-Display all the roles available in the cluster:
-
-```sh 
-postgres=> \dg
-                                        List of roles
-   Role name    |                         Attributes                         |   Member of
-----------------+------------------------------------------------------------+----------------
- eric           | 2 connections                                              | {monty_python}
- graham         | No inheritance                                            +| {monty_python}
-                | 2 connections                                              |
- monty_python   | Cannot login                                               | {}
- postgres       | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
-```
-
-Connect to the quiz database:
-
-```sh 
-postgres=> \c quiz
-```
-
-Grant all privileges for all tables in schema public to group monty_python:
-
-```sh 
-quiz=> GRANT ALL ON ALL TABLES IN SCHEMA public TO monty_python;
-GRANT
-```
-
-In order to be able to switch to another role you need to grant this permission to the current user. Replace *adminuser* with your pg admin user name:
+Create a new group:
 
 ```sh
-GRANT graham to adminuser;
-GRANT eric to adminuser;
+CREATE GROUP monty_python;
 ```
 
-Switch to the Graham user:
-
-```sh 
-quiz=> SET ROLE TO graham;
-SET
-```
-
-Try to check the content of answers table as user Graham:
-
-```sh 
-quiz=> TABLE answers;
-ERROR:  permission denied for table answers
-```
-
-Change the user and try to query the table again:
-
-```sh 
-quiz=> SET ROLE TO eric;
-SET
-quiz=> table answers;
- question_id | answer | is_correct
--------------+--------+------------
-           1 | Au     | f
-           1 | O      | t
-           1 | Oxy    | f
-           1 | Tl     | f
-(4 rows)
-```
-
-Why user Graham doesn't have permission to view the content of answer table?:
-
-Changing permissions
-
-Grant the SELECT privilege on table answers to user Graham:
+Create a user `Graham` in the `monty_python` group, with a maximum of 2 active connections and **no** privilege inheritance:
 
 ```sh
-quiz=> GRANT SELECT ON TABLE answers TO Graham;
-WARNING:  no privileges were granted for "answers"
-GRANT
+CREATE USER Graham CONNECTION LIMIT 2 IN ROLE monty_python NOINHERIT;
 ```
 
-Switch back to the superuser account and try again:
+Create a user `Eric` in the `monty_python` group, with a maximum of 2 active connections and **privilege inheritance**:
 
 ```sh
-quiz=> SET ROLE TO adminuser;
-SET
-quiz=> GRANT SELECT ON TABLE answers TO Graham;
-GRANT
+CREATE USER Eric CONNECTION LIMIT 2 IN ROLE monty_python INHERIT;
 ```
 
-Check if user Graham is able to query the table:
+## Viewing Roles
+
+Display all roles in the cluster:
 
 ```sh
-quiz=> SET ROLE TO graham;
-SET
-quiz=> TABLE answers;
- question_id | answer | is_correct
--------------+--------+------------
-           1 | Au     | f
-           1 | O      | t
-           1 | Oxy    | f
-           1 | Tl     | f
-(4 rows)
+\dg
 ```
 
-Display all granted privileges:
+Example output:
+
+```
+List of roles
+ Role name   | Attributes | Member of
+-------------+------------+-----------
+eric         | 2 connections | {monty_python}
+graham       | No inheritance, 2 connections | {monty_python}
+monty_python | Cannot login | {}
+postgres     | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
+```
+
+## Granting Privileges
+
+Connect to the `quiz` database:
 
 ```sh
-quiz=> \dp
-                                     Access privileges
- Schema |   Name    | Type  |       Access privileges       | Column privileges | Policies
---------+-----------+-------+-------------------------------+-------------------+----------
- public | answers   | table | postgres=arwdDxt/postgres    +|                   |
-        |           |       | monty_python=arwdDxt/postgres+|                   |
-        |           |       | graham=r/postgres             |                   |
- public | questions | table | postgres=arwdDxt/postgres    +|                   |
-        |           |       | monty_python=arwdDxt/postgres |                   |
-(2 rows)
+\c quiz
 ```
 
-Granting roles
-As user Graham try to DELETE all records from table answers:
+Grant all privileges on all tables in the `public` schema to the `monty_python` group:
 
 ```sh
-quiz=> DELETE FROM answers ;
-ERROR:  permission denied for table answers
+GRANT ALL ON ALL TABLES IN SCHEMA public TO monty_python;
 ```
 
-As adminuser copy all privileges from user eric to user graham:
+## Switching Roles
+
+To switch to another role, grant the role to your admin user (replace *adminuser* with your actual admin username):
 
 ```sh
-quiz=> \c
-You are now connected to database "quiz" as user "postgres".
-quiz=> GRANT eric TO graham ;
-GRANT ROLE
+GRANT graham TO adminuser;
+GRANT eric TO adminuser;
 ```
 
-As user Graham try to DELETE all records from table answers:
+Switch to the `Graham` user:
 
 ```sh
-quiz=> set role to graham;
-SET
-quiz=> DELETE FROM answers ;
-ERROR:  permission denied for table answers
-quiz=> SET ROLE TO adminuser;
-quiz=> GRANT DELETE ON TABLE answers TO graham;
-GRANT
-quiz=> SET role TO Graham;
-SET
-quiz=> DELETE FROM answers ;
+SET ROLE TO graham;
 ```
 
-Display permissions granted to objects and information about roles:
+Try to query the `answers` table as `Graham`:
 
 ```sh
-quiz=> \dp
-                                     Access privileges
- Schema |   Name    | Type  |       Access privileges       | Column privileges | Policies
-
---------+-----------+-------+-------------------------------+-------------------+---------
--
- public | answers   | table | postgres=arwdDxt/postgres    +|                   |
-        |           |       | monty_python=arwdDxt/postgres+|                   |
-        |           |       | graham=r/postgres            +|                   |
-        |           |       | eric=d/postgres               |                   |
- public | questions | table | postgres=arwdDxt/postgres    +|                   |
-        |           |       | monty_python=arwdDxt/postgres |                   |
-(2 rows)
-
-quiz=> \dg
-                                           List of roles
-   Role name    |                         Attributes                         |      Member of
-----------------+------------------------------------------------------------+---------------------
- eric           | 2 connections                                              | {monty_python}
- graham         | No inheritance                                            +| {monty_python,eric}
-                | 2 connections                                              |
- monty_python   | Cannot login                                               | {}
- postgres       | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
+TABLE answers;
+-- ERROR: permission denied for table answers
 ```
 
-Without INHERIT, membership in another role only grants the ability to SET ROLE to that other role; the privileges of the other role are only available after having done so.
-
-Revoke DELETE privilege from eric:
+Switch to the `Eric` user and try again:
 
 ```sh
-quiz=> \c
-You are now connected to database "quiz" as user "adminuser".
-quiz=> REVOKE DELETE ON TABLE answers FROM eric;
-REVOKE
-quiz=> set role to eric;
-SET
-quiz=> delete from answers ;
-DELETE 0
+SET ROLE TO eric;
+TABLE answers;
+-- Table content displayed
 ```
 
-As you see user Eric is still able to perform DELETE operation because of his membership in role monty_python.
+**Why can't Graham view the table?**  
+Graham does not inherit privileges from the group.
+
+## Changing Permissions
+
+Grant `SELECT` privilege on the `answers` table to `Graham`:
+
+```sh
+GRANT SELECT ON TABLE answers TO Graham;
+```
+
+If you get a warning, switch back to the superuser and try again:
+
+```sh
+SET ROLE TO adminuser;
+GRANT SELECT ON TABLE answers TO Graham;
+```
+
+Check if `Graham` can now query the table:
+
+```sh
+SET ROLE TO graham;
+TABLE answers;
+-- Table content displayed
+```
+
+## Displaying Privileges
+
+Show all granted privileges:
+
+```sh
+\dp
+```
+
+Example output:
+
+```
+Access privileges
+ Schema | Name     | Type  | Access privileges
+--------+----------+-------+-------------------------------
+public  | answers  | table | postgres=arwdDxt/postgres
+                        monty_python=arwdDxt/postgres
+                        graham=r/postgres
+public  | questions| table | postgres=arwdDxt/postgres
+                        monty_python=arwdDxt/postgres
+```
+
+## Granting Roles
+
+As `Graham`, try to delete all records from `answers`:
+
+```sh
+DELETE FROM answers;
+-- ERROR: permission denied for table answers
+```
+
+As `adminuser`, copy all privileges from `Eric` to `Graham`:
+
+```sh
+GRANT eric TO graham;
+```
+
+Try again as `Graham`:
+
+```sh
+SET ROLE TO graham;
+DELETE FROM answers;
+-- ERROR: permission denied for table answers
+```
+
+Grant `DELETE` privilege to `Graham`:
+
+```sh
+SET ROLE TO adminuser;
+GRANT DELETE ON TABLE answers TO graham;
+SET ROLE TO Graham;
+DELETE FROM answers;
+```
+
+## Displaying Permissions and Roles
+
+Show object permissions and role information:
+
+```sh
+\dp
+\dg
+```
+
+## Role Inheritance
+
+Without `INHERIT`, membership in another role only allows you to `SET ROLE` to that role; privileges are available only after switching.
+
+## Revoking Privileges
+
+Revoke `DELETE` privilege from `Eric`:
+
+```sh
+REVOKE DELETE ON TABLE answers FROM eric;
+SET ROLE TO eric;
+DELETE FROM answers;
+```
+
+**Note:**  
+Eric can still delete records because of his membership in the `monty_python` role.

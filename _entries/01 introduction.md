@@ -6,7 +6,7 @@ type: nocount
 is-parent: yes
 ---
 
-Welcome to the Azure PostgreSQL Workshop. In this lab, you'll go through tasks that will help you master the basic and more advanced topics required to deploy and operate a PostgreSQL environment on [Azure Database for PostgreSQL)](https://azure.microsoft.com/en-us/services/postgresql/). 
+Welcome to the Azure PostgreSQL Workshop. In this lab, you'll go through tasks that will help you master the basic and more advanced topics required to deploy and operate a PostgreSQL environment on [Azure Database for PostgreSQL](https://azure.microsoft.com/en-us/services/postgresql/). 
 
 You can use this guide as a PostgreSQL tutorial and as study material to help you get started to learn PostgreSQL.
 

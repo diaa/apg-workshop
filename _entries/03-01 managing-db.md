@@ -3,52 +3,52 @@ sectionid: managing-db
 sectionclass: h2
 title: Managing PostgreSQL DB
 parent-id: basicadmin
-
 ---
 
-
 ### Managing Compute and Storage
-Navigate to **Compute + Storage**, you will be able to alter storage and compute. Also, navigate to change the backup retention.
 
-You don't have to change the compute size as it might have additional cost for having a bigger instance. 
+Navigate to **Compute + Storage** to alter storage and compute settings. You can also change the backup retention period here.
+
+> **Note:** Increasing the compute size may incur additional costs. Only adjust if necessary.
 
 ![Compute and Storage](media/compute_storage.png)
 
-
 ### Managing Server Parameters
 
-As you don't have access to configuration files, you can change server parameters through the Azure Portal/APIs. All the changes made here provide default values for the **entire cluster**. 
-Users can also make changes on the database level with [ALTER DATABASE](https://www.postgresql.org/docs/current/sql-alterdatabase.html) command, on the role level with [ALTER ROLE](https://www.postgresql.org/docs/current/sql-alterrole.html) command, or
-on the session level with the [SET](https://www.postgresql.org/docs/current/sql-set.html) command.
+Since you do not have access to configuration files, you can change server parameters through the Azure Portal or APIs. Changes made here apply default values to the **entire cluster**.
 
-![managing parameters](media/pg-parameters.png)
+You can also make changes at different levels:
+- **Database level:** Use the [ALTER DATABASE](https://www.postgresql.org/docs/current/sql-alterdatabase.html) command.
+- **Role level:** Use the [ALTER ROLE](https://www.postgresql.org/docs/current/sql-alterrole.html) command.
+- **Session level:** Use the [SET](https://www.postgresql.org/docs/current/sql-set.html) command.
 
-In the search box type **pgbouncer** and change the value to **TRUE**:
+![Managing parameters](media/pg-parameters.png)
 
-![managing parameters](media/pgbouncer.png)
+To enable PgBouncer, type **pgbouncer** in the search box and set its value to **TRUE**:
 
-**Save** the changes, and wait until the new deployment finish successfully:
+![Managing parameters](media/pgbouncer.png)
 
-![managing parameters](media/pgbouncer-success.png)
+Click **Save** and wait for the deployment to complete successfully:
 
-Once you see the success screen, go to the VM and try to access PostgreSQL through port 6432:
+![Managing parameters](media/pgbouncer-success.png)
+
+Once you see the success screen, access PostgreSQL through port 6432 on your VM:
 
 ```sh
 psql -p 6432
 ```
-![managing parameters](media/pgbouncer-test.png)
+![Managing parameters](media/pgbouncer-test.png)
 
-### Apply Server Locks
+### Applying Server Locks
 
 Navigate to **Locks**:
 
-![managing locks](media/pg-server-locks.png)
+![Managing locks](media/pg-server-locks.png)
 
-Click on **+Add**, add Lock name of your choice and lock type with **Delete**:
+Click **+Add**, enter a lock name of your choice, and select the lock type **Delete**:
 
-![managing locks](media/pg-delete-locks.png)
+![Managing locks](media/pg-delete-locks.png)
 
-If you try to delete the server it should give the such below error:
+If you attempt to delete the server, you should see an error similar to the following:
 
-
-![managing locks](media/pg-delete-lock-error.png)
+![Managing locks](media/pg-delete-lock-error.png)

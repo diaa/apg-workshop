@@ -42,7 +42,7 @@ ssh username@<jumpbox-ip> # the DNS VM IP Address, and the username that you sel
 ![ssh access](media/ssh-access.png)
 
 
-In the first time acessing the jumpbox make sure that you have psql installed use the following commands once you logon 
+The first time you access the jumpbox, make sure that you have psql installed. Use the following commands once you log in:
 ```
 sudo dnf module enable -y postgresql:13
 sudo dnf install -y postgresql
@@ -104,21 +104,21 @@ Let's connect to our Azure database with psql client:
 psql
 ```
 
-You should connect to the postgres without any parameters
+You should be able to connect to PostgreSQL without specifying any parameters.
 
 
 **Task Hints**
 You can also use the connection string shown in the Azure Portal in the Connection String tab. Using libpq variables is another option to ease your work with Postgres. 
 
 
-While you have the psql connected to the database, let's run some quries:
+While you have the psql connected to the database, Let's run some queries:
 
 ```sql
 SELECT version();
 ```
 You should be able to read the PostgreSQL version.
 
-Create table with some random data:
+Create a table with some random data:
 
 ```sql
 DROP TABLE IF EXISTS random_data;

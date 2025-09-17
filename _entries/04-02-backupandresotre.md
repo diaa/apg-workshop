@@ -8,41 +8,38 @@ published: true
 ---
 
 ### Backup
-While creating a server through the Azure portal, the **Compute tier** tab is where you select either **Burstable **, **"General purpose"** or **Memory Optimized** backups for your server. This window is also where you select the **Backup Retention Period** - how long (in number of days) you want the server backups stored for.
 
+When creating a server through the Azure portal, use the **Compute tier** tab to select either **Burstable**, **General Purpose**, or **Memory Optimized** for your server. This window is also where you set the **Backup Retention Period**—the number of days backups are stored.
 
 ![Azure backup](media/backup-retention.png)
 
-
-
-The backup retention period governs how far back in time a point-in-time restore can be retrieved, since it's based on backups available. Point-in-time restore is described further in the following section.
+The backup retention period determines how far back in time you can restore using point-in-time restore, as it depends on the available backups.
 
 ![Azure backup](media/backup-retention-2.png)
 
-After changing the retention period make sure to click **Save**
+After changing the retention period, make sure to click **Save**.
 
-When you see the deployment finished, it means that retention period has changed
+When the deployment is finished, the retention period has been updated.
 
 ![Azure backup](media/backup-retention-done.png)
 
+---
 
-### Point-in-time restore
+### Point-in-Time Restore
 
-Azure Database for PostgreSQL Flexible server allows you to restore the server back to a point-in-time and into to a new copy of the server. You can use this new server to recover your data, or have your client applications point to this new server.
+Azure Database for PostgreSQL Flexible Server allows you to restore your server to a specific point in time, creating a new copy of the server. You can use this new server to recover data or redirect your client applications.
 
-For example, if a table was accidentally dropped at noon today, you could restore to the time just before noon and retrieve the missing table and data from that new copy of the server. Point-in-time restore is at the server level, not at the database level.
+For example, if a table was accidentally dropped at noon, you can restore to just before noon and retrieve the missing table and data from the new server copy. Note: Point-in-time restore operates at the server level, not the database level.
 
-The following steps restore the sample server to a point-in-time:
+**To restore to a point in time:**
 
-* In the Azure portal, select your Azure Database for PostgreSQL Flexible server.
-
-* In the toolbar of the server's Overview page, select Restore.
+1. In the Azure portal, select your Azure Database for PostgreSQL Flexible Server.
+2. On the server's Overview page, click **Restore** in the toolbar.
 
 ![Azure backup](media/azure_postgresql-restore.png)
-
-
 ![Azure backup](media/azure_postgresql-restore2.png)
 
-The new server created by point-in-time restore has the same server admin login name and password that was valid for the existing server at the point-in-time chose. You can change the password from the new server's Overview page.
+The new server created by point-in-time restore will have the same server admin login name and password as the original server at the selected restore time. You can change the password from the new server's Overview page.
 
-The new server created during a restore does not have the firewall rules or VNet service endpoints that existed on the original server. These rules need to be set up separately for this new server.
+**Important:**  
+The new server created during a restore does **not** have the firewall rules or VNet service endpoints from the original server. You must set up these rules separately for the new server.
