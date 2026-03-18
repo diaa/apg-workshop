@@ -22,12 +22,12 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-02-01' = {
       name: subnet.name
       properties: {
         addressPrefix: subnet.addressPrefix
-        delegations: contains(subnet, 'delegations') ? subnet.delegations : null
+        delegations: subnet.?delegations
         networkSecurityGroup: contains(subnet, 'networkSecurityGroupName') ? {
           id: nsg[index].id
         } : null
-        privateEndpointNetworkPolicies: contains(subnet, 'privateEndpointNetworkPolicies') ? subnet.privateEndpointNetworkPolicies : null
-        privateLinkServiceNetworkPolicies: contains(subnet, 'privateLinkServiceNetworkPolicies') ? subnet.privateLinkServiceNetworkPolicies : null
+        privateEndpointNetworkPolicies: subnet.?privateEndpointNetworkPolicies
+        privateLinkServiceNetworkPolicies: subnet.?privateLinkServiceNetworkPolicies
       }
     }]
   }

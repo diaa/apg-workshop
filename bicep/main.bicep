@@ -52,9 +52,7 @@ param spokeSubnetsConfig array = [
     addressPrefix: '192.168.2.0/24'
   }
 ]
-param spokeDnsServers array = [
-  '192.168.0.4'
-]
+param spokeDnsServers array = []
 // Spoke VNet - Peering
 param spokeAllowForwardedTraffic bool = false
 param spokeAllowGatewayTransit bool = false
@@ -99,34 +97,26 @@ param securityRules array = [
 ]
 
 // Virtual Machine
-param vmAdminUsername string 
+param vmAdminUsername string
 @secure()
 param vmAdminPassword string
-<<<<<<< HEAD
-param imageOffer string = 'resf'
-param imagePublisher string = 'rockylinux'
-param imageSku string = '9-lvm-gen2'
-=======
 param imageOffer string = 'rockylinux-x86_64'
 param imagePublisher string = 'resf'
 param imageSku string = '9-lvm'
->>>>>>> 5bd865ced0bc2710ac8b97c23a91a3210e66b928
 param osType string = 'Linux'
 param storageSku string = 'Premium_LRS'
 param vmName string = 'jumpbox'
 param vmSize string = 'Standard_D2s_v3'
 param zone string = ''
 
-// Virtual Machine Extension
-param extensionName string = 'installCustomScript'
-param publisher string = 'Microsoft.Azure.Extensions'
-param type string = 'CustomScript'
-param typeHandlerVersion string = '2.0'
-param autoUpgradeMinorVersion bool = true
-param enableAutomaticUpgrade bool = false
-param settings object = {
-//  script : 'c2VkIC1pICdzL21pcnJvcmxpc3QvI21pcnJvcmxpc3QvZycgL2V0Yy95dW0ucmVwb3MuZC9DZW50T1MtKg0Kc2VkIC1pICdzfGJhc2V1cmw9aHR0cDovL21pcnJvci5jZW50b3Mub3JnfGJhc2V1cmw9aHR0cDovL3ZhdWx0LmNlbnRvcy5vcmd8ZycgL2V0Yy95dW0ucmVwb3MuZC9DZW50T1MtKg0KeXVtIHVwZGF0ZSAteQ0KeXVtIGluc3RhbGwgYmluZCBiaW5kLXV0aWxzIC15DQpybSAtcmYgL2V0Yy9kZWZhdWx0L2JpbmQ5DQpjYXQgPiAvZXRjL2RlZmF1bHQvYmluZDkgPDwgRU9GMQ0KT1BUSU9OUz0iLXUgYmluZCAtNCINCkVPRjENCnJtIC1yZiAvZXRjL25hbWVkLmNvbmYNCmNhdCA+IC9ldGMvbmFtZWQuY29uZiA8PCBFT0YxDQphY2wgInRydXN0ZWQiIHsNCiAgICAgICAgbG9jYWxob3N0Ow0KICAgICAgICBhbnk7DQp9Ow0Kb3B0aW9ucyB7DQogICAgICAgIGRpcmVjdG9yeSAiL3Zhci9uYW1lZCI7DQoNCiAgICAgICAgLy8gSWYgdGhlcmUgaXMgYSBmaXJld2FsbCBiZXR3ZWVuIHlvdSBhbmQgbmFtZXNlcnZlcnMgeW91IHdhbnQNCiAgICAgICAgLy8gdG8gdGFsayB0bywgeW91IG1heSBuZWVkIHRvIGZpeCB0aGUgZmlyZXdhbGwgdG8gYWxsb3cgbXVsdGlwbGUNCiAgICAgICAgLy8gcG9ydHMgdG8gdGFsay4gIFNlZSBodHRwOi8vd3d3LmtiLmNlcnQub3JnL3Z1bHMvaWQvODAwMTEzDQoNCiAgICAgICAgLy8gSWYgeW91ciBJU1AgcHJvdmlkZWQgb25lIG9yIG1vcmUgSVAgYWRkcmVzc2VzIGZvciBzdGFibGUNCiAgICAgICAgLy8gbmFtZXNlcnZlcnMsIHlvdSBwcm9iYWJseSB3YW50IHRvIHVzZSB0aGVtIGFzIGZvcndhcmRlcnMuDQogICAgICAgIC8vIFVuY29tbWVudCB0aGUgZm9sbG93aW5nIGJsb2NrLCBhbmQgaW5zZXJ0IHRoZSBhZGRyZXNzZXMgcmVwbGFjaW5nDQogICAgICAgIC8vIHRoZSBhbGwtMCdzIHBsYWNlaG9sZGVyLg0KDQogICAgICAgIC8vIGZvcndhcmRlcnMgew0KICAgICAgICAvLyAgICAgIDAuMC4wLjA7DQogICAgICAgIC8vIH07DQoNCiAgICAgICAgLy89PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0NCiAgICAgICAgLy8gSWYgQklORCBsb2dzIGVycm9yIG1lc3NhZ2VzIGFib3V0IHRoZSByb290IGtleSBiZWluZyBleHBpcmVkLA0KICAgICAgICAvLyB5b3Ugd2lsbCBuZWVkIHRvIHVwZGF0ZSB5b3VyIGtleXMuICBTZWUgaHR0cHM6Ly93d3cuaXNjLm9yZy9iaW5kLWtleXMNCiAgICAgICAgLy89PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0NCiAgICAgICAgZG5zc2VjLXZhbGlkYXRpb24gYXV0bzsNCg0KICAgICAgICBhdXRoLW54ZG9tYWluIG5vOyAgICAjIGNvbmZvcm0gdG8gUkZDMTAzNQ0KICAgICAgICBsaXN0ZW4tb24tdjYgeyBhbnk7IH07DQogICAgICAgIHJlY3Vyc2lvbiB5ZXM7DQogICAgICAgIGFsbG93LXJlY3Vyc2lvbiB7IHRydXN0ZWQ7IH07DQogICAgICAgIGxpc3Rlbi1vbiB7IGxvY2FsaG9zdDsgfTsNCiAgICAgICAgYWxsb3ctdHJhbnNmZXIgeyBub25lOyB9Ow0KICAgICAgICBmb3J3YXJkZXJzIHsNCiAgICAgICAgICAgICAgICAxNjguNjMuMTI5LjE2Ow0KICAgICAgICB9Ow0KfTsNCkVPRjENCnN5c3RlbWN0bCByZXN0YXJ0IG5hbWVk'
-}
+// VM extension params kept for future use (DNS forwarder setup)
+// param extensionName string = 'installCustomScript'
+// param publisher string = 'Microsoft.Azure.Extensions'
+// param type string = 'CustomScript'
+// param typeHandlerVersion string = '2.0'
+// param autoUpgradeMinorVersion bool = true
+// param enableAutomaticUpgrade bool = false
+// param settings object = {}
 
 // Private DNS Zone
 param privateDnsZoneName string = 'private.postgres.database.azure.com'
@@ -150,9 +140,7 @@ param postgreSqlAdministratorLogin string
 param postgreSqlAdministratorLoginPassword string
 param postgreSqlAvailabilityZone string = '1'
 param postgreSqlBackupRetentionDays int = 7
-//param postgreSqlDelegatedSubnetName string = 'subnet-02'
-
-param postgreSqlDelegatedSubnetName string = 'subnet-01'
+param postgreSqlDelegatedSubnetName string = 'subnet-02'
 
 param postgreSqlVirtualNetworkName string = spokeVirtualNetworkName
 param postgreSqlGeoRedundantBackup string = 'Disabled'
@@ -164,11 +152,7 @@ param postgreSqlServerName string = '${postgreSqlServerNamePrefix}${randomString
 param postgreSqlSkuName string = 'Standard_D2ds_v4'
 param postgreSqlStorageSizeGB int = 128
 param postgreSqlTier string = 'GeneralPurpose'
-<<<<<<< HEAD
-param postgreSqlVersion string = '16'
-=======
-param postgreSqlVersion string = '17'
->>>>>>> 5bd865ced0bc2710ac8b97c23a91a3210e66b928
+param postgreSqlVersion string = '18'
 param isLogEnabled bool = true
 
 //// MAIN ////
@@ -252,7 +236,7 @@ module publicIp 'modules/publicip.bicep' = {
 
 module dnsNic './modules/networkinterface.bicep' = {
   dependsOn: [
-    spokeVnet
+    hubVnet
     publicIp
   ]
   name: 'dnsNicDeployment'

@@ -35,7 +35,7 @@ param skuName string = 'Standard_D2ds_v4'
 param skuTier string = 'GeneralPurpose'
 
 @description('PostgreSQL major version (ensure it is supported in your region).')
-param postgresVersion string = '17'
+param postgresVersion string = '18'
 
 @description('Provisioned storage size in GB.')
 param storageSizeGB int = 128
@@ -46,15 +46,10 @@ param vnetName string = '${baseName}-vnet'
 @description('Name of the subnet.')
 param subnetName string = 'db-subnet'
 
-@description('Name of the private DNS zone for PostgreSQL Flexible Server.')
-param privateDnsZoneName string = 'privatelink.postgres.database.azure.com'
-
 
 var normalizedBase = toLower(baseName)
 var serverName = '${normalizedBase}-primary'
 var replicaName = '${normalizedBase}-replica'
-
-var privateDnsZoneId = resourceId('Microsoft.Network/privateDnsZones', privateDnsZoneName)
 
 resource vnet 'Microsoft.Network/virtualNetworks@2023-02-01' = {
   name: vnetName
@@ -139,22 +134,13 @@ resource readReplica 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' = if
   properties: {
     createMode: 'Replica'
     sourceServerResourceId: primaryServer.id
-    network: {
-      delegatedSubnetResourceId: subnet.id
-    }
   }
 }
 
 output primaryServerName string = primaryServer.name
-output primaryEndpoint string = primaryServer.properties!.fullyQualifiedDomainName
-output replicaEndpoint string = (enableReadReplica ? readReplica.properties!.fullyQualifiedDomainName : '')
-output psqlCommand string = 'psql "host=${primaryServer.properties!.fullyQualifiedDomainName} user=${administratorLogin} dbname=postgres sslmode=require"'
+output primaryEndpoint string = primaryServer.properties.fullyQualifiedDomainName
+output replicaEndpoint string = enableReadReplica ? readReplica.?properties.?fullyQualifiedDomainName ?? '' : ''
+output psqlCommand string = 'psql "host=${primaryServer.properties.fullyQualifiedDomainName} user=${administratorLogin} dbname=postgres sslmode=require"'
 output managementPortal string = 'https://portal.azure.com/#resource${primaryServer.id}/overview'
-output connectionInstructions string = '''
-# Production Connection String:
-Host=${primaryServer.properties!.fullyQualifiedDomainName};Username=${administratorLogin};Password=******;Database=postgres;SSL Mode=Require;
-
-# Read Replica Connection (for read-only queries):
-${enableReadReplica ? 'Host=' + readReplica.properties!.fullyQualifiedDomainName + ';Username=' + administratorLogin + ';Password=******;Database=postgres;SSL Mode=Require;' : 'Replica not enabled'}
-'''
+output connectionString string = 'Host=${primaryServer.properties.fullyQualifiedDomainName};Username=${administratorLogin};Password=<your-password>;Database=postgres;SSL Mode=Require;'
 
