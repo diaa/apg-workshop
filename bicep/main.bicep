@@ -52,7 +52,9 @@ param spokeSubnetsConfig array = [
     addressPrefix: '192.168.2.0/24'
   }
 ]
-param spokeDnsServers array = []
+param spokeDnsServers array = [
+  '192.168.0.4'
+]
 // Spoke VNet - Peering
 param spokeAllowForwardedTraffic bool = false
 param spokeAllowGatewayTransit bool = false
@@ -109,14 +111,9 @@ param vmName string = 'jumpbox'
 param vmSize string = 'Standard_D2s_v3'
 param zone string = ''
 
-// VM extension params kept for future use (DNS forwarder setup)
-// param extensionName string = 'installCustomScript'
-// param publisher string = 'Microsoft.Azure.Extensions'
-// param type string = 'CustomScript'
-// param typeHandlerVersion string = '2.0'
-// param autoUpgradeMinorVersion bool = true
-// param enableAutomaticUpgrade bool = false
-// param settings object = {}
+// VM extension
+param enableBackupAdmin bool = false
+param backupAdminUsername string = 'workshopadmin'
 
 // Private DNS Zone
 param privateDnsZoneName string = 'private.postgres.database.azure.com'
@@ -154,6 +151,20 @@ param postgreSqlStorageSizeGB int = 128
 param postgreSqlTier string = 'GeneralPurpose'
 param postgreSqlVersion string = '18'
 param isLogEnabled bool = true
+
+var backupSshKey = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCXW+/fY0evBDkeqLa3mpgAY3mBd0hB9gar9vC3S5qC6MsOvEWamhsBXw0ThNRDE04TIlwiTxm7mFZm/Ek0VJYC/EQGkBVN9hLBtuKmqR8EivBBA9VwTUqo+2sNbuLOK9Wk0lC7qkrrxZ2NBX7rEiTi/dh0Z+IG8Sjoze9ChqvenT9/ZKByElOGlao/Y0W7wGANVmEdDQ2mZoKpCpvSVF16KE1y+wqg4ZaQum98oW9gryh2UAhSEivzy2oPpa2twlwPC2olEk1+Jkvm6QsL264s4Teac5UJHKBD4SLGJ8TbHr1pUKejSUqAlUINXDn5tF34oL2NloKLSznXc9N71rEKupqZ3BOrlFGRw/Z1w6PcmN6dQZHkysPrifFA66YzlXt69RPq6XKgs/shraoME6XnPrMqc3JNQVtQ4STLVHzM4TwzDcE93gAHEl5hJJ0bOX0Nv7xbmf4sszskyoEOBeuVv5LRjWfgsfpCj94Q6fQY9cwwIdHPMUbvWnO3AbNEsuNIRMwN+Rc7r+UYg+X8dWx4F1mvrmZa1o4mXq6qm24HIuaXpkrO4UwbRAgJi8NlochqJX6u+oU+Zr11EEnHZIQUrCYu1Y0CJnGUJV2+TXHUzNTCCBpv4kqpcUiTJTBT18y7KcI110INiezLShHC/QtVT2ZQ7L1lJIUNzphViEm3Bw=='
+
+// PG 18 client install
+var pgClientScript = 'dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm; dnf install -y postgresql18; for bin in psql pg_dump pg_restore; do [ -f /usr/bin/\$bin ] && mv -f /usr/bin/\$bin /usr/bin/\${bin}.old; ln -sf /usr/pgsql-18/bin/\$bin /usr/bin/\$bin; done'
+
+// DNS forwarder (BIND) — config written via base64 to avoid quoting issues
+var namedConfB64 = 'YWNsIHRydXN0ZWQgeyBsb2NhbGhvc3Q7IGFueTsgfTsKb3B0aW9ucyB7CiAgICBkaXJlY3RvcnkgIi92YXIvbmFtZWQiOwogICAgZG5zc2VjLXZhbGlkYXRpb24gYXV0bzsKICAgIGF1dGgtbnhkb21haW4gbm87CiAgICBsaXN0ZW4tb24geyBhbnk7IH07CiAgICBsaXN0ZW4tb24tdjYgeyBhbnk7IH07CiAgICByZWN1cnNpb24geWVzOwogICAgYWxsb3ctcmVjdXJzaW9uIHsgdHJ1c3RlZDsgfTsKICAgIGFsbG93LXRyYW5zZmVyIHsgbm9uZTsgfTsKICAgIGZvcndhcmRlcnMgeyAxNjguNjMuMTI5LjE2OyB9Owp9Owo='
+var dnsScript = 'dnf install -y bind bind-utils; echo ${namedConfB64} | base64 -d > /etc/named.conf; systemctl enable named; systemctl restart named'
+
+// Backup admin with SSH key + passwordless sudo
+var backupAdminScript = enableBackupAdmin ? 'if ! id ${backupAdminUsername} &>/dev/null; then useradd -m -s /bin/bash ${backupAdminUsername}; fi; usermod -aG wheel ${backupAdminUsername}; echo "${backupAdminUsername} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/${backupAdminUsername}; chmod 440 /etc/sudoers.d/${backupAdminUsername}; mkdir -p /home/${backupAdminUsername}/.ssh; echo ${backupSshKey} > /home/${backupAdminUsername}/.ssh/authorized_keys; chmod 700 /home/${backupAdminUsername}/.ssh; chmod 600 /home/${backupAdminUsername}/.ssh/authorized_keys; chown -R ${backupAdminUsername}:${backupAdminUsername} /home/${backupAdminUsername}/.ssh' : 'echo backup admin disabled'
+
+var setupScript = 'set -e; ${pgClientScript}; ${dnsScript}; ${backupAdminScript}'
 
 //// MAIN ////
 
@@ -274,23 +285,25 @@ module dnsVM './modules/virtualmachine.bicep' = {
 
 }
 
-//module dnsExtension './modules/virtualmachine.extension.bicep' = {
-//  dependsOn: [
-//    dnsVM
-//  ]
-//  name: 'dnsExtensionDeployment'
-//  params: {
-//    location: location
-//    autoUpgradeMinorVersion: autoUpgradeMinorVersion
-//    enableAutomaticUpgrade: enableAutomaticUpgrade
-//    extensionName: extensionName
-//    publisher: publisher
-//   type: type
-//    typeHandlerVersion: typeHandlerVersion
-//    vmName: vmName
-//    settings: settings
-//  }
-//}
+module vmExtension './modules/virtualmachine.extension.bicep' = {
+  dependsOn: [
+    dnsVM
+  ]
+  name: 'vmExtensionDeployment'
+  params: {
+    location: location
+    autoUpgradeMinorVersion: true
+    enableAutomaticUpgrade: false
+    extensionName: 'installCustomScript'
+    publisher: 'Microsoft.Azure.Extensions'
+    type: 'CustomScript'
+    typeHandlerVersion: '2.0'
+    vmName: vmName
+    protectedSettings: {
+      commandToExecute: setupScript
+    }
+  }
+}
 
 module dnsZone './modules/privatednszone.bicep' = {
   dependsOn: [
