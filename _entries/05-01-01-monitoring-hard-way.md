@@ -94,7 +94,7 @@ prometheus-prometheus-node-exporter               ClusterIP   10.41.235.18    <n
 Type the x.x.x.x ip address to your favorite browser at the line prometheus-grafana. This ip address is the public interface of grafana service which we are going to look the dashboards. 
 ![Grafana](../media/postgresql-monitoring-grafana.png)
 
-We need prometheus exporter to collect our metrics. To install prometheus expoter to your kubernetes installation use prometheus-postgresql-expoter.yaml in the code folder. Please replace the variables in the yaml file
+We need prometheus exporter to collect our metrics. To install prometheus exporter to your kubernetes installation use prometheus-postgresql-exporter.yaml in the code folder. Please replace the variables in the yaml file
 ```yaml
         env:
         - name: DATA_SOURCE_URI
@@ -107,7 +107,7 @@ We need prometheus exporter to collect our metrics. To install prometheus expote
 
 deploy it to kubernetes cluster
 ```
-kubectl apply -f prometheus-postgresql-expoter.yaml -n monitoring
+kubectl apply -f prometheus-postgresql-exporter.yaml -n monitoring
 ```
 
 #### check logs for any error
@@ -120,7 +120,7 @@ ts=2022-02-28T22:47:40.529Z caller=tls_config.go:195 level=info msg="TLS is disa
 Create Service Object and ServiceMonitor object for Prometheus Exporter
 ```
 kubectl apply -f prometheus-postgresql-exporter-svc.yaml -n monitoring
-kubectl apply -f prometheus-postgresql-expoter-svc-monitor.yaml -n monitoring
+kubectl apply -f prometheus-postgresql-exporter-svc-monitor.yaml -n monitoring
 ``
 
 Add pre configured grafana dashboard for postgresql to your prometheus stack 

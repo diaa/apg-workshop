@@ -4,6 +4,7 @@ sectionid: connecting-db
 sectionclass: h2
 parent-id: upandrunning
 title: Connecting to PostgreSQL
+published: false
 ---
 
 In order to connect to a database you need to know the name of your target database, the host name and port number of the server, and what user name you want to connect as. 
@@ -37,22 +38,12 @@ You can save yourself some typing by setting the environment variables PGDATABAS
 Example (please change these values to match with your setup) from the cloudshell
 
 ```sh
-ssh username@<jumpbox-ip> # the DNS VM IP Address, and the username that you selected in deployment
+ssh <vmUsername>@<jumpbox-ip> # the jumpbox VM IP address and the username you selected during deployment
 ```
 ![ssh access](media/ssh-access.png)
 
 
-The first time you access the jumpbox, make sure that you have psql installed. Use the following commands once you log in:
-```
-sudo dnf module enable -y postgresql:13
-sudo dnf install -y postgresql
-
-```
-You should see output like this
-
-![Install PG client](media/dnf-install-pg.png)
-
-Then connect to the database
+Once on the jumpbox, connect to the database (the PostgreSQL 18 client is pre-installed by the Bicep deployment)
 
 ```sh   
 psql -U adminuser -h postgresql-db.postgres.database.azure.com postgres
@@ -93,7 +84,7 @@ wget https://pg.azure-workshops.cloud/scripts/pg_azure -O .pg_azure
 Read the content of the file in the current session:
 
 ```sh
-source .pg_azure
+source ~/.pg_azure
 ```
 
 If you closed this bash session, you won't be able to login again to psql without reading .pg_azure.

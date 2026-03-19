@@ -10,7 +10,7 @@ Azure Database for PostgreSQL is a fully-managed database as a service with buil
 ### Tasks
 
 * Use [Bicep](https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview?tabs=bicep) to deploy Azure Database for PostgreSQL - Flexible server.
-* Use [Azure Cloud Shell](https://docs.microsoft.com/en-us/azure/cloud-shell/overview) to connect to **DNS VM** then you can access the Azure PostgreSQL database..
+* Use [Azure Cloud Shell](https://docs.microsoft.com/en-us/azure/cloud-shell/overview) to connect to the **jumpbox VM**, then you can access the Azure PostgreSQL database.
 
 #### Setup Database
 
@@ -57,8 +57,8 @@ az deployment group create --resource-group PG-Workshop --template-file bicep/ma
 ```
 
 You will be asked for 4 questions
-- Admin username for the Jump-box (DNS)
-- Admin password for the Jump-box 
+- Admin username for the jumpbox VM
+- Admin password for the jumpbox VM
 - Admin username for the PostgreSQL database (use your name rather than admin/root)
 - Admin password for the PostgreSQL database (Please use strong password)
 
@@ -77,7 +77,7 @@ Click on the resource group name that we created, **PG-Workshop** if you didn't 
 
 ![Resource Groups](media/bicep/7-resources-dns-pg.png)
 
-Visit both **DNS VM** to get the public IP and the PostgreSQL Flexible Server to get the **access endpoint**, please keep them as we will use them during the workshop.
+Visit the **jumpbox VM** to get the public IP and the **PostgreSQL Flexible Server** to get the access endpoint. Please keep both as we will use them during the workshop.
 
 ![Resource Groups](media/bicep/8-dns-publicip.png)
 

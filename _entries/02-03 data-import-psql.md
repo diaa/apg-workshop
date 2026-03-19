@@ -3,201 +3,158 @@
 sectionid: psql
 sectionclass: h2
 parent-id: upandrunning
-title: Data import and environment preparation
+title: "psql: The PostgreSQL Command-Line Client"
 ---
 
-psql is a terminal-based front-end to PostgreSQL. It enables you to type in queries interactively, issue them to PostgreSQL, and see the query results. 
+`psql` is the interactive terminal for PostgreSQL. You will use it throughout this workshop to run queries, explore schemas, import data, and administer the server. This section teaches you the essential skills for working with `psql` efficiently.
 
-Anything you enter in psql that begins with an **unquoted backslash** (\\) is a psql meta-command that is processed by psql itself.
+> **Prerequisite:** You should have connected to PostgreSQL from the jumpbox in the previous section. If your environment variables and `.pgpass` are set up, simply run `psql` to connect.
 
- These commands make psql more useful for administration or scripting. Meta-commands are often called slash or backslash commands. The format of a psql command is the backslash, followed immediately by a command verb, then any arguments. The arguments are separated from the command verb and each other by any number of whitespace characters.
+---
 
-List the databases in the cluster:
+### Backslash Meta-Commands
 
+Anything you type in `psql` that begins with a backslash (`\`) is a **meta-command** — it is processed by the `psql` client itself, not sent to the PostgreSQL server. These are your primary navigation tools.
 
-```sh 
-psql
-```
+#### Exploring the Server
 
-```sh 
-postgres=> \l
-```
+| Command | What it shows |
+|---|---|
+| `\l` | List all databases |
+| `\l+` | Databases with sizes |
+| `\c <dbname>` | Switch to a different database |
+| `\dn` | List schemas in the current database |
+| `\dt` | List tables in the current schema |
+| `\dt *.*` | List tables in **all** schemas |
+| `\di` | List indexes |
+| `\dv` | List views |
+| `\df` | List functions |
+| `\du` | List roles / users |
+| `\d <table>` | Describe a table — columns, types, constraints |
+| `\d+ <table>` | Same, with sizes and storage info |
 
-List the databases in the cluster with their sizes:
-```sh 
-postgres=> \l+
-```
+Try these now against the `postgres` database:
 
-Copy and paste following statements:
 ```sql
-CREATE DATABASE quiz;
-\connect quiz
-
-CREATE TABLE public.answers (
-    question_id serial NOT NULL,
-    answer text NOT NULL,
-    is_correct boolean NOT NULL DEFAULT FALSE
-);
-
-CREATE TABLE public.questions (
-    question_id integer NOT NULL,
-    question text NOT NULL
-);
-
-ALTER TABLE ONLY public.answers
-    ADD CONSTRAINT answers_pkey PRIMARY KEY (question_id, answer);
-
-ALTER TABLE ONLY public.questions
-    ADD CONSTRAINT questions_pkey PRIMARY KEY (question_id);
-
-ALTER TABLE ONLY public.answers
-    ADD CONSTRAINT question_id_answers_fk FOREIGN KEY (question_id) REFERENCES public.questions(question_id);
-
-CREATE SCHEMA calc;
-CREATE OR REPLACE FUNCTION calc.increment(i integer) RETURNS integer AS $$
-        BEGIN
-                RETURN i + 1;
-        END;
-$$ LANGUAGE plpgsql;
-
-CREATE VIEW calc.vista AS SELECT $$I'm in calc$$;
-
-CREATE VIEW public.vista AS SELECT $$I'm in public$$;
-
-INSERT INTO public.questions (question_id, question) VALUES (1, 'Jaki symbol chemiczny ma tlen?');
-
-INSERT INTO public.answers (question_id, answer, is_correct) VALUES (1, 'Au', false);
-INSERT INTO public.answers (question_id, answer, is_correct) VALUES (1, 'O', true);
-INSERT INTO public.answers (question_id, answer, is_correct) VALUES (1, 'Oxy', false);
-INSERT INTO public.answers (question_id, answer, is_correct) VALUES (1, 'Tl', false);
+\l
+\dn
+\dt *.*
+\du
+\conninfo
 ```
 
-List the databases in the cluster:
-```sh 
-postgres=> \l
+`\conninfo` shows your current connection details — host, port, user, database, and SSL status.
+
+---
+
+### Display Modes
+
+By default, `psql` displays query results as a horizontal table. This becomes unreadable when tables have many columns.
+
+**Toggle expanded (vertical) display:**
+
+```sql
+\x auto
 ```
 
-![Schema list](media/schema-list.png)
+With `\x auto`, `psql` automatically switches to vertical display when the output is too wide for your terminal. Try it:
 
-Lists schemas (namespaces) in the current database:
-
-```sh 
-quiz=> \dn
-     List of schemas
-  Name  |     Owner
---------+----------------
- calc   | masteruser
- public | azure_pg_admin
-(2 rows)
+```sql
+SELECT * FROM pg_stat_activity;
 ```
 
-Check your current connection:
-```sh 
-quiz=> \conninfo
-You are connected to database "quiz" as user "masteruser" on host "psqlflexlekjqqdqpcfja.postgres.database.azure.com" (address "192.168.1.132") at port "5432".
-SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
+Without `\x auto`, this is a wall of text. With it, each row is displayed vertically.
+
+**Toggle query timing:**
+
+```sql
+\timing
 ```
 
-Check what's going on in your instance:
-```sh
-quiz=> TABLE pg_stat_activity;
+This shows how long each query takes. Enable it now — you will want it for every query in the workshop.
+
+---
+
+### Getting Help
+
+```sql
+\?            -- list all backslash meta-commands
+\h            -- list all SQL commands
+\h CREATE TABLE  -- show syntax help for a specific SQL command
 ```
 
-It's unreadable, isn't it? Change the display format:
-```sh 
-quiz=> \x auto
+---
+
+### Watching a Query
+
+`\watch` re-runs the last query at a set interval — useful for monitoring:
+
+```sql
+SELECT count(*) FROM pg_stat_activity;
+\watch 2
 ```
 
-And try to display the same view again:
-```sh
-quiz=> SELECT * FROM pg_stat_activity;
+This runs the count every 2 seconds. Press `Ctrl+C` to stop.
+
+---
+
+### Command History
+
+```sql
+\s            -- print command history
 ```
 
-Display all relations (including tables, views, materialized views, indexes, sequences, or foreign tables) in your database:
-```sh
-quiz=> \d
-                   List of relations
- Schema |          Name           |   Type   |  Owner
---------+-------------------------+----------+----------
- public | answers                 | table    | postgres
- public | answers_question_id_seq | sequence | postgres
- public | questions               | table    | postgres
- public | vista                   | view     | postgres
-(4 rows)
+Use `Ctrl+R` to search history interactively — type part of a previous command and `psql` will find it.
+
+---
+
+### Inspecting Functions
+
+You can view the source of any function:
+
+```sql
+\sf abs(bigint)
 ```
 
-Display all relations with their sizes and description:
-```sh
-quiz=> \d+
-                                 List of relations
- Schema |          Name           |   Type   |  Owner   |    Size    | Description
---------+-------------------------+----------+----------+------------+-------------
- public | answers                 | table    | postgres | 16 kB      |
- public | answers_question_id_seq | sequence | postgres | 8192 bytes |
- public | questions               | table    | postgres | 16 kB      |
- public | vista                   | view     | postgres | 0 bytes    |
-(4 rows)
+This prints the `CREATE FUNCTION` definition — useful for understanding built-in or custom functions.
+
+---
+
+### Running SQL from a File
+
+Instead of pasting SQL into `psql`, you can run a file:
+
+```sql
+\i /path/to/script.sql
 ```
 
-Display information about one, specific table:
-```sh
-quiz=> \dt+ pg_class
-```
-
-Display tables, which names start with "pg_c[...]"
-```sh
-quiz=> \dt pg_c*
-```
-
-Check out help information:
+Or from the command line:
 
 ```sh
-quiz=> \?
+psql -f /path/to/script.sql
 ```
 
-Display the number of total connections to your database:
-```sh
-quiz=> SELECT count(*) FROM pg_stat_activity;
-```
+This is how you will restore database dumps and run batch scripts later in the workshop.
 
-Watch the change of the count over time:
-```sh
-quiz=> \watch
-```
+---
 
-Stop the process:
-```sh
-quiz=> [Ctrl+c]
-```
+### Quick Reference
 
-List all system views:
-```sh 
-quiz=> \dvS
-```
+| Command | Purpose |
+|---|---|
+| `\l` | List databases |
+| `\c <db>` | Switch database |
+| `\dt` | List tables |
+| `\d <table>` | Describe table |
+| `\du` | List roles |
+| `\x auto` | Auto-toggle vertical display |
+| `\timing` | Show query execution time |
+| `\watch N` | Re-run last query every N seconds |
+| `\s` | Command history |
+| `\i file` | Run SQL from file |
+| `\q` | Quit psql |
 
-Turns displaying of how long each SQL statement takes on:
-```sh 
-quiz=> \timing
-```
-
-List the system functions:
-```sh 
-quiz=> \dfS
-```
-
-Fetch and display the definition of the chosen function, in the form of a CREATE OR REPLACE FUNCTION command:
-```sh 
-quiz=> \sf abs(bigint)
-```
-
-Print psql's command line history:
-```sh 
-quiz=> \s
-```
-
-Search for a specific command in the history:
-```sh 
-quiz=> [Ctrl+r + part of the command string]
+> **Next:** In the next section you will restore the `orders_demo` database and use these `psql` skills to explore its schema and run a demo workload.
 ```
 
 

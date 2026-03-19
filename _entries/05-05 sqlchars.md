@@ -6,8 +6,9 @@ title: SQL Characteristic
 
 ---
 ### Partial Index
-Let's create a new table in quiz database and load it with some data:
+Let's create a new table in the `orders_demo` database and load it with some data:
 ```sql 
+\c orders_demo
 CREATE SCHEMA IF NOT EXISTS games;
 SET SEARCH_PATH TO games;
 DROP TABLE IF EXISTS games;
@@ -94,7 +95,98 @@ Create the GIN index on the table:
 CREATE INDEX ON products USING gin(attributes);
 ```
 
+Add more products with varied structures to demonstrate JSONB's schema flexibility:
+```sql
+INSERT INTO products (name, attributes) VALUES
+  ('Chimay Blue',
+   '{"category": "Belgian Strong Dark Ale", "region": "Belgium", "ABV": 9.0}'),
+  ('Brooklyn Lager',
+   '{"category": "American Amber Lager", "region": "United States", "ABV": 5.2,
+     "awards": ["World Beer Cup 2010"]}'),
+  ('Guinness Draught',
+   '{"category": "Dry Stout", "region": "Ireland", "ABV": 4.2}'),
+  ('Punk IPA',
+   '{"category": "American IPA", "region": "Scotland", "ABV": 5.6,
+     "hops": ["Chinook", "Ahtanum", "Nelson Sauvin"]}');
+```
 
+#### Filtering and Operators
 
+Use `->` to extract a value as a JSON object, `->>` to extract as text for comparison:
+```sql
+-- Return ABV as text for all products
+SELECT name, attributes ->> 'ABV' AS abv
+FROM products;
 
+-- Filter: beers above 5% ABV
+SELECT name, (attributes ->> 'ABV')::numeric AS abv
+FROM products
+WHERE (attributes ->> 'ABV')::numeric > 5.0
+ORDER BY abv DESC;
+```
+
+Use the **containment operator** `@>` — this is what GIN indexes are optimised for:
+```sql
+-- All beers from Belgium
+SELECT name FROM products
+WHERE attributes @> '{"region": "Belgium"}';
+```
+
+Check key existence with `?`:
+```sql
+-- Products that have an awards list
+SELECT name FROM products
+WHERE attributes ? 'awards';
+```
+
+Access an element inside a nested array with `#>>`:
+```sql
+SELECT name, attributes #>> '{hops,0}' AS first_hop
+FROM products
+WHERE attributes ? 'hops';
+```
+
+Verify the GIN index is used for containment queries:
+```sql
+EXPLAIN SELECT name FROM products
+WHERE attributes @> '{"region": "Belgium"}';
+```
+
+#### Updating JSONB Fields
+
+Add or update a specific key without replacing the whole document:
+```sql
+UPDATE products
+SET attributes = jsonb_set(attributes, '{stock}', '42')
+WHERE name = 'Punk IPA';
+
+SELECT name, attributes -> 'stock' FROM products WHERE name = 'Punk IPA';
+```
+
+Remove a key with the `-` operator:
+```sql
+UPDATE products
+SET attributes = attributes - 'stock'
+WHERE name = 'Punk IPA';
+```
+
+#### Expanding JSONB to Rows
+
+Use `jsonb_each_text` to pivot every key/value pair into rows — useful for generic attribute reporting:
+```sql
+SELECT name, key, value
+FROM products,
+     jsonb_each_text(attributes)
+ORDER BY name, key;
+```
+
+#### When to Use JSONB
+
+| Use JSONB when | Use regular columns when |
+|---|---|
+| Attribute set varies per row | Schema is fixed and well-known |
+| Storing third-party payloads as-is | Frequent aggregations on the field |
+| Schema is evolving / prototype stage | Column-level `NOT NULL` / `CHECK` constraints needed |
+
+> **Note:** GIN indexes accelerate containment (`@>`) and key-existence (`?`) lookups, but each write to the indexed column carries extra overhead. Only add a GIN index when the JSONB column is frequently queried with `@>` or `?`.
 

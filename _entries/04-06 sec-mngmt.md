@@ -51,12 +51,12 @@ INSERT into a SELECT generate_series(1,1000);
 From the second terminal configure a mounted container location so you can have the storage account mounted on your filesystem:
 
 ### Mounting Storage Account to VM
-In this section you will mount Storage Account to your dns VM to be able to easier manipulate on log files.
+In this section you will mount a Storage Account to your jumpbox VM to make it easier to work with log files.
 
 First let's download and install necessary packages. Feel free to simply copy and paste the following commands:
 
 ```sh
-sudo rpm -Uvh https://packages.microsoft.com/config/rhel/8/packages-microsoft-prod.rpm
+sudo rpm -Uvh https://packages.microsoft.com/config/rhel/9/packages-microsoft-prod.rpm
 sudo dnf -y install blobfuse
 sudo mkdir /mnt/ramdisk
 sudo mount -t tmpfs -o size=16g tmpfs /mnt/ramdisk
