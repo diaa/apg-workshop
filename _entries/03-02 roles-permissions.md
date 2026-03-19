@@ -13,95 +13,38 @@ In this section you will learn how PostgreSQL manages access control through its
 
 ### Lab Overview
 
-The diagram below shows the complete role hierarchy and permission model you will build in this lab using the `orders_demo` database.
+To make this easier to digest, the access model is split into three short diagrams.
 
-```mermaid
-graph TB
-    subgraph Azure Managed
-        azuresu["🔒 azuresu<br/><i>Superuser — Azure managed</i>"]
-        azure_pg_admin["azure_pg_admin<br/><i>Create role, Create DB,<br/>Bypass RLS, Replication</i>"]
-    end
+#### 1) app_team path (dev_user)
 
-    subgraph Your Admin
-        admin["&lt;your-admin&gt;<br/><i>Login ✅ — member of azure_pg_admin</i>"]
-    end
+![App team path](../media/roles-flow-app-team.svg)
 
-    azure_pg_admin -- "member of" --> azuresu
-    admin -- "member of" --> azure_pg_admin
+*Footnote - value by step:*
+1. Establishes a controlled admin starting point for governance.
+2. Centralizes write permissions in one reusable group role.
+3. Connects a real user to the role with automatic inheritance.
+4. Delivers immediate app productivity without manual role switching.
 
-    subgraph Group Roles — Cannot Login
-        app_team["app_team<br/><i>NOLOGIN</i>"]
-        readonly["readonly<br/><i>NOLOGIN</i>"]
-    end
+#### 2) analyst_user path (readonly)
 
-    subgraph Login Roles — Users
-        dev_user["dev_user<br/><i>LOGIN — INHERIT ✅</i>"]
-        analyst["analyst_user<br/><i>LOGIN — INHERIT ✅</i>"]
-        contractor["contractor_user<br/><i>LOGIN — NOINHERIT ⚠️<br/>CONNECTION LIMIT 2</i>"]
-    end
+![Analyst path](../media/roles-flow-analyst.svg)
 
-    dev_user -- "member of<br/>(inherits automatically)" --> app_team
-    contractor -- "member of<br/>(must SET ROLE)" --> app_team
-    analyst -- "member of<br/>(inherits automatically)" --> readonly
+*Footnote - value by step:*
+1. Keeps role creation in a single trusted admin workflow.
+2. Encapsulates reporting permissions as SELECT-only.
+3. Grants analysts safe default access through inheritance.
+4. Prevents accidental writes while enabling BI/reporting use cases.
 
-    subgraph orders_demo — public schema
-        customers["📋 customers"]
-        products["📋 products"]
-        orders["📋 orders"]
-        order_items["📋 order_items"]
-    end
+#### 3) contractor_user path (NOINHERIT)
 
-    app_team -- "ALL privileges" --> customers
-    app_team -- "ALL privileges" --> products
-    app_team -- "ALL privileges" --> orders
-    app_team -- "ALL privileges" --> order_items
-    readonly -- "SELECT only" --> customers
-    readonly -- "SELECT only" --> products
-    readonly -- "SELECT only" --> orders
-    readonly -- "SELECT only" --> order_items
+![Contractor path](../media/roles-flow-contractor.svg)
 
-    style azuresu fill:#ff6b6b,stroke:#c0392b,color:#fff
-    style azure_pg_admin fill:#e74c3c,stroke:#c0392b,color:#fff
-    style admin fill:#3498db,stroke:#2980b9,color:#fff
-    style app_team fill:#2ecc71,stroke:#27ae60,color:#fff
-    style readonly fill:#f39c12,stroke:#e67e22,color:#fff
-    style dev_user fill:#2ecc71,stroke:#27ae60,color:#fff
-    style analyst fill:#f39c12,stroke:#e67e22,color:#fff
-    style contractor fill:#e67e22,stroke:#d35400,color:#fff
-    style customers fill:#ecf0f1,stroke:#bdc3c7,color:#2c3e50
-    style products fill:#ecf0f1,stroke:#bdc3c7,color:#2c3e50
-    style orders fill:#ecf0f1,stroke:#bdc3c7,color:#2c3e50
-    style order_items fill:#ecf0f1,stroke:#bdc3c7,color:#2c3e50
-```
-
-**How to read the diagram:**
-- **Red** = Azure-managed roles (you cannot use these directly)
-- **Blue** = your admin user (the account you deployed with)
-- **Green** = `app_team` path — full read/write access. `dev_user` inherits automatically; `contractor_user` must explicitly `SET ROLE` to activate.
-- **Orange** = `readonly` path — SELECT only. `analyst_user` inherits automatically.
-- Solid arrows show membership. Privilege arrows show what each group role can do on the `orders_demo` tables.
-
-```mermaid
-flowchart LR
-    subgraph INHERIT — dev_user
-        A["dev_user connects"] --> B["Automatically has<br/>app_team privileges"]
-        B --> C["✅ SELECT, INSERT,<br/>UPDATE, DELETE"]
-    end
-
-    subgraph NOINHERIT — contractor_user
-        D["contractor_user connects"] --> E["❌ No privileges<br/>by default"]
-        E --> F["SET ROLE app_team"]
-        F --> G["✅ Now has<br/>app_team privileges"]
-    end
-
-    style A fill:#2ecc71,stroke:#27ae60,color:#fff
-    style B fill:#2ecc71,stroke:#27ae60,color:#fff
-    style C fill:#2ecc71,stroke:#27ae60,color:#fff
-    style D fill:#e67e22,stroke:#d35400,color:#fff
-    style E fill:#e74c3c,stroke:#c0392b,color:#fff
-    style F fill:#f39c12,stroke:#e67e22,color:#fff
-    style G fill:#2ecc71,stroke:#27ae60,color:#fff
-```
+*Footnote - value by step:*
+1. Defines a privileged role, but does not expose it by default.
+2. Associates contractor identity with explicit guardrails (`NOINHERIT`).
+3. Starts each session in low-privilege mode to reduce blast radius.
+4. Requires intentional elevation (`SET ROLE`) for controlled operations.
+5. Enables temporary write capability with full operator intent.
 
 ---
 
@@ -117,6 +60,13 @@ PostgreSQL has a single concept for managing access: the **role**. There are no 
 
 This is fundamentally different from Oracle (where users and roles are distinct objects) and SQL Server (where logins, users, and roles are separate layers).
 
+![PostgreSQL vs Oracle vs SQL Server access model](../media/roles-engine-comparison.svg)
+
+Quick comparison for customers:
+- PostgreSQL: one role object type; `LOGIN` and `NOLOGIN` define behavior; membership + INHERIT control access.
+- Oracle: users and roles are separate objects; privileges can be direct or via role.
+- SQL Server: login is server-level, user is database-level, roles are assigned per database.
+
 ---
 
 ### Azure Flexible Server Role Hierarchy
@@ -131,7 +81,7 @@ psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 
 View the existing roles:
 
-```sql
+```psql
 \du
 ```
 
@@ -180,7 +130,7 @@ CREATE ROLE contractor_user LOGIN PASSWORD 'Workshop#Ext1' IN ROLE app_team NOIN
 
 Verify the roles:
 
-```sql
+```psql
 \du
 ```
 
@@ -200,7 +150,7 @@ Verify the roles:
 
 You should already be connected to the `orders_demo` database. If not:
 
-```sql
+```psql
 \c orders_demo
 ```
 
@@ -290,17 +240,7 @@ RESET ROLE;
 
 **When to use NOINHERIT:** For users who should have access but must consciously "elevate" to use it — similar to `sudo` on Linux or `runas` on Windows. Useful for contractors, automated accounts, or break-glass scenarios.
 
-```
-┌─────────────────────────────────────────────────────┐
-│  INHERIT (dev_user)        NOINHERIT (contractor)   │
-│                                                     │
-│  dev_user ──inherits──► app_team privileges         │
-│  (automatic)                                        │
-│                                                     │
-│  contractor ──member of──► app_team                 │
-│  (must SET ROLE to activate)                        │
-└─────────────────────────────────────────────────────┘
-```
+![INHERIT vs NOINHERIT](../media/roles-inherit-vs-noinherit.svg)
 
 ---
 
@@ -310,6 +250,9 @@ Run the following to see all granted privileges:
 
 ```sql
 RESET ROLE;
+```
+
+```psql
 \dp
 ```
 
@@ -383,7 +326,7 @@ RESET ROLE;
 
 Check the privilege codes again:
 
-```sql
+```psql
 \dp orders
 ```
 
@@ -414,6 +357,9 @@ Test it:
 CREATE TABLE test_defaults (id serial, name text);
 
 -- Check privileges — readonly and app_team should already have access
+```
+
+```psql
 \dp test_defaults
 ```
 
@@ -462,6 +408,7 @@ VALUES (1, now(), 49.99, 'pending');
 -- ERROR: permission denied for table orders
 
 -- Disconnect
+```psql
 \q
 ```
 

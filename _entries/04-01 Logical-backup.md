@@ -9,6 +9,17 @@ PostgreSQL ships three logical backup utilities: `pg_dump` (single database), `p
 
 > **Reminder:** If your libpq environment variables are not set, run `source ~/.pg_azure` on the jumpbox first. All commands below run on the **jumpbox Linux shell**, not inside psql.
 
+```mermaid
+flowchart LR
+	A[orders_demo] --> B{Backup format}
+	B --> C[Plain SQL]
+	B --> D[Custom Fc]
+	B --> E[Directory Fd]
+	D --> F[pg_restore]
+	E --> F
+	F --> G[orders_demo_restored]
+```
+
 ---
 
 ### Step 1 — Plain-Text Dump

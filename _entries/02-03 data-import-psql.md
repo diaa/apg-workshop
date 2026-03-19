@@ -12,38 +12,43 @@ title: "psql: The PostgreSQL Command-Line Client"
 
 ---
 
+> **Code block conventions used throughout this workshop:**
+> - ` ```sh ` — run in the Linux shell on the jumpbox
+> - ` ```sql ` — SQL sent to the PostgreSQL server (type inside psql)
+> - ` ```psql ` — psql meta-commands (type inside psql, processed by the client — not sent to the server)
+
 ### Backslash Meta-Commands
 
-Anything you type in `psql` that begins with a backslash (`\`) is a **meta-command** — it is processed by the `psql` client itself, not sent to the PostgreSQL server. These are your primary navigation tools.
+Anything you type in `psql` that begins with a backslash (`\`) is a **meta-command** — it is processed by the `psql` client itself, not sent to the PostgreSQL server.
 
-#### Exploring the Server
+> **Note:** The meta-commands for exploring databases, schemas, tables, indexes, and roles (`\l`, `\dt`, `\dn`, `\du`, `\d`, etc.) are covered step-by-step in the **Explore PostgreSQL & Run Demo Workload** section, where you will use them hands-on against real data. This section focuses on the `psql` session skills you need to work efficiently.
 
-| Command | What it shows |
-|---|---|
-| `\l` | List all databases |
-| `\l+` | Databases with sizes |
-| `\c <dbname>` | Switch to a different database |
-| `\dn` | List schemas in the current database |
-| `\dt` | List tables in the current schema |
-| `\dt *.*` | List tables in **all** schemas |
-| `\di` | List indexes |
-| `\dv` | List views |
-| `\df` | List functions |
-| `\du` | List roles / users |
-| `\d <table>` | Describe a table — columns, types, constraints |
-| `\d+ <table>` | Same, with sizes and storage info |
+#### \conninfo — Always Verify Your Connection First
 
-Try these now against the `postgres` database:
+Before running any commands, confirm that you are connected to the right server, database, and user:
 
-```sql
-\l
-\dn
-\dt *.*
-\du
+```psql
 \conninfo
 ```
 
-`\conninfo` shows your current connection details — host, port, user, database, and SSL status.
+Example output:
+
+```
+You are connected to database "postgres" as user "pgadmin" on host "myserver.postgres.database.azure.com" at port "5432".
+SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
+```
+
+What each field tells you:
+
+| Field | Why it matters |
+|---|---|
+| **database** | Confirms you are on `postgres` (default) or `orders_demo` (after restore) — a wrong database is the #1 cause of "table not found" errors |
+| **user** | Confirms the role you connected as — important for privilege troubleshooting |
+| **host** | Full FQDN of the Flexible Server — confirms you are not on localhost by mistake |
+| **port** | Should be `5432` (direct) or `6432` if you are going through PgBouncer |
+| **SSL** | Confirms the connection is encrypted — Azure Flexible Server enforces TLS by default |
+
+Run `\conninfo` any time you are unsure which server or database your session is on.
 
 ---
 
@@ -53,7 +58,7 @@ By default, `psql` displays query results as a horizontal table. This becomes un
 
 **Toggle expanded (vertical) display:**
 
-```sql
+```psql
 \x auto
 ```
 
@@ -67,7 +72,7 @@ Without `\x auto`, this is a wall of text. With it, each row is displayed vertic
 
 **Toggle query timing:**
 
-```sql
+```psql
 \timing
 ```
 
@@ -77,7 +82,7 @@ This shows how long each query takes. Enable it now — you will want it for eve
 
 ### Getting Help
 
-```sql
+```psql
 \?            -- list all backslash meta-commands
 \h            -- list all SQL commands
 \h CREATE TABLE  -- show syntax help for a specific SQL command
@@ -91,7 +96,10 @@ This shows how long each query takes. Enable it now — you will want it for eve
 
 ```sql
 SELECT count(*) FROM pg_stat_activity;
-\watch 2
+```
+
+```psql
+\watch 2    -- meta-command: re-runs the last query every 2 seconds. Press Ctrl+C to stop.
 ```
 
 This runs the count every 2 seconds. Press `Ctrl+C` to stop.
@@ -100,7 +108,7 @@ This runs the count every 2 seconds. Press `Ctrl+C` to stop.
 
 ### Command History
 
-```sql
+```psql
 \s            -- print command history
 ```
 
@@ -112,7 +120,7 @@ Use `Ctrl+R` to search history interactively — type part of a previous command
 
 You can view the source of any function:
 
-```sql
+```psql
 \sf abs(bigint)
 ```
 
@@ -124,7 +132,7 @@ This prints the `CREATE FUNCTION` definition — useful for understanding built-
 
 Instead of pasting SQL into `psql`, you can run a file:
 
-```sql
+```psql
 \i /path/to/script.sql
 ```
 
@@ -142,20 +150,18 @@ This is how you will restore database dumps and run batch scripts later in the w
 
 | Command | Purpose |
 |---|---|
-| `\l` | List databases |
-| `\c <db>` | Switch database |
-| `\dt` | List tables |
-| `\d <table>` | Describe table |
-| `\du` | List roles |
-| `\x auto` | Auto-toggle vertical display |
-| `\timing` | Show query execution time |
+| `\conninfo` | Show current connection (host, port, user, database, SSL) |
+| `\x auto` | Auto-toggle vertical display for wide results |
+| `\timing` | Toggle query execution time display |
 | `\watch N` | Re-run last query every N seconds |
-| `\s` | Command history |
-| `\i file` | Run SQL from file |
+| `\s` | Print command history |
+| `\sf <func>` | Show function definition |
+| `\i file` | Run SQL from a file |
+| `\?` | List all backslash meta-commands |
+| `\h <cmd>` | SQL syntax help for a command |
 | `\q` | Quit psql |
 
-> **Next:** In the next section you will restore the `orders_demo` database and use these `psql` skills to explore its schema and run a demo workload.
-```
+> **Navigation commands** (`\l`, `\dt`, `\dn`, `\d <table>`, `\du`, etc.) are covered hands-on in the **Explore PostgreSQL & Run Demo Workload** section.
 
 
 

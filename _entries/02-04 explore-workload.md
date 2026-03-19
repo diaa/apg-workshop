@@ -38,9 +38,11 @@ You should see the `postgres=>` prompt.
 
 Before restoring any data, run the following meta-commands to understand what is already on the server. These are **psql backslash commands** — they are not SQL; they are interpreted by the psql client itself.
 
+> **psql session skills** (`\timing`, `\x`, `\watch`, `\conninfo`, `\i`, `\?`) are covered in the previous **psql: The PostgreSQL Command-Line Client** section. This step focuses on navigation commands that explore what is on the server.
+
 #### 3.1 — List all databases
 
-```sql
+```psql
 \l
 ```
 
@@ -48,7 +50,7 @@ Before restoring any data, run the following meta-commands to understand what is
 
 #### 3.2 — List schemas
 
-```sql
+```psql
 \dn
 ```
 
@@ -56,7 +58,7 @@ Before restoring any data, run the following meta-commands to understand what is
 
 #### 3.3 — List all tables in all schemas
 
-```sql
+```psql
 \dt *.*
 ```
 
@@ -64,7 +66,7 @@ Before restoring any data, run the following meta-commands to understand what is
 
 #### 3.4 — List all views in all schemas
 
-```sql
+```psql
 \dv *.*
 ```
 
@@ -72,7 +74,7 @@ Before restoring any data, run the following meta-commands to understand what is
 
 #### 3.5 — List all indexes in all schemas
 
-```sql
+```psql
 \di *.*
 ```
 
@@ -99,7 +101,7 @@ Before restoring any data, run the following meta-commands to understand what is
 
 #### 4.1 — Exit psql
 
-```sql
+```psql
 \q
 ```
 
@@ -177,7 +179,7 @@ psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 
 #### 5.1 — Confirm the tables exist
 
-```sql
+```psql
 \dt
 ```
 
@@ -192,7 +194,7 @@ You should see four tables:
 
 #### 5.2 — Inspect table structures
 
-```sql
+```psql
 \d customers
 \d products
 \d orders
@@ -227,7 +229,7 @@ ORDER BY pg_total_relation_size(oid) DESC;
 
 #### 5.5 — List indexes
 
-```sql
+```psql
 \di
 ```
 

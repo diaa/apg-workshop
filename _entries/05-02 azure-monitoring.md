@@ -314,8 +314,11 @@ Set up an alert so you are notified when CPU exceeds a threshold — this simula
 
 Go back to the jumpbox and re-run Query 5 with a higher loop count:
 
-```sql
+```psql
 \c orders_demo
+```
+
+```sql
 DO $$
 BEGIN
   FOR i IN 1..100 LOOP
@@ -334,25 +337,9 @@ Within a few minutes, you should receive an email alert that CPU exceeded 80%.
 
 ### Step 10 — Correlating Metrics to Queries (Summary)
 
-This is the key skill — when you see a metric spike in the portal, how do you trace it back to a specific query? Here is the workflow:
+This is the key skill — when you see a metric spike in the portal, how do you trace it back to a specific query?
 
-```
-1. See spike in Metrics Explorer (CPU, IOPS, Memory, Temp Files)
-     ↓
-2. Note the timestamp of the spike
-     ↓
-3. Go to Query Performance Insight → filter to that time range
-     ↓
-4. Identify the top query by CPU or IO in that window
-     ↓
-5. Copy the query text → run EXPLAIN (ANALYZE, BUFFERS) on the jumpbox
-     ↓
-6. Identify the root cause (missing index, sequential scan, temp file spill)
-     ↓
-7. Fix (add index / rewrite query / tune work_mem)
-     ↓
-8. Re-run and verify the metric returns to normal
-```
+![Correlating Metrics to Queries — 8-step workflow](../media/monitoring-workflow.svg)
 
 Here is how each demo query maps to the metrics you observed:
 

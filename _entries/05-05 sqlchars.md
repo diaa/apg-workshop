@@ -7,8 +7,11 @@ title: SQL Characteristic
 ---
 ### Partial Index
 Let's create a new table in the `orders_demo` database and load it with some data:
-```sql 
+```psql
 \c orders_demo
+```
+
+```sql
 CREATE SCHEMA IF NOT EXISTS games;
 SET SEARCH_PATH TO games;
 DROP TABLE IF EXISTS games;

@@ -4,6 +4,16 @@ sectionclass: h2
 parent-id: day2
 title: Statistics and Query Planning
 ---
+
+```mermaid
+flowchart LR
+      A[Collect stats<br/>ANALYZE] --> B[Planner estimates rows and cost]
+      B --> C[Choose plan<br/>SeqScan or Index or Join type]
+      C --> D[Run EXPLAIN ANALYZE]
+      D --> E[Compare estimate vs actual]
+      E --> A
+```
+
 ### EXPLAIN
 Recreate the random_data table:
 ```sql 
