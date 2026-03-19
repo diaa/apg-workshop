@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="380" viewBox="0 0 1100 380" role="img" aria-labelledby="title desc">
+  <title id="title">INHERIT vs NOINHERIT comparison</title>
+  <desc id="desc">Side-by-side comparison: dev_user with INHERIT gets access immediately; contractor_user with NOINHERIT must SET ROLE.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1e293b" />
+    </marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#dc2626" />
+    </marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#16a34a" />
+    </marker>
+    <style>
+      .title{font:700 24px 'Segoe UI',Arial,sans-serif; fill:#0f172a}
+      .sub{font:500 14px 'Segoe UI',Arial,sans-serif; fill:#475569}
+      .badge{font:700 12px 'Segoe UI',Arial,sans-serif; fill:#fff}
+      .h{font:700 15px 'Segoe UI',Arial,sans-serif; fill:#0f172a}
+      .p{font:500 13px 'Segoe UI',Arial,sans-serif; fill:#334155}
+      .code{font:600 13px 'Consolas',monospace; fill:#1e293b}
+      .card{stroke:#cbd5e1; stroke-width:2; rx:12}
+      .line-g{stroke:#16a34a; stroke-width:2.5; fill:none; marker-end:url(#arrow-green)}
+      .line-r{stroke:#dc2626; stroke-width:2.5; fill:none; stroke-dasharray:6,4; marker-end:url(#arrow-red)}
+      .line-o{stroke:#ea580c; stroke-width:2.5; fill:none; marker-end:url(#arrow-green)}
+    </style>
+  </defs>
+
+  <rect width="1100" height="380" fill="#f8fafc"/>
+
+  <!-- Title -->
+  <text x="30" y="42" class="title">INHERIT vs NOINHERIT — Two different elevation strategies</text>
+  <text x="30" y="66" class="sub">sudo on Linux or runas on Windows is the mental model for NOINHERIT.</text>
+
+  <!-- Left panel: INHERIT -->
+  <rect x="30" y="90" width="490" height="260" class="card" fill="#f0fdf4"/>
+  <rect x="30" y="90" width="490" height="44" rx="12" fill="#16a34a"/>
+  <text x="50" y="119" class="badge" style="font-size:16px">INHERIT — dev_user</text>
+
+  <rect x="58" y="160" width="150" height="70" class="card" fill="#bbf7d0"/>
+  <text x="83" y="192" class="h">dev_user</text>
+  <text x="83" y="212" class="p">LOGIN INHERIT</text>
+
+  <rect x="350" y="160" width="150" height="70" class="card" fill="#dcfce7"/>
+  <text x="365" y="192" class="h">app_team</text>
+  <text x="365" y="212" class="p">privileges active</text>
+
+  <path d="M208 195 L350 195" class="line-g"/>
+  <text x="220" y="185" class="p" style="fill:#16a34a">auto</text>
+
+  <text x="58" y="280" class="p">Connects → immediately has app_team access.</text>
+  <text x="58" y="300" class="p">No extra action needed.</text>
+
+  <!-- Right panel: NOINHERIT -->
+  <rect x="580" y="90" width="490" height="260" class="card" fill="#fff7ed"/>
+  <rect x="580" y="90" width="490" height="44" rx="12" fill="#dc2626"/>
+  <text x="600" y="119" class="badge" style="font-size:16px">NOINHERIT — contractor_user</text>
+
+  <rect x="608" y="152" width="150" height="70" class="card" fill="#fee2e2"/>
+  <text x="615" y="184" class="h">contractor_user</text>
+  <text x="615" y="204" class="p">LOGIN NOINHERIT</text>
+
+  <rect x="608" y="252" width="150" height="55" class="card" fill="#fef9c3"/>
+  <text x="628" y="279" class="code">SET ROLE</text>
+  <text x="618" y="299" class="code">app_team;</text>
+
+  <rect x="850" y="172" width="180" height="115" class="card" fill="#dcfce7"/>
+  <text x="885" y="205" class="h">app_team</text>
+  <text x="870" y="228" class="p">privileges activate</text>
+  <text x="870" y="250" class="p">only after explicit</text>
+  <text x="870" y="270" class="p">SET ROLE</text>
+
+  <!-- blocked arrow -->
+  <path d="M758 187 L848 220" class="line-r"/>
+  <text x="790" y="193" class="p" style="fill:#dc2626; font-size:12px">blocked by default</text>
+
+  <!-- SET ROLE arrow -->
+  <path d="M758 272 L850 252" class="line-o"/>
+  <text x="770" y="300" class="p" style="fill:#ea580c; font-size:12px">after SET ROLE</text>
+</svg>

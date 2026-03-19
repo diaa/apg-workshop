@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="980" viewBox="0 0 880 980" role="img" aria-labelledby="title desc">
+  <title id="title">Correlating Metrics to Queries — 8-step workflow</title>
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#475569"/>
+    </marker>
+    <style>
+      .title{font:700 26px 'Segoe UI',Arial,sans-serif;fill:#0f172a}
+      .leg-title{font:700 15px 'Segoe UI',Arial,sans-serif;fill:#0f172a}
+      .leg{font:500 13px 'Segoe UI',Arial,sans-serif;fill:#334155}
+      .num{font:800 15px 'Segoe UI',Arial,sans-serif;fill:#fff}
+      .h{font:700 15px 'Segoe UI',Arial,sans-serif;fill:#0f172a}
+      .p{font:500 13px 'Segoe UI',Arial,sans-serif;fill:#334155}
+      .tool{font:600 12px 'Consolas',monospace;fill:#1e293b}
+      .line{stroke:#475569;stroke-width:2.5;fill:none;marker-end:url(#arr)}
+    </style>
+  </defs>
+
+  <rect width="880" height="980" fill="#f8fafc"/>
+
+  <text x="30" y="46" class="title">Correlating Metrics to Queries — 8-step workflow</text>
+
+  <!-- Step colours: observe=#3b82f6, locate=#8b5cf6, query=#0891b2, diagnose=#dc2626, fix=#16a34a, verify=#0d9488 -->
+
+  <!-- STEP 1 -->
+  <rect x="30" y="74" width="820" height="76" rx="12" fill="#dbeafe" stroke="#93c5fd" stroke-width="2"/>
+  <circle cx="68" cy="112" r="20" fill="#2563eb"/>
+  <text x="62" y="118" class="num">1</text>
+  <text x="104" y="104" class="h">See spike in Azure Metrics Explorer</text>
+  <text x="104" y="126" class="p">Observe: CPU %, IOPS, Memory %, Temp Files written — narrow the time window</text>
+  <rect x="700" y="88" width="130" height="24" rx="6" fill="#bfdbfe"/>
+  <text x="715" y="105" class="tool">Azure Portal</text>
+
+  <path d="M440 150 L440 166" class="line"/>
+
+  <!-- STEP 2 -->
+  <rect x="30" y="168" width="820" height="76" rx="12" fill="#ede9fe" stroke="#c4b5fd" stroke-width="2"/>
+  <circle cx="68" cy="206" r="20" fill="#7c3aed"/>
+  <text x="62" y="212" class="num">2</text>
+  <text x="104" y="198" class="h">Note the timestamp of the spike</text>
+  <text x="104" y="220" class="p">Record the exact time range — you will use it to filter query data next</text>
+  <rect x="680" y="182" width="150" height="24" rx="6" fill="#ddd6fe"/>
+  <text x="695" y="199" class="tool">Metrics Explorer</text>
+
+  <path d="M440 244 L440 260" class="line"/>
+
+  <!-- STEP 3 -->
+  <rect x="30" y="262" width="820" height="76" rx="12" fill="#cffafe" stroke="#67e8f9" stroke-width="2"/>
+  <circle cx="68" cy="300" r="20" fill="#0e7490"/>
+  <text x="62" y="306" class="num">3</text>
+  <text x="104" y="292" class="h">Open Query Performance Insight</text>
+  <text x="104" y="314" class="p">Filter to the spike time range — sort by CPU or IO wait</text>
+  <rect x="630" y="276" width="200" height="24" rx="6" fill="#a5f3fc"/>
+  <text x="645" y="293" class="tool">Query Performance Insight</text>
+
+  <path d="M440 338 L440 354" class="line"/>
+
+  <!-- STEP 4 -->
+  <rect x="30" y="356" width="820" height="76" rx="12" fill="#fef9c3" stroke="#fde047" stroke-width="2"/>
+  <circle cx="68" cy="394" r="20" fill="#ca8a04"/>
+  <text x="62" y="400" class="num">4</text>
+  <text x="104" y="384" class="h">Identify the top query in that window</text>
+  <text x="104" y="406" class="p">Look for highest CPU %, total duration, or IO reads — copy the query text</text>
+  <rect x="630" y="368" width="200" height="24" rx="6" fill="#fef08a"/>
+  <text x="635" y="385" class="tool">Query Performance Insight</text>
+
+  <path d="M440 432 L440 448" class="line"/>
+
+  <!-- STEP 5 -->
+  <rect x="30" y="450" width="820" height="76" rx="12" fill="#ffedd5" stroke="#fdba74" stroke-width="2"/>
+  <circle cx="68" cy="488" r="20" fill="#ea580c"/>
+  <text x="62" y="494" class="num">5</text>
+  <text x="104" y="478" class="h">Run EXPLAIN (ANALYZE, BUFFERS) on the jumpbox</text>
+  <text x="104" y="500" class="p">Paste the query into psql — read the plan: scan types, loops, rows, buffers</text>
+  <rect x="700" y="462" width="130" height="24" rx="6" fill="#fed7aa"/>
+  <text x="710" y="479" class="tool">psql jumpbox</text>
+
+  <path d="M440 526 L440 542" class="line"/>
+
+  <!-- STEP 6 -->
+  <rect x="30" y="544" width="820" height="88" rx="12" fill="#fee2e2" stroke="#fca5a5" stroke-width="2"/>
+  <circle cx="68" cy="588" r="20" fill="#dc2626"/>
+  <text x="62" y="594" class="num">6</text>
+  <text x="104" y="572" class="h">Identify the root cause</text>
+  <text x="104" y="594" class="p">Missing index → Seq Scan on large table</text>
+  <text x="104" y="614" class="p">Temp file spill → work_mem too small   |   Loop × N → correlated subquery</text>
+  <rect x="660" y="556" width="170" height="24" rx="6" fill="#fecaca"/>
+  <text x="668" y="573" class="tool">EXPLAIN output</text>
+
+  <path d="M440 632 L440 648" class="line"/>
+
+  <!-- STEP 7 -->
+  <rect x="30" y="650" width="820" height="88" rx="12" fill="#dcfce7" stroke="#86efac" stroke-width="2"/>
+  <circle cx="68" cy="694" r="20" fill="#16a34a"/>
+  <text x="62" y="700" class="num">7</text>
+  <text x="104" y="678" class="h">Apply the fix</text>
+  <text x="104" y="700" class="p">Create missing index   |   Rewrite query to remove correlated subquery</text>
+  <text x="104" y="720" class="p">Increase work_mem for the session   |   Use ANALYSE to refresh statistics</text>
+  <rect x="700" y="662" width="130" height="24" rx="6" fill="#bbf7d0"/>
+  <text x="710" y="679" class="tool">psql jumpbox</text>
+
+  <path d="M440 738 L440 754" class="line"/>
+
+  <!-- STEP 8 -->
+  <rect x="30" y="756" width="820" height="76" rx="12" fill="#ccfbf1" stroke="#5eead4" stroke-width="2"/>
+  <circle cx="68" cy="794" r="20" fill="#0d9488"/>
+  <text x="62" y="800" class="num">8</text>
+  <text x="104" y="784" class="h">Re-run and verify metric returns to normal</text>
+  <text x="104" y="806" class="p">Watch CPU/IOPS drop in Metrics Explorer — run the same query: check execution time</text>
+  <rect x="700" y="768" width="130" height="24" rx="6" fill="#99f6e4"/>
+  <text x="715" y="785" class="tool">Azure Portal</text>
+
+  <!-- LEGEND -->
+  <rect x="30" y="866" width="820" height="96" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="50" y="890" class="leg-title">Legend</text>
+  <circle cx="62"  cy="912" r="10" fill="#2563eb"/><text x="80"  y="917" class="leg">Observe (portal)         </text>
+  <circle cx="220" cy="912" r="10" fill="#7c3aed"/><text x="238" y="917" class="leg">Locate (timestamp)        </text>
+  <circle cx="400" cy="912" r="10" fill="#0e7490"/><text x="418" y="917" class="leg">Query tool (QPI)          </text>
+  <circle cx="570" cy="912" r="10" fill="#ca8a04"/><text x="588" y="917" class="leg">Identify (top query)      </text>
+  <circle cx="62"  cy="946" r="10" fill="#ea580c"/><text x="80"  y="951" class="leg">Explain plan (jumpbox)    </text>
+  <circle cx="220" cy="946" r="10" fill="#dc2626"/><text x="238" y="951" class="leg">Root cause                </text>
+  <circle cx="400" cy="946" r="10" fill="#16a34a"/><text x="418" y="951" class="leg">Fix                       </text>
+  <circle cx="570" cy="946" r="10" fill="#0d9488"/><text x="588" y="951" class="leg">Verify (back to portal)   </text>
+</svg>
