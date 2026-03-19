@@ -3,6 +3,7 @@ sectionid: DeepDive
 sectionclass: h2
 title: Configure PgBadger
 parent-id: day2
+published: false
 ---
 
 ### Configuring Server Parameters

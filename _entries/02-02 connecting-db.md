@@ -4,6 +4,7 @@ sectionid: connecting-db
 sectionclass: h2
 parent-id: upandrunning
 title: Connecting to PostgreSQL
+published: false
 ---
 
 In order to connect to a database you need to know the name of your target database, the host name and port number of the server, and what user name you want to connect as. 
