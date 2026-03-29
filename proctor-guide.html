@@ -249,25 +249,28 @@
 
 <h3>Key Commands</h3>
 
-<h4>Step 1 — Clone the repo</h4>
-<pre><code>git clone https://github.com/diaa/apg-workshop.git
-cd apg-workshop/bicep</code></pre>
+<h4>Step 1 — Install Bicep and create a resource group</h4>
+<pre><code>az bicep install
+az group create -l Eastus -n PG-Workshop</code></pre>
+<p class="cmd-explain">Installs the Bicep CLI and creates the <code>PG-Workshop</code> resource group. The resource group <strong>must exist before deployment</strong>.</p>
+
+<h4>Step 2 — Clone the repo</h4>
+<pre><code>git clone https://github.com/Azure/apg-workshop.git
+cd apg-workshop</code></pre>
 <p class="cmd-explain">Downloads the workshop repo which contains Bicep templates and scripts.</p>
 
-<h4>Step 2 — Deploy the Bicep template</h4>
-<pre><code>az deployment group create \
-  --resource-group PG-Workshop \
-  --template-file main.bicep \
-  --parameters main.bicepparam</code></pre>
-<p class="cmd-explain">Deploys the hub-spoke VNet architecture with PostgreSQL Flexible Server, jumpbox VM, and private DNS zone.</p>
+<h4>Step 3 — Deploy the Bicep template</h4>
+<pre><code>az deployment group create --resource-group PG-Workshop --template-file bicep/main.bicep</code></pre>
+<p class="cmd-explain">Deploys the hub-spoke VNet architecture with PostgreSQL Flexible Server, jumpbox VM, and private DNS zone. Attendees will be prompted for VM and PG admin username/password.</p>
 
 <div class="box box-proctor">
   <strong>Proctor Notes</strong>
   <ul>
-    <li>Attendees may need to create the resource group first: <code>az group create --name PG-Workshop --location uksouth</code></li>
-    <li>The <code>main.bicepparam</code> file has default values. Attendees must fill in their admin username/password.</li>
+    <li>Resource group creation is Step 1 — if attendees skip it, the deployment will fail with "ResourceGroupNotFound".</li>
+    <li>The deployment prompts interactively for VM admin user/password and PG admin user/password.</li>
     <li>Deployment takes 10–15 minutes. Use this time to walk through the architecture diagram or answer conceptual questions.</li>
     <li>For the <strong>Simple</strong> path: <code>cd bicep/simple</code> and use those files instead. Public access is enabled by default.</li>
+    <li>If <code>git</code> isn't available, attendees can download templates directly: <code>wget https://pg.azure-workshops.cloud/scripts/bicep.zip &amp;&amp; unzip bicep.zip</code></li>
   </ul>
 </div>
 
