@@ -259,13 +259,11 @@
 <h3>Option 1 — Enterprise Deployment (Recommended)</h3>
 <p>Deploys the full hub-and-spoke architecture: jumpbox VM, private VNet, PostgreSQL Flexible Server with private access, and private DNS zone.</p>
 
-<h4>Step 1 — Extract templates and navigate</h4>
-<pre><code># If using the zip file:
-cd C:\path\to\extracted\bicep
-
-# Or clone the repo:
-git clone https://github.com/Azure/apg-workshop.git
-cd apg-workshop/bicep</code></pre>
+<h4>Step 1 — Download and extract the templates</h4>
+<p>Attendees download <strong>bicep.zip</strong> from the workshop page and extract it:</p>
+<pre><code># Extract the zip, then open a terminal:
+cd C:\path\to\extracted\bicep</code></pre>
+<p class="cmd-explain">Cloud Shell users: <code>curl -O https://pg.azure-workshops.cloud/scripts/bicep.zip &amp;&amp; unzip bicep.zip &amp;&amp; cd bicep</code></p>
 
 <h4>Step 2 — Log in to Azure</h4>
 <pre><code>az login</code></pre>
@@ -302,11 +300,8 @@ psql -h &lt;postgresql-fqdn&gt; -U &lt;pgAdminUsername&gt; -d postgres</code></p
 <p>Deploys only a PostgreSQL Flexible Server with a public endpoint and a firewall rule. No jumpbox VM — attendees connect directly from their machine.</p>
 
 <h4>Step 1 — Navigate to the simple folder</h4>
-<pre><code># From extracted zip:
-cd C:\path\to\extracted\bicep\simple
-
-# Or from cloned repo:
-cd apg-workshop/bicep/simple</code></pre>
+<pre><code># From the extracted bicep folder:
+cd C:\path\to\extracted\bicep\simple</code></pre>
 
 <h4>Step 2 — Log in and create the resource group</h4>
 <pre><code>az login
@@ -335,7 +330,7 @@ curl -s ifconfig.me</code></pre>
     <li><strong>Recommend Option 1</strong> for most workshops — it teaches real-world private networking and gives hands-on SSH experience.</li>
     <li>Fall back to <strong>Option 2</strong> if time is short, attendees have restricted subscriptions, or the audience is developer-focused.</li>
     <li><code>az login</code> and subscription selection is the first thing to verify — don't let attendees skip it.</li>
-    <li>If <code>git</code> isn't available: <code>wget https://pg.azure-workshops.cloud/scripts/bicep.zip &amp;&amp; unzip bicep.zip</code></li>
+    <li>The download link is <code>https://pg.azure-workshops.cloud/scripts/bicep.zip</code> — have it ready to share in chat.</li>
     <li>During the 10–15 min deployment wait, walk through the architecture diagram or answer conceptual questions about Azure PostgreSQL.</li>
     <li>For Option 1 Step 5, attendees must use the <strong>jumpbox-public-ip</strong> from deployment outputs, not the PG server IP.</li>
   </ul>

@@ -19,24 +19,21 @@ In this section you will deploy the workshop environment using [Bicep](https://d
 
 Deploys the full hub-and-spoke architecture: jumpbox VM, private VNet, PostgreSQL Flexible Server with private access, and a private DNS zone.
 
-#### Step 1 — Extract the templates
+#### Step 1 — Download and extract the templates
 
-If you downloaded the zip file, extract it and open a terminal:
+Download the Bicep templates from the workshop page:
+
+📦 [**bicep.zip**](https://pg.azure-workshops.cloud/scripts/bicep.zip)
+
+Extract the zip file and open a terminal in the extracted folder:
 
 ```sh
 cd C:\path\to\extracted\bicep
 ```
 
-Or clone the repository:
-
-```sh
-git clone https://github.com/Azure/apg-workshop.git
-cd apg-workshop/bicep
-```
-
-> If `git` is not available, download the templates directly:
+> **Cloud Shell?** Upload the zip or download it directly:
 > ```sh
-> wget https://pg.azure-workshops.cloud/scripts/bicep.zip && unzip bicep.zip
+> curl -O https://pg.azure-workshops.cloud/scripts/bicep.zip && unzip bicep.zip
 > cd bicep
 > ```
 
@@ -109,14 +106,10 @@ Deploys only a PostgreSQL Flexible Server with a **public endpoint** and a firew
 
 #### Step 1 — Navigate to the simple folder
 
+From the extracted `bicep` folder:
+
 ```sh
 cd C:\path\to\extracted\bicep\simple
-```
-
-Or if you cloned the repo:
-
-```sh
-cd apg-workshop/bicep/simple
 ```
 
 #### Step 2 — Log in and create the resource group
