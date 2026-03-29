@@ -5,47 +5,43 @@ title: Prerequisites
 parent-id: intro
 ---
 
-### Tools
+Before you begin, make sure you have the items below ready. The exact requirements depend on which **deployment option** you choose — see the comparison table at the bottom of this page.
 
-You can use the Azure Cloud Shell accessible at <https://shell.azure.com> once you login with an Azure subscription. The Azure Cloud Shell has the Azure CLI pre-installed and configured to connect to your Azure subscription as well as `psql` and other Postgres utilities like `pg_dump`, `createdb` or `createuser` that will be used throughout the training, your access to the database might be through a jump-box in between cloudshell and PostgreSQL environment.
+### Azure Subscription
 
-### Azure subscription
+You need an Azure subscription with **Contributor** access.
 
-#### If the workshop will run on your Azure subscription
+- Sign in at <https://portal.azure.com>
+- Authenticate the Azure CLI: `az login`
 
-{% collapsible %}
+{% collapsible If the workshop uses an Azure Pass %}
 
-Please use your username and password to login to <https://portal.azure.com>.
+1. Use the provided link (e.g. `https://azcheck.in/xxxxxxx`) to sign in with a GitHub account.
+2. Copy the code and go to <https://www.microsoftazurepass.com/> → click **Start** to redeem the voucher.
 
-Also please authenticate your Azure CLI by running the command below on your machine and following the instructions.
-
-```sh
-az account show
-az login
-```
+For details: <https://www.microsoftazurepass.com/Home/HowTo?Length=5>
 
 {% endcollapsible %}
 
+### Required Tools
 
-#### If the workshop will run on [Azure Pass](https://www.microsoftazurepass.com/)
-{% collapsible %}
+| Tool | Download | Required for |
+|---|---|---|
+| **Azure CLI** | [Install Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) | All options |
+| **SSH client** | Built into Windows 10+, macOS, Linux | Option 1 (Enterprise) |
+| **psql** (PostgreSQL client) | Pre-installed on jumpbox VM (Option 1), or install locally via [PostgreSQL downloads](https://www.postgresql.org/download/) | All options |
+| **VS Code** + PostgreSQL extension *(optional)* | [Download VS Code](https://code.visualstudio.com/) + install [PostgreSQL extension](https://marketplace.visualstudio.com/items?itemName=ms-ossdata.vscode-postgresql) | Option 2, Option 3 (or via SSH tunnel with Option 1) |
 
-* Login with a github account with the provided link: https://azcheck.in/xxxxxxx (Please use the provided one)
-    ![Azure Cloud Shell](media/1-az-checkin.png)
-* Follow the instructions, basically copy the code and go to: <https://www.microsoftazurepass.com/> to redeem the voucher and click on **Start>**.
+### Shell Environment
 
-    ![Azure Cloud Shell](media/2-azure-pass.png)
+Your choice of shell depends on your deployment option:
 
+- **Option 1 (Enterprise):** Use [Azure Cloud Shell](https://shell.azure.com) (Bash) to deploy. After deployment, you SSH into the **jumpbox Linux VM** which has `psql`, `pg_dump`, `pg_restore`, and other PostgreSQL 18 utilities pre-installed. All database work happens on the jumpbox.
+- **Option 2 (Simple) / Option 3 (BYOS):** Use **any terminal** — Azure Cloud Shell, PowerShell, Bash, or Windows Terminal. You connect to PostgreSQL directly from your machine, so you need `psql` installed locally (or use the VS Code PostgreSQL extension or the Azure Portal Connect blade).
 
-For more information follow : <https://www.microsoftazurepass.com/Home/HowTo?Length=5>
+{% collapsible Setting up Azure Cloud Shell (first time only) %}
 
-{% endcollapsible %}
-
-### Azure Cloud Shell
-
-You can use the Azure Cloud Shell accessible at <https://shell.azure.com> once you login with an Azure subscription.
-
-Head over to <https://shell.azure.com> and sign in with your Azure Subscription details.
+Head over to <https://shell.azure.com> and sign in.
 
 Select **Bash** as your shell.
 
@@ -55,21 +51,33 @@ Select **Show advanced settings**
 
 ![Select show advanced settings](media/cloudshell/1-mountstorage-advanced.png)
 
-Set the **Storage account** and **File share** names to your resource group name (all lowercase, without any special characters), then hit **Create storage**
+Set the **Storage account** and **File share** names to your resource group name (all lowercase, without special characters), then click **Create storage**.
 
 ![Azure Cloud Shell](media/cloudshell/2-storageaccount-fileshare.png)
 
-You should now have access to the Azure Cloud Shell
+You should now have access to the Azure Cloud Shell.
 
-![Set the storage account and fileshare names](media/cloudshell/3-cloudshell.png)
+![Cloud Shell ready](media/cloudshell/3-cloudshell.png)
 
-### Deployment Options
-
-The workshop provides **three** deployment options. Choose the one that best fits your scenario:
+{% endcollapsible %}
 
 ---
 
-#### Option 1 — Full Deployment (Recommended for the workshop)
+### Deployment Options
+
+The workshop provides **three** deployment options. Choose the one that best fits your scenario.
+
+| | Option 1 — Enterprise | Option 2 — Simple | Option 3 — BYOS |
+|---|---|---|---|
+| **What's deployed** | Hub-spoke VNet, jumpbox VM, PG Flex (private access), private DNS | PG Flex (public access) + firewall rule | Nothing — you bring your own server |
+| **How you connect** | SSH → jumpbox → `psql` (private network) | Direct from your machine (`psql`, VS Code, Portal) | Direct or via jumpbox |
+| **SSH tunnel needed?** | Yes — for GUI tools (VS Code, pgAdmin) on your laptop | No | Depends on your setup |
+| **Cloud Shell required?** | Recommended for deployment | No — any terminal works | No |
+| **Best for** | Enterprise private networking scenarios | Quick start, developer-focused | Instructor-led or pre-provisioned |
+
+---
+
+#### Option 1 — Enterprise Deployment (Recommended)
 
 Deploy the complete hub-and-spoke architecture using Bicep. This is the default path used throughout the workshop.
 
@@ -77,14 +85,17 @@ Deploy the complete hub-and-spoke architecture using Bicep. This is the default 
 
 ![Workshop Architecture — Full Deployment](media/architecture.png)
 
-- **Hub VNet** with a jumpbox Linux VM (DNS forwarder, PostgreSQL 18 client pre-installed)
+- **Hub VNet** with a jumpbox Linux VM (Rocky Linux 9, PostgreSQL 18 client pre-installed)
 - **Spoke VNet** with Azure Database for PostgreSQL Flexible Server (private access via delegated subnet)
 - VNet peering between hub and spoke
 - Private DNS zone (`private.postgres.database.azure.com`)
 - NSG with SSH access
 - Storage account (for diagnostic logs)
 
-**How to connect:** SSH into the jumpbox VM → use `psql` to reach PostgreSQL over the private network. See the **Connecting to PostgreSQL** section for SSH tunnel and VS Code options.
+**How to connect:**
+1. **SSH** into the jumpbox VM from Cloud Shell or your local terminal
+2. Use `psql` directly on the jumpbox to reach PostgreSQL over the private network
+3. *(Optional)* Set up an **SSH tunnel** to use GUI tools (VS Code PostgreSQL extension, pgAdmin) from your laptop — see **Connecting to PostgreSQL** for details
 
 **Best for:** Enterprise-like scenarios with private networking, DNS resolution, and a jump-box access pattern.
 
@@ -98,11 +109,15 @@ Deploy only a PostgreSQL Flexible Server with **public network access** and a fi
 
 **What gets deployed:**
 - Azure Database for PostgreSQL Flexible Server (public access, firewall whitelist)
-- Optional: read replica in a secondary zone
 
-**How to connect:** Directly from your local machine using `psql`, VS Code PostgreSQL extension, or any PostgreSQL client — no SSH tunnel needed.
+**How to connect:** Directly from your machine using:
+- `psql` (install locally or use Cloud Shell)
+- [VS Code PostgreSQL extension](https://marketplace.visualstudio.com/items?itemName=ms-ossdata.vscode-postgresql)
+- Azure Portal → PostgreSQL server → **Connect** blade
 
-**Best for:** Quick start, simple labs, or when you already have a local PostgreSQL client installed and want minimal setup.
+No SSH tunnel needed.
+
+**Best for:** Quick start, simple labs, or when you already have a PostgreSQL client installed and want minimal setup.
 
 > See the **Deploy with Bicep** section for step-by-step instructions.
 
@@ -112,11 +127,9 @@ Deploy only a PostgreSQL Flexible Server with **public network access** and a fi
 
 If you already have an Azure Database for PostgreSQL Flexible Server (or are attending an instructor-led session where infrastructure is pre-provisioned), skip the deployment section entirely and proceed to **Connecting to PostgreSQL**.
 
-In this option your environment includes a **jumpbox VM** with the PostgreSQL 18 client (`psql`) pre-installed, and a **publicly accessible PostgreSQL Flexible Server** with your IP whitelisted in the firewall. You can connect either way — through the VM or directly from your laptop.
-
 <img src="media/diagram-byos-deployment.svg" alt="Bring Your Own Server — Jumpbox + Public Access" style="max-width:420px;">
 
-You will need:
+**You will need:**
 - PostgreSQL server FQDN
 - Admin username and password
 - Jumpbox VM IP address (if applicable) and SSH credentials
@@ -124,8 +137,8 @@ You will need:
 
 ---
 
-#### Tips for uploading and editing files in Azure Cloud Shell
+#### Tips for Azure Cloud Shell
 
-- You can use `code <file you want to edit>` in Azure Cloud Shell to open the built-in text editor.
-- You can upload files to the Azure Cloud Shell by dragging and dropping them.
-- You can also do a `curl -o filename.ext https://file-url/filename.ext` to download a file from the internet.
+- Use `code <filename>` to open the built-in text editor
+- Drag and drop files to upload them
+- Use `curl -o filename.ext https://url/filename.ext` to download files directly
