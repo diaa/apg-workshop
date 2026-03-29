@@ -126,6 +126,20 @@ psql -h <postgresql-fqdn> -U <pgAdminUsername> -d postgres
 
 Enter the PostgreSQL password when prompted. If you see the `postgres=>` prompt, the deployment is working correctly.
 
+Check the PostgreSQL server version:
+
+```sql
+SELECT version();
+```
+
+You should see output containing `PostgreSQL 18.x`. To exit `psql`:
+
+```sql
+\q
+```
+
+> **Next:** Proceed to **[Connecting to PostgreSQL](#connecting-db)** for detailed connection methods, SSH tunnels, and VS Code setup.
+
 ---
 
 ## Option 2 — Simple Deployment (Public Network)
@@ -201,3 +215,17 @@ Keep these values accessible — you will use them in every subsequent section:
 |---|---|
 | **PostgreSQL FQDN** | Azure Portal → `PG-Workshop` → PostgreSQL Flexible Server → **Overview** → Server name |
 | **PostgreSQL admin username** | The `administratorLogin` you entered in Step 4 |
+
+Once connected via `psql`, check the PostgreSQL server version:
+
+```sql
+SELECT version();
+```
+
+You should see output containing `PostgreSQL 18.x`. To exit `psql`:
+
+```sql
+\q
+```
+
+> **Next:** Proceed to **[Connecting to PostgreSQL](#connecting-db)** for detailed connection methods and VS Code setup.
