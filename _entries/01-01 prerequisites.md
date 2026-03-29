@@ -105,7 +105,7 @@ Deploy the complete hub-and-spoke architecture using Bicep. This is the default 
 
 Deploy only a PostgreSQL Flexible Server with **public network access** and a firewall rule for your IP. No VNet, no jumpbox, no DNS.
 
-<img src="media/diagram-simple-deployment.svg" alt="Simple Deployment — Public Access" style="max-width:420px;">
+<img src="media/diagram-simple-deployment.svg" alt="Simple Deployment — Public Access" style="max-width:680px;">
 
 **What gets deployed:**
 - Azure Database for PostgreSQL Flexible Server (public access, firewall whitelist)
@@ -127,7 +127,7 @@ No SSH tunnel needed.
 
 If you already have an Azure Database for PostgreSQL Flexible Server (or are attending an instructor-led session where infrastructure is pre-provisioned), skip the deployment section entirely and proceed to **Connecting to PostgreSQL**.
 
-<img src="media/diagram-byos-deployment.svg" alt="Bring Your Own Server — Jumpbox + Public Access" style="max-width:420px;">
+<img src="media/diagram-byos-deployment.svg" alt="Bring Your Own Server — Jumpbox + Public Access" style="max-width:680px;">
 
 **You will need:**
 - PostgreSQL server FQDN
