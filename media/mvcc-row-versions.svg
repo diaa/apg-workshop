@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1020" viewBox="0 0 1080 1020" role="img" aria-labelledby="title desc">
+  <title id="title">How MVCC Works — 3 steps + VACUUM</title>
+  <desc id="desc">INSERT creates a live row. UPDATE creates a new version and marks the old one dead. DELETE marks the latest version dead. VACUUM reclaims disk space.</desc>
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#334155"/>
+    </marker>
+    <marker id="arr-red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#dc2626"/>
+    </marker>
+    <marker id="arr-green" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#16a34a"/>
+    </marker>
+    <style>
+      .title{font:700 26px 'Segoe UI',Arial,sans-serif;fill:#0f172a}
+      .step-lbl{font:700 17px 'Segoe UI',Arial,sans-serif;fill:#0f172a}
+      .badge{font:700 13px 'Segoe UI',Arial,sans-serif;fill:#fff}
+      .tx{font:600 13px 'Consolas',monospace;fill:#1e293b}
+      .tag{font:600 12px 'Segoe UI',Arial,sans-serif;fill:#334155}
+      .note{font:500 13px 'Segoe UI',Arial,sans-serif;fill:#334155}
+      .warn{font:700 14px 'Segoe UI',Arial,sans-serif;fill:#b91c1c}
+      .leg-h{font:700 14px 'Segoe UI',Arial,sans-serif;fill:#0f172a}
+      .leg{font:500 13px 'Segoe UI',Arial,sans-serif;fill:#334155}
+      .line{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#arr)}
+    </style>
+  </defs>
+
+  <rect width="1080" height="1020" fill="#f8fafc"/>
+  <text x="30" y="44" class="title">How MVCC Works — Each operation adds a row version, never overwrites</text>
+
+  <!-- STEP 1 -->
+  <rect x="30" y="68" width="1020" height="170" rx="12" fill="#f0fdf4" stroke="#86efac" stroke-width="2"/>
+  <circle cx="66" cy="96" r="18" fill="#16a34a"/>
+  <text x="59" y="102" class="badge">1</text>
+  <text x="96" y="100" class="step-lbl">INSERT a row  (transaction 100)</text>
+
+  <!-- Row v1 live -->
+  <rect x="64" y="118" width="680" height="88" rx="8" fill="#dcfce7" stroke="#4ade80" stroke-width="2"/>
+  <text x="84" y="152" class="tx">Row v1  │  xmin=100  │  xmax=∞</text>
+  <text x="84" y="178" class="note">← live row, visible to all active sessions</text>
+
+  <rect x="760" y="132" width="270" height="64" rx="8" fill="#bbf7d0" stroke="#4ade80" stroke-width="1.5"/>
+  <text x="780" y="158" class="tag">xmin = transaction that created this version</text>
+  <text x="780" y="178" class="tag">xmax = ∞ means: still alive, not yet replaced</text>
+
+  <!-- STEP 2 -->
+  <rect x="30" y="264" width="1020" height="220" rx="12" fill="#fffbeb" stroke="#fde68a" stroke-width="2"/>
+  <circle cx="66" cy="292" r="18" fill="#d97706"/>
+  <text x="59" y="298" class="badge">2</text>
+  <text x="96" y="296" class="step-lbl">UPDATE the row (transaction 101) — PostgreSQL NEVER overwrites</text>
+  <text x="96" y="318" class="note">Old version is marked dead; a brand new physical row version is inserted at the end of the page.</text>
+
+  <!-- Row v1 dead -->
+  <rect x="64" y="336" width="680" height="60" rx="8" fill="#fef3c7" stroke="#fbbf24" stroke-width="2"/>
+  <text x="84" y="364" class="tx">Row v1  │  xmin=100  │  xmax=101</text>
+  <text x="84" y="384" class="tag" style="fill:#d97706">← dead version — xmax now set to 101 (the UPDATE transaction)</text>
+
+  <!-- Row v2 live -->
+  <rect x="64" y="408" width="680" height="60" rx="8" fill="#dcfce7" stroke="#4ade80" stroke-width="2"/>
+  <text x="84" y="436" class="tx">Row v2  │  xmin=101  │  xmax=∞</text>
+  <text x="84" y="456" class="note">← new live version (new value on disk)</text>
+
+  <rect x="760" y="344" width="270" height="130" rx="8" fill="#fef9c3" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="780" y="368" class="tag">UPDATE = DELETE + INSERT</text>
+  <text x="780" y="390" class="tag">Old row is NOT overwritten.</text>
+  <text x="780" y="412" class="tag">xmax of v1 is set to 101.</text>
+  <text x="780" y="434" class="tag">New row v2 is appended.</text>
+  <text x="780" y="456" class="tag">Both rows sit on disk.</text>
+
+  <!-- STEP 3 -->
+  <rect x="30" y="514" width="1020" height="200" rx="12" fill="#fff1f2" stroke="#fca5a5" stroke-width="2"/>
+  <circle cx="66" cy="542" r="18" fill="#dc2626"/>
+  <text x="59" y="548" class="badge">3</text>
+  <text x="96" y="546" class="step-lbl">DELETE the row (transaction 102) — marks dead, does NOT free disk space</text>
+  <text x="96" y="568" class="note">DELETE only sets xmax on the current live version. Both old versions stay on disk, occupying space.</text>
+
+  <!-- Row v1 dead -->
+  <rect x="64" y="586" width="680" height="52" rx="8" fill="#fee2e2" stroke="#f87171" stroke-width="1.5"/>
+  <text x="84" y="614" class="tx">Row v1  │  xmin=100  │  xmax=101  │  dead</text>
+
+  <!-- Row v2 dead -->
+  <rect x="64" y="650" width="680" height="52" rx="8" fill="#fecaca" stroke="#f87171" stroke-width="2"/>
+  <text x="84" y="678" class="tx">Row v2  │  xmin=101  │  xmax=102  │  dead (marked by DELETE)</text>
+
+  <rect x="760" y="594" width="270" height="112" rx="8" fill="#fee2e2" stroke="#f87171" stroke-width="1.5"/>
+  <text x="780" y="618" class="warn">Both row versions</text>
+  <text x="780" y="640" class="warn">still occupy disk!</text>
+  <text x="780" y="666" class="tag">No data is freed until</text>
+  <text x="780" y="686" class="tag">VACUUM runs.</text>
+
+  <!-- VACUUM box -->
+  <rect x="30" y="742" width="1020" height="200" rx="12" fill="#eff6ff" stroke="#93c5fd" stroke-width="2"/>
+  <circle cx="66" cy="770" r="18" fill="#2563eb"/>
+  <text x="59" y="776" class="badge">4</text>
+  <text x="96" y="774" class="step-lbl">VACUUM — the only process that reclaims dead row space</text>
+
+  <rect x="64" y="800" width="310" height="124" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="84" y="828" class="tag"><tspan font-weight="700">What VACUUM does:</tspan></text>
+  <text x="84" y="852" class="tag">• Scans for dead row versions</text>
+  <text x="84" y="872" class="tag">• Marks their space as reusable</text>
+  <text x="84" y="892" class="tag">• Updates visibility maps</text>
+  <text x="84" y="912" class="tag">• Does NOT shrink the file size</text>
+
+  <rect x="400" y="800" width="310" height="124" rx="8" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="1.5"/>
+  <text x="420" y="828" class="tag"><tspan font-weight="700">VACUUM FULL:</tspan></text>
+  <text x="420" y="852" class="tag">• Rewrites the table to a new file</text>
+  <text x="420" y="872" class="tag">• Actually shrinks disk usage</text>
+  <text x="420" y="892" class="tag">• Locks the table (use with care)</text>
+  <text x="420" y="912" class="tag">• Use only when bloat is severe</text>
+
+  <rect x="730" y="800" width="310" height="124" rx="8" fill="#cffafe" stroke="#67e8f9" stroke-width="1.5"/>
+  <text x="750" y="828" class="tag"><tspan font-weight="700">autovacuum:</tspan></text>
+  <text x="750" y="852" class="tag">• Background daemon — always on</text>
+  <text x="750" y="872" class="tag">• Triggered by dead tuple count</text>
+  <text x="750" y="892" class="tag">• Must be tuned for large tables</text>
+  <text x="750" y="912" class="tag">• Underfunded = table bloat</text>
+
+  <!-- Legend -->
+  <rect x="30" y="962" width="1020" height="44" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+  <circle cx="56"  cy="984" r="9" fill="#16a34a"/><text x="72"  y="989" class="leg">Live row</text>
+  <circle cx="200" cy="984" r="9" fill="#d97706"/><text x="216" y="989" class="leg">Dead (old version)</text>
+  <circle cx="400" cy="984" r="9" fill="#dc2626"/><text x="416" y="989" class="leg">Dead (deleted)</text>
+  <circle cx="580" cy="984" r="9" fill="#2563eb"/><text x="596" y="989" class="leg">VACUUM / autovacuum</text>
+  <text x="800" y="989" class="leg">xmin = created by   │   xmax = deleted / replaced by   │   ∞ = still alive</text>
+</svg>

@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" role="img" aria-labelledby="title desc">
+  <title id="title">PostgreSQL roles access flow</title>
+  <desc id="desc">Numbered flow for admin, group roles, login roles, and effective permissions in orders_demo.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#334155" />
+    </marker>
+    <style>
+      .title { font: 700 28px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 500 16px 'Segoe UI', Arial, sans-serif; fill: #334155; }
+      .step { font: 700 14px 'Segoe UI', Arial, sans-serif; fill: #ffffff; }
+      .label { font: 600 14px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .small { font: 500 12px 'Segoe UI', Arial, sans-serif; fill: #334155; }
+      .arrow { stroke: #334155; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+      .card { stroke: #cbd5e1; stroke-width: 2; rx: 12; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1400" height="760" fill="#f8fafc"/>
+  <text x="36" y="52" class="title">Roles and Permissions Flow (orders_demo)</text>
+  <text x="36" y="78" class="subtitle">Numbered view: create group roles, attach users, then apply effective access.</text>
+
+  <rect x="40" y="120" width="300" height="110" class="card" fill="#dbeafe"/>
+  <circle cx="74" cy="154" r="18" fill="#2563eb"/>
+  <text x="68" y="159" class="step">1</text>
+  <text x="104" y="150" class="label">Admin account</text>
+  <text x="104" y="172" class="small">member of azure_pg_admin</text>
+  <text x="104" y="192" class="small">creates the access model</text>
+
+  <rect x="400" y="120" width="300" height="110" class="card" fill="#dcfce7"/>
+  <circle cx="434" cy="154" r="18" fill="#16a34a"/>
+  <text x="428" y="159" class="step">2</text>
+  <text x="464" y="150" class="label">Create group role: app_team</text>
+  <text x="464" y="172" class="small">NOLOGIN</text>
+  <text x="464" y="192" class="small">read/write privileges holder</text>
+
+  <rect x="760" y="120" width="300" height="110" class="card" fill="#ffedd5"/>
+  <circle cx="794" cy="154" r="18" fill="#ea580c"/>
+  <text x="788" y="159" class="step">3</text>
+  <text x="824" y="150" class="label">Create group role: readonly</text>
+  <text x="824" y="172" class="small">NOLOGIN</text>
+  <text x="824" y="192" class="small">SELECT-only privileges holder</text>
+
+  <path d="M340 175 L400 175" class="arrow"/>
+  <path d="M700 175 L760 175" class="arrow"/>
+
+  <rect x="220" y="320" width="280" height="120" class="card" fill="#dcfce7"/>
+  <circle cx="254" cy="354" r="18" fill="#16a34a"/>
+  <text x="248" y="359" class="step">4</text>
+  <text x="284" y="350" class="label">dev_user LOGIN INHERIT</text>
+  <text x="284" y="372" class="small">member of app_team</text>
+  <text x="284" y="392" class="small">gets privileges automatically</text>
+
+  <rect x="560" y="320" width="280" height="120" class="card" fill="#ffedd5"/>
+  <circle cx="594" cy="354" r="18" fill="#ea580c"/>
+  <text x="588" y="359" class="step">5</text>
+  <text x="624" y="350" class="label">analyst_user LOGIN INHERIT</text>
+  <text x="624" y="372" class="small">member of readonly</text>
+  <text x="624" y="392" class="small">gets SELECT automatically</text>
+
+  <rect x="900" y="320" width="360" height="120" class="card" fill="#fee2e2"/>
+  <circle cx="934" cy="354" r="18" fill="#dc2626"/>
+  <text x="928" y="359" class="step">6</text>
+  <text x="964" y="350" class="label">contractor_user LOGIN NOINHERIT</text>
+  <text x="964" y="372" class="small">member of app_team</text>
+  <text x="964" y="392" class="small">must run SET ROLE app_team</text>
+
+  <path d="M520 230 L350 320" class="arrow"/>
+  <path d="M870 230 L700 320" class="arrow"/>
+  <path d="M550 230 L980 320" class="arrow"/>
+
+  <rect x="140" y="540" width="540" height="150" class="card" fill="#ecfeff"/>
+  <circle cx="174" cy="574" r="18" fill="#0891b2"/>
+  <text x="168" y="579" class="step">7</text>
+  <text x="204" y="570" class="label">Effective access via app_team</text>
+  <text x="204" y="592" class="small">customers, products, orders, order_items</text>
+  <text x="204" y="612" class="small">SELECT, INSERT, UPDATE, DELETE</text>
+  <text x="204" y="632" class="small">(dev_user direct, contractor_user after SET ROLE)</text>
+
+  <rect x="740" y="540" width="520" height="150" class="card" fill="#fff7ed"/>
+  <circle cx="774" cy="574" r="18" fill="#f97316"/>
+  <text x="768" y="579" class="step">8</text>
+  <text x="804" y="570" class="label">Effective access via readonly</text>
+  <text x="804" y="592" class="small">customers, products, orders, order_items</text>
+  <text x="804" y="612" class="small">SELECT only</text>
+  <text x="804" y="632" class="small">(analyst_user direct)</text>
+
+  <path d="M360 440 L340 540" class="arrow"/>
+  <path d="M1040 440 L420 540" class="arrow"/>
+  <path d="M700 440 L980 540" class="arrow"/>
+</svg>

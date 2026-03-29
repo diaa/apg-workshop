@@ -1,6 +1,6 @@
 ---
 sectionid: basicadmin
 sectionclass: h1
-title: Basic PostgreSQL Administration 
+title: Administration & Access Control
 is-parent: yes
 ---

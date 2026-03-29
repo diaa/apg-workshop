@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 160" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="ah5" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+  </defs>
+
+  <!-- Step 1: Collect stats -->
+  <rect x="10" y="45" width="120" height="55" rx="8" fill="#336791"/>
+  <text x="70" y="68" text-anchor="middle" font-size="11" fill="#fff" font-weight="600">Collect stats</text>
+  <text x="70" y="85" text-anchor="middle" font-size="10" fill="#a0c4e0">ANALYZE</text>
+
+  <!-- Arrow -->
+  <line x1="130" y1="72" x2="155" y2="72" stroke="#555" stroke-width="2" marker-end="url(#ah5)"/>
+
+  <!-- Step 2: Planner estimates -->
+  <rect x="160" y="45" width="140" height="55" rx="8" fill="#0078d4"/>
+  <text x="230" y="68" text-anchor="middle" font-size="11" fill="#fff" font-weight="600">Planner estimates</text>
+  <text x="230" y="85" text-anchor="middle" font-size="10" fill="#cce4f7">rows and cost</text>
+
+  <!-- Arrow -->
+  <line x1="300" y1="72" x2="325" y2="72" stroke="#555" stroke-width="2" marker-end="url(#ah5)"/>
+
+  <!-- Step 3: Choose plan -->
+  <rect x="330" y="45" width="130" height="55" rx="8" fill="#ff8c00"/>
+  <text x="395" y="68" text-anchor="middle" font-size="11" fill="#fff" font-weight="600">Choose plan</text>
+  <text x="395" y="85" text-anchor="middle" font-size="10" fill="#ffe0b2">Seq / Index / Join</text>
+
+  <!-- Arrow -->
+  <line x1="460" y1="72" x2="485" y2="72" stroke="#555" stroke-width="2" marker-end="url(#ah5)"/>
+
+  <!-- Step 4: EXPLAIN ANALYZE -->
+  <rect x="490" y="45" width="140" height="55" rx="8" fill="#7b2d8e"/>
+  <text x="560" y="68" text-anchor="middle" font-size="11" fill="#fff" font-weight="600">Run EXPLAIN</text>
+  <text x="560" y="85" text-anchor="middle" font-size="10" fill="#d8b4e8">ANALYZE</text>
+
+  <!-- Arrow -->
+  <line x1="630" y1="72" x2="655" y2="72" stroke="#555" stroke-width="2" marker-end="url(#ah5)"/>
+
+  <!-- Step 5: Compare -->
+  <rect x="660" y="45" width="130" height="55" rx="8" fill="#5bb350"/>
+  <text x="725" y="68" text-anchor="middle" font-size="11" fill="#fff" font-weight="600">Compare</text>
+  <text x="725" y="85" text-anchor="middle" font-size="10" fill="#d4ecd0">estimate vs actual</text>
+
+  <!-- Feedback arrow back to step 1 -->
+  <path d="M 725,100 L 725,135 L 70,135 L 70,100" fill="none" stroke="#555" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#ah5)"/>
+  <text x="400" y="150" text-anchor="middle" font-size="10" fill="#888">Iterate and improve</text>
+</svg>

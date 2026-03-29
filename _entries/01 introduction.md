@@ -6,29 +6,66 @@ type: nocount
 is-parent: yes
 ---
 
-Welcome to the Azure PostgreSQL Workshop. In this lab, you'll go through tasks that will help you master the basic and more advanced topics required to deploy and operate a PostgreSQL environment on [Azure Database for PostgreSQL](https://azure.microsoft.com/en-us/services/postgresql/). 
+Welcome to the **Azure PostgreSQL Workshop** — a hands-on, scenario-driven lab that takes you from zero to confidently operating Azure Database for PostgreSQL Flexible Server in production.
 
-You can use this guide as a PostgreSQL tutorial and as study material to help you get started to learn PostgreSQL.
+You will deploy infrastructure with Bicep, load realistic data, deliberately break things, observe the damage through monitoring, diagnose root causes, and fix them — the same cycle you follow in real operations.
 
-**Theme: Deployment**
-- Azure Database for PostgreSQL Provisioning 
-- Data import and environment preparation  
-- Access and basic Administration in Azure Database for PostgreSQL
-    - Managing databases
-	- Roles and Permissions 
+This is a **two-day workshop**. We'll move at a comfortable pace with plenty of time for questions, discussion, and troubleshooting. Whether you're coming from an Oracle, SQL Server, or cloud-native background — please ask questions as we go. There are no silly questions, and the best workshops are the ones where everyone participates!
 
-**Theme: Accessibility and Business Continuity**
-- Logical backup
-- Back-ups/restore   
-- HA/DR 
-- Patching and maintenance windows
-- Security Management in Azure Database for PostgreSQL 
+### Who Is This For?
 
-**Theme: Day two operations**
-- Monitoring and Troubleshooting in Azure Database for PostgreSQL  
-- Deep dive into performance issue resolution and identify optimization fixes  
-    - Multiversion Concurrency Control, MVCC
-    - Daemons & Tuning
-    - SQL characteristic
-    - Statistics and Queries
+- **Developers** building applications on Azure PostgreSQL who want to understand the platform deeply
+- **Platform / DevOps engineers** responsible for deploying, securing, and monitoring PostgreSQL on Azure
+- **DBAs** migrating from Oracle, or on-premises PostgreSQL to Azure
+
+### Day 1 — Deploy, Connect, Administer & Protect
+
+| Time | Session | What We'll Do | Duration |
+|---|---|---|---|
+| 09:00 | **Welcome & Setup** | Introductions, prerequisites, Azure Cloud Shell | 30 min |
+| 09:30 | **Deploy** | Bicep → PostgreSQL Flex + jumpbox + VNets, DNS, storage | 35 min |
+| 10:05 | **Connect** | SSH to jumpbox, psql basics, SSH tunnels, VS Code | 40 min |
+| 10:45 | ☕ **Break** | | 15 min |
+| 11:00 | **Load Data** | Restore orders_demo (4 tables, ~410K rows), explore the schema | 25 min |
+| 11:25 | **Break the Workload** | Run 6 intentionally heavy queries — CPU, IOPS, temp spills | 25 min |
+| 11:50 | **Q&A — Morning Recap** | Questions on everything so far, troubleshoot any setup issues | 10 min |
+| 12:00 | 🍽️ **Lunch** | | 60 min |
+| 13:00 | **Administration & Access** | Roles, permissions, RBAC, managing server parameters | 40 min |
+| 13:40 | **Roles Deep Dive** | Hands-on: create roles, GRANT/REVOKE, test access, Azure-specific roles | 35 min |
+| 14:15 | ☕ **Break** | | 15 min |
+| 14:30 | **Logical Backup** | pg_dump / pg_restore — formats, selective restore, verification | 25 min |
+| 14:55 | **Physical Backup & PITR** | Azure managed backups, point-in-time restore walkthrough | 15 min |
+| 15:10 | **HA/DR** | Zone-redundant HA, forced failover, planned failover | 15 min |
+| 15:25 | **Security & Patching** | pgAudit, Log Analytics, maintenance windows | 25 min |
+| 15:50 | **Q&A — Day 1 Wrap-up** | Open discussion, review key concepts, preview of Day 2 | 10 min |
+| 16:00 | **End of Day 1** | | |
+
+### Day 2 — Monitor, Diagnose & Fix
+
+| Time | Session | What We'll Do | Duration |
+|---|---|---|---|
+| 09:00 | **Day 2 Kick-off** | Quick recap of Day 1, questions from overnight | 10 min |
+| 09:10 | **Database Profiling** | 22 diagnostic queries — health check & performance triage scripts | 45 min |
+| 09:55 | **Azure Monitoring** | Portal metrics, Query Performance Insight, KQL, alerts | 35 min |
+| 10:30 | ☕ **Break** | | 15 min |
+| 10:45 | **MVCC & Autovacuum** | Dead tuples, VACUUM vs VACUUM FULL, bloat, autovacuum tuning | 30 min |
+| 11:15 | **Parameter Tuning** | work_mem, shared_buffers, effective_cache_size — measure the impact | 30 min |
+| 11:45 | **Q&A — Monitoring & Internals** | Pause for questions — this is the densest part of the workshop | 15 min |
+| 12:00 | 🍽️ **Lunch** | | 60 min |
+| 13:00 | **SQL Characteristics** | Partial indexes, JSONB, GIN indexes — PostgreSQL superpowers | 20 min |
+| 13:20 | **Statistics & Query Planning** | EXPLAIN, cost model, join algorithms — nested loop vs hash vs merge | 25 min |
+| 13:45 | **Index Tuning Lab** | Add 5 indexes, re-run the broken workload, measure 2–50× speedup | 35 min |
+| 14:20 | ☕ **Break** | | 15 min |
+| 14:35 | **Extensions** *(optional)* | pg_trgm, uuid-ossp, pgcrypto, pg_cron | 20 min |
+| 14:55 | **Clean Up** | Delete resource group, verify everything is gone | 10 min |
+| 15:05 | **Final Q&A & Wrap-up** | Open floor — ask anything! Feedback, next steps, resources | 25 min |
+| 15:30 | **End of Workshop** | | |
+
+### What You Will Learn
+
+| Theme | Topics |
+|---|---|
+| **Deployment & Access** | Bicep IaC, Azure Flexible Server provisioning, networking (VNet, private DNS, peering), connection methods (psql, SSH tunnel, VS Code), roles & permissions, connection pooling |
+| **Business Continuity & Security** | Logical backup (pg_dump / pg_restore), physical backup & PITR, logical replication, HA/DR with zone redundancy, patching & maintenance windows, pgAudit & security management |
+| **Day Two Operations** | Azure Monitor metrics, Query Performance Insight, database profiling (catalog views), MVCC & autovacuum, parameter tuning (work_mem, shared_buffers), EXPLAIN & statistics, index tuning, SQL features (partial indexes, JSONB), extensions |
 

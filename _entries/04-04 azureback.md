@@ -3,6 +3,7 @@ sectionid: azurebackup
 sectionclass: h2
 title: Azure Backup
 parent-id: businesscont-sec
+published: false
 
 ---
 
@@ -28,7 +29,7 @@ Execute below command to take a back up of the database.
 pg_dump -Fc -v --host=<host> --username=<name> --dbname=<database name> -f <database>.dump
 ```
 
-* Restore manual dabase backup using pg_restore
+* Restore manual database backup using pg_restore
 
 ```sh 
 pg_restore -v --no-owner --host=<server name> --port=<port> --username=<user-name> --dbname=<target database name> <database>.dump

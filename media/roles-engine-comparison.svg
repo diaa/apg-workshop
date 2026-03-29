@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="700" viewBox="0 0 1400 700" role="img" aria-labelledby="title desc">
+  <title id="title">PostgreSQL vs Oracle vs SQL Server access model</title>
+  <desc id="desc">Comparison diagram of access layers and where permissions are typically granted.</desc>
+  <defs>
+    <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#334155" />
+    </marker>
+    <style>
+      .title { font: 700 28px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 500 16px 'Segoe UI', Arial, sans-serif; fill: #334155; }
+      .head { font: 700 18px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .lbl { font: 600 14px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .note { font: 500 12px 'Segoe UI', Arial, sans-serif; fill: #334155; }
+      .line { stroke: #334155; stroke-width: 2; fill: none; marker-end: url(#arrow2); }
+      .card { stroke: #cbd5e1; stroke-width: 2; rx: 10; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1400" height="700" fill="#f8fafc"/>
+  <text x="36" y="50" class="title">Access Model Comparison</text>
+  <text x="36" y="76" class="subtitle">Same business goal, different identity and permission layers.</text>
+
+  <rect x="40" y="110" width="420" height="540" class="card" fill="#e0f2fe"/>
+  <text x="70" y="145" class="head">PostgreSQL</text>
+  <rect x="80" y="180" width="340" height="80" class="card" fill="#ffffff"/>
+  <text x="100" y="220" class="lbl">Role (LOGIN or NOLOGIN)</text>
+  <text x="100" y="240" class="note">One object type for users and groups</text>
+
+  <rect x="80" y="320" width="340" height="80" class="card" fill="#ffffff"/>
+  <text x="100" y="360" class="lbl">Role membership</text>
+  <text x="100" y="380" class="note">INHERIT / NOINHERIT controls activation</text>
+
+  <rect x="80" y="460" width="340" height="130" class="card" fill="#ffffff"/>
+  <text x="100" y="500" class="lbl">Object privileges</text>
+  <text x="100" y="522" class="note">GRANT on database/schema/table level</text>
+  <text x="100" y="544" class="note">Example: app_team, readonly</text>
+
+  <path d="M250 260 L250 320" class="line"/>
+  <path d="M250 400 L250 460" class="line"/>
+
+  <rect x="490" y="110" width="420" height="540" class="card" fill="#ecfccb"/>
+  <text x="520" y="145" class="head">Oracle</text>
+  <rect x="530" y="180" width="340" height="80" class="card" fill="#ffffff"/>
+  <text x="550" y="220" class="lbl">User (schema owner)</text>
+  <text x="550" y="240" class="note">User and role are distinct objects</text>
+
+  <rect x="530" y="320" width="340" height="80" class="card" fill="#ffffff"/>
+  <text x="550" y="360" class="lbl">Role</text>
+  <text x="550" y="380" class="note">Granted to users and other roles</text>
+
+  <rect x="530" y="460" width="340" height="130" class="card" fill="#ffffff"/>
+  <text x="550" y="500" class="lbl">System + object privileges</text>
+  <text x="550" y="522" class="note">CREATE SESSION, CREATE TABLE, SELECT ...</text>
+  <text x="550" y="544" class="note">Can be direct or via role</text>
+
+  <path d="M700 260 L700 320" class="line"/>
+  <path d="M700 400 L700 460" class="line"/>
+
+  <rect x="940" y="110" width="420" height="540" class="card" fill="#ffe4e6"/>
+  <text x="970" y="145" class="head">SQL Server</text>
+  <rect x="980" y="180" width="340" height="80" class="card" fill="#ffffff"/>
+  <text x="1000" y="220" class="lbl">Login (server level)</text>
+  <text x="1000" y="240" class="note">Identity that can connect to instance</text>
+
+  <rect x="980" y="320" width="340" height="80" class="card" fill="#ffffff"/>
+  <text x="1000" y="360" class="lbl">Database user (database level)</text>
+  <text x="1000" y="380" class="note">Mapped from login per database</text>
+
+  <rect x="980" y="460" width="340" height="130" class="card" fill="#ffffff"/>
+  <text x="1000" y="500" class="lbl">Database roles + permissions</text>
+  <text x="1000" y="522" class="note">db_datareader, db_datawriter, custom roles</text>
+  <text x="1000" y="544" class="note">GRANT at object/schema/database scope</text>
+
+  <path d="M1150 260 L1150 320" class="line"/>
+  <path d="M1150 400 L1150 460" class="line"/>
+</svg>

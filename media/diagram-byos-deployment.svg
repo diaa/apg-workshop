@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 300" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="ah2" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+    <marker id="ah2d" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#999"/>
+    </marker>
+  </defs>
+
+  <!-- Your Machine box -->
+  <rect x="20" y="60" width="180" height="140" rx="12" fill="#e8f4fd" stroke="#0078d4" stroke-width="2"/>
+  <text x="110" y="85" text-anchor="middle" font-size="13" fill="#555">🖥️ Your Machine</text>
+  <rect x="35" y="100" width="150" height="80" rx="8" fill="#0078d4"/>
+  <text x="110" y="132" text-anchor="middle" font-size="13" fill="#fff" font-weight="600">VS Code / Terminal</text>
+  <text x="110" y="152" text-anchor="middle" font-size="11" fill="#cce4f7">psql client</text>
+
+  <!-- Azure outer box -->
+  <rect x="320" y="10" width="440" height="280" rx="12" fill="#fff4e5" stroke="#ff8c00" stroke-width="2"/>
+  <text x="540" y="35" text-anchor="middle" font-size="13" fill="#555">☁️ Azure</text>
+
+  <!-- VNet box -->
+  <rect x="340" y="45" width="400" height="230" rx="10" fill="#f0f9e8" stroke="#5bb350" stroke-width="2"/>
+  <text x="540" y="68" text-anchor="middle" font-size="12" fill="#555">Virtual Network</text>
+
+  <!-- Jumpbox VM -->
+  <rect x="360" y="82" width="180" height="80" rx="8" fill="#5bb350"/>
+  <text x="450" y="108" text-anchor="middle" font-size="13" fill="#fff" font-weight="600">🖧 Jumpbox VM</text>
+  <text x="450" y="126" text-anchor="middle" font-size="11" fill="#d4ecd0">Rocky Linux 9</text>
+  <text x="450" y="144" text-anchor="middle" font-size="11" fill="#d4ecd0">psql 18 pre-installed</text>
+
+  <!-- PostgreSQL -->
+  <rect x="360" y="180" width="360" height="80" rx="8" fill="#336791"/>
+  <text x="540" y="208" text-anchor="middle" font-size="13" fill="#fff" font-weight="600">🐘 PostgreSQL Flexible Server</text>
+  <text x="540" y="228" text-anchor="middle" font-size="11" fill="#a0c4e0">Public Access Enabled · Firewall: your IP allowed</text>
+
+  <!-- Arrow: laptop -> VM (SSH) -->
+  <line x1="200" y1="120" x2="355" y2="120" stroke="#555" stroke-width="2" marker-end="url(#ah2)"/>
+  <text x="278" y="112" text-anchor="middle" font-size="10" fill="#555">SSH :22</text>
+
+  <!-- Arrow: VM -> PG (private) -->
+  <line x1="450" y1="162" x2="450" y2="175" stroke="#555" stroke-width="2" marker-end="url(#ah2)"/>
+  <text x="490" y="172" text-anchor="start" font-size="10" fill="#555">psql :5432 (private)</text>
+
+  <!-- Dashed arrow: laptop -> PG (public direct) -->
+  <line x1="200" y1="170" x2="355" y2="220" stroke="#999" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#ah2d)"/>
+  <text x="248" y="210" text-anchor="start" font-size="10" fill="#888">psql :5432 direct (public)</text>
+</svg>

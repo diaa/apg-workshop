@@ -7,93 +7,44 @@ parent-id: basicadmin
 
 In this section you will learn how PostgreSQL manages access control through its **role** system — creating roles, granting privileges, understanding inheritance, and applying least-privilege principles.
 
-> **Prerequisite:** You should have the `quiz` database from the **Data Import** section. If you skipped it, run the CREATE statements from that section first.
+> **Prerequisite:** You should have the `orders_demo` database restored from the **Load Data** section.
 
 ---
 
 ### Lab Overview
 
-The diagram below shows the complete role hierarchy and permission model you will build in this lab.
+To make this easier to digest, the access model is split into three short diagrams.
 
-```mermaid
-graph TB
-    subgraph Azure Managed
-        azuresu["🔒 azuresu<br/><i>Superuser — Azure managed</i>"]
-        azure_pg_admin["azure_pg_admin<br/><i>Create role, Create DB,<br/>Bypass RLS, Replication</i>"]
-    end
+#### 1) app_team path (dev_user)
 
-    subgraph Your Admin
-        admin["&lt;your-admin&gt;<br/><i>Login ✅ — member of azure_pg_admin</i>"]
-    end
+![App team path](../media/roles-flow-app-team.svg)
 
-    azure_pg_admin -- "member of" --> azuresu
-    admin -- "member of" --> azure_pg_admin
+*Footnote - value by step:*
+1. Establishes a controlled admin starting point for governance.
+2. Centralizes write permissions in one reusable group role.
+3. Connects a real user to the role with automatic inheritance.
+4. Delivers immediate app productivity without manual role switching.
 
-    subgraph Group Roles — Cannot Login
-        app_team["app_team<br/><i>NOLOGIN</i>"]
-        readonly["readonly<br/><i>NOLOGIN</i>"]
-    end
+#### 2) analyst_user path (readonly)
 
-    subgraph Login Roles — Users
-        dev_user["dev_user<br/><i>LOGIN — INHERIT ✅</i>"]
-        analyst["analyst_user<br/><i>LOGIN — INHERIT ✅</i>"]
-        contractor["contractor_user<br/><i>LOGIN — NOINHERIT ⚠️<br/>CONNECTION LIMIT 2</i>"]
-    end
+![Analyst path](../media/roles-flow-analyst.svg)
 
-    dev_user -- "member of<br/>(inherits automatically)" --> app_team
-    contractor -- "member of<br/>(must SET ROLE)" --> app_team
-    analyst -- "member of<br/>(inherits automatically)" --> readonly
+*Footnote - value by step:*
+1. Keeps role creation in a single trusted admin workflow.
+2. Encapsulates reporting permissions as SELECT-only.
+3. Grants analysts safe default access through inheritance.
+4. Prevents accidental writes while enabling BI/reporting use cases.
 
-    subgraph Quiz Database — public schema
-        answers["📋 answers table"]
-        questions["📋 questions table"]
-    end
+#### 3) contractor_user path (NOINHERIT)
 
-    app_team -- "ALL privileges<br/>(SELECT, INSERT,<br/>UPDATE, DELETE, ...)" --> answers
-    app_team -- "ALL privileges" --> questions
-    readonly -- "SELECT only" --> answers
-    readonly -- "SELECT only" --> questions
+![Contractor path](../media/roles-flow-contractor.svg)
 
-    style azuresu fill:#ff6b6b,stroke:#c0392b,color:#fff
-    style azure_pg_admin fill:#e74c3c,stroke:#c0392b,color:#fff
-    style admin fill:#3498db,stroke:#2980b9,color:#fff
-    style app_team fill:#2ecc71,stroke:#27ae60,color:#fff
-    style readonly fill:#f39c12,stroke:#e67e22,color:#fff
-    style dev_user fill:#2ecc71,stroke:#27ae60,color:#fff
-    style analyst fill:#f39c12,stroke:#e67e22,color:#fff
-    style contractor fill:#e67e22,stroke:#d35400,color:#fff
-    style answers fill:#ecf0f1,stroke:#bdc3c7,color:#2c3e50
-    style questions fill:#ecf0f1,stroke:#bdc3c7,color:#2c3e50
-```
-
-**How to read the diagram:**
-- **Red** = Azure-managed roles (you cannot use these directly)
-- **Blue** = your admin user (the account you deployed with)
-- **Green** = `app_team` path — full read/write access. `dev_user` inherits automatically; `contractor_user` must explicitly `SET ROLE` to activate.
-- **Orange** = `readonly` path — SELECT only. `analyst_user` inherits automatically.
-- Solid arrows show membership. Privilege arrows show what each group role can do on the quiz database tables.
-
-```mermaid
-flowchart LR
-    subgraph INHERIT — dev_user
-        A["dev_user connects"] --> B["Automatically has<br/>app_team privileges"]
-        B --> C["✅ SELECT, INSERT,<br/>UPDATE, DELETE"]
-    end
-
-    subgraph NOINHERIT — contractor_user
-        D["contractor_user connects"] --> E["❌ No privileges<br/>by default"]
-        E --> F["SET ROLE app_team"]
-        F --> G["✅ Now has<br/>app_team privileges"]
-    end
-
-    style A fill:#2ecc71,stroke:#27ae60,color:#fff
-    style B fill:#2ecc71,stroke:#27ae60,color:#fff
-    style C fill:#2ecc71,stroke:#27ae60,color:#fff
-    style D fill:#e67e22,stroke:#d35400,color:#fff
-    style E fill:#e74c3c,stroke:#c0392b,color:#fff
-    style F fill:#f39c12,stroke:#e67e22,color:#fff
-    style G fill:#2ecc71,stroke:#27ae60,color:#fff
-```
+*Footnote - value by step:*
+1. Defines a privileged role, but does not expose it by default.
+2. Associates contractor identity with explicit guardrails (`NOINHERIT`).
+3. Starts each session in low-privilege mode to reduce blast radius.
+4. Requires intentional elevation (`SET ROLE`) for controlled operations.
+5. Enables temporary write capability with full operator intent.
 
 ---
 
@@ -109,6 +60,13 @@ PostgreSQL has a single concept for managing access: the **role**. There are no 
 
 This is fundamentally different from Oracle (where users and roles are distinct objects) and SQL Server (where logins, users, and roles are separate layers).
 
+![PostgreSQL vs Oracle vs SQL Server access model](../media/roles-engine-comparison.svg)
+
+Quick comparison for customers:
+- PostgreSQL: one role object type; `LOGIN` and `NOLOGIN` define behavior; membership + INHERIT control access.
+- Oracle: users and roles are separate objects; privileges can be direct or via role.
+- SQL Server: login is server-level, user is database-level, roles are assigned per database.
+
 ---
 
 ### Azure Flexible Server Role Hierarchy
@@ -117,13 +75,13 @@ On Azure Database for PostgreSQL Flexible Server, the admin user you created dur
 
 Connect to the server from the jumpbox:
 
-```sql
-psql -h <postgresql-fqdn> -U <pgadmin> -d postgres
+```sh
+psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 ```
 
 View the existing roles:
 
-```sql
+```psql
 \du
 ```
 
@@ -172,7 +130,7 @@ CREATE ROLE contractor_user LOGIN PASSWORD 'Workshop#Ext1' IN ROLE app_team NOIN
 
 Verify the roles:
 
-```sql
+```psql
 \du
 ```
 
@@ -188,12 +146,12 @@ Verify the roles:
 
 ---
 
-### Step 2 — Grant Privileges on the Quiz Database
+### Step 2 — Grant Privileges on the orders_demo Database
 
-Switch to the `quiz` database:
+You should already be connected to the `orders_demo` database. If not:
 
-```sql
-\c quiz
+```psql
+\c orders_demo
 ```
 
 Grant privileges to each group role:
@@ -232,10 +190,11 @@ GRANT contractor_user TO <your-admin>;
 SET ROLE dev_user;
 
 -- This should work — dev_user inherits app_team privileges
-SELECT * FROM answers;
+SELECT customer_id, first_name, last_name, email FROM customers LIMIT 5;
 
 -- This should also work — app_team has ALL privileges
-INSERT INTO questions (question_id, question) VALUES (2, 'What is the capital of France?');
+INSERT INTO customers (first_name, last_name, email, city, country)
+VALUES ('Test', 'User', 'test@workshop.dev', 'London', 'United Kingdom');
 
 -- Switch back
 RESET ROLE;
@@ -247,11 +206,12 @@ RESET ROLE;
 SET ROLE analyst_user;
 
 -- SELECT works — analyst_user inherits readonly privileges
-SELECT * FROM answers;
+SELECT status, COUNT(*) FROM orders GROUP BY status;
 
 -- INSERT fails — readonly only has SELECT
-INSERT INTO questions (question_id, question) VALUES (3, 'Test');
--- ERROR: permission denied for table questions
+INSERT INTO customers (first_name, last_name, email, city, country)
+VALUES ('Bad', 'Insert', 'nope@fail.dev', 'London', 'United Kingdom');
+-- ERROR: permission denied for table customers
 
 RESET ROLE;
 ```
@@ -262,8 +222,8 @@ RESET ROLE;
 SET ROLE contractor_user;
 
 -- This FAILS — contractor_user does NOT inherit app_team privileges
-SELECT * FROM answers;
--- ERROR: permission denied for table answers
+SELECT * FROM customers LIMIT 1;
+-- ERROR: permission denied for table customers
 ```
 
 **Why?** `contractor_user` was created with `NOINHERIT`. Even though it is a member of `app_team`, it does not automatically receive `app_team`'s privileges. The user must explicitly activate the role:
@@ -273,24 +233,14 @@ SELECT * FROM answers;
 SET ROLE app_team;
 
 -- Now it works
-SELECT * FROM answers;
+SELECT * FROM customers LIMIT 5;
 
 RESET ROLE;
 ```
 
 **When to use NOINHERIT:** For users who should have access but must consciously "elevate" to use it — similar to `sudo` on Linux or `runas` on Windows. Useful for contractors, automated accounts, or break-glass scenarios.
 
-```
-┌─────────────────────────────────────────────────────┐
-│  INHERIT (dev_user)        NOINHERIT (contractor)   │
-│                                                     │
-│  dev_user ──inherits──► app_team privileges         │
-│  (automatic)                                        │
-│                                                     │
-│  contractor ──member of──► app_team                 │
-│  (must SET ROLE to activate)                        │
-└─────────────────────────────────────────────────────┘
-```
+![INHERIT vs NOINHERIT](../media/roles-inherit-vs-noinherit.svg)
 
 ---
 
@@ -300,6 +250,9 @@ Run the following to see all granted privileges:
 
 ```sql
 RESET ROLE;
+```
+
+```psql
 \dp
 ```
 
@@ -307,14 +260,20 @@ You will see output like:
 
 ```
                                   Access privileges
- Schema |   Name    | Type  |       Access privileges        | ...
---------+-----------+-------+--------------------------------+
- public | answers   | table | <admin>=arwdDxt/<admin>       +|
-        |           |       | app_team=arwdDxt/<admin>      +|
-        |           |       | readonly=r/<admin>             |
- public | questions | table | <admin>=arwdDxt/<admin>       +|
-        |           |       | app_team=arwdDxt/<admin>      +|
-        |           |       | readonly=r/<admin>             |
+ Schema |    Name      | Type  |       Access privileges        | ...
+--------+--------------+-------+--------------------------------+
+ public | customers    | table | <admin>=arwdDxt/<admin>       +|
+        |              |       | app_team=arwdDxt/<admin>      +|
+        |              |       | readonly=r/<admin>             |
+ public | orders       | table | <admin>=arwdDxt/<admin>       +|
+        |              |       | app_team=arwdDxt/<admin>      +|
+        |              |       | readonly=r/<admin>             |
+ public | order_items  | table | <admin>=arwdDxt/<admin>       +|
+        |              |       | app_team=arwdDxt/<admin>      +|
+        |              |       | readonly=r/<admin>             |
+ public | products     | table | <admin>=arwdDxt/<admin>       +|
+        |              |       | app_team=arwdDxt/<admin>      +|
+        |              |       | readonly=r/<admin>             |
 ```
 
 **Reading the privilege codes:**
@@ -339,10 +298,10 @@ The format is `role=privileges/grantor`. So `app_team=arwdDxt/<admin>` means: `a
 
 ### Step 5 — REVOKE Privileges
 
-Remove INSERT/UPDATE/DELETE from `app_team` on the `answers` table, keeping only SELECT:
+A realistic scenario: the `orders` table holds financial data and should be read-only for the application team. Remove INSERT/UPDATE/DELETE from `app_team` on `orders`, keeping only SELECT:
 
 ```sql
-REVOKE INSERT, UPDATE, DELETE ON TABLE answers FROM app_team;
+REVOKE INSERT, UPDATE, DELETE ON TABLE orders FROM app_team;
 ```
 
 Verify:
@@ -351,19 +310,24 @@ Verify:
 SET ROLE dev_user;
 
 -- SELECT still works
-SELECT * FROM answers;
+SELECT order_id, customer_id, total_amount, status FROM orders LIMIT 5;
 
--- INSERT now fails
-INSERT INTO answers (question_id, answer, is_correct) VALUES (1, 'Test', false);
--- ERROR: permission denied for table answers
+-- INSERT now fails — orders is protected
+INSERT INTO orders (customer_id, order_date, total_amount, status)
+VALUES (1, now(), 99.99, 'pending');
+-- ERROR: permission denied for table orders
+
+-- But other tables still allow writes
+INSERT INTO customers (first_name, last_name, email, city, country)
+VALUES ('Another', 'Test', 'another@workshop.dev', 'Dublin', 'Ireland');
 
 RESET ROLE;
 ```
 
 Check the privilege codes again:
 
-```sql
-\dp answers
+```psql
+\dp orders
 ```
 
 You should see `app_team=rDxt/<admin>` — the `a`, `w`, and `d` codes are gone.
@@ -393,6 +357,9 @@ Test it:
 CREATE TABLE test_defaults (id serial, name text);
 
 -- Check privileges — readonly and app_team should already have access
+```
+
+```psql
 \dp test_defaults
 ```
 
@@ -426,20 +393,22 @@ REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 
 Open a **new** psql session as `dev_user` to verify everything works without `SET ROLE`:
 
-```sql
--- On the jumpbox, open a new connection
-psql -h <postgresql-fqdn> -U dev_user -d quiz
+```sh
+# On the jumpbox, open a new connection
+psql -h <postgresql-fqdn> -U dev_user -d orders_demo
 ```
 
 ```sql
--- Should work (inherited from app_team → readonly has SELECT, app_team has ALL on questions)
-SELECT * FROM questions;
+-- Should work (inherited from app_team)
+SELECT COUNT(*) FROM customers;
 
--- Should fail (we revoked INSERT on answers from app_team in Step 5)
-INSERT INTO answers (question_id, answer, is_correct) VALUES (1, 'Test', false);
--- ERROR: permission denied for table answers
+-- Should fail (we revoked INSERT on orders from app_team in Step 5)
+INSERT INTO orders (customer_id, order_date, total_amount, status)
+VALUES (1, now(), 49.99, 'pending');
+-- ERROR: permission denied for table orders
+```
 
--- Disconnect
+```psql
 \q
 ```
 
@@ -449,9 +418,11 @@ INSERT INTO answers (question_id, answer, is_correct) VALUES (1, 'Test', false);
 
 Switch back to your admin user and clean up:
 
-```sql
-psql -h <postgresql-fqdn> -U <pgadmin> -d quiz
+```sh
+psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
+```
 
+```sql
 -- Revoke privileges first (required before dropping roles)
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM app_team;
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM readonly;
@@ -461,6 +432,16 @@ REVOKE USAGE ON SCHEMA public FROM readonly;
 
 -- Re-grant CREATE on public schema (we revoked it in Step 7)
 GRANT CREATE ON SCHEMA public TO PUBLIC;
+
+-- Remove default privilege changes from Step 6
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  REVOKE SELECT ON TABLES FROM readonly;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  REVOKE ALL ON TABLES FROM app_team;
+
+-- Re-grant INSERT/UPDATE/DELETE on orders (we revoked in Step 5)
+-- Not strictly needed since we're dropping the roles, but good practice
+GRANT ALL ON ALL TABLES IN SCHEMA public TO <your-admin>;
 
 -- Drop the schema we created
 DROP SCHEMA IF EXISTS app;
@@ -472,8 +453,8 @@ DROP ROLE IF EXISTS contractor_user;
 DROP ROLE IF EXISTS app_team;
 DROP ROLE IF EXISTS readonly;
 
--- Remove the test data from Step 3
-DELETE FROM questions WHERE question_id = 2;
+-- Remove the test rows we inserted during the lab
+DELETE FROM customers WHERE email IN ('test@workshop.dev', 'another@workshop.dev');
 ```
 
 ---
@@ -489,46 +470,3 @@ DELETE FROM questions WHERE question_id = 2;
 | **Default privileges** | `ALTER DEFAULT PRIVILEGES` ensures future tables get the right grants automatically. |
 | **Schema isolation** | Revoke `CREATE` on `public` from `PUBLIC`. Use dedicated schemas per application. |
 | **Azure specifics** | Your admin is not a superuser — it's a member of `azure_pg_admin`. `azuresu` is Azure-managed. |
-
-Try again as `Graham`:
-
-```sh
-SET ROLE TO graham;
-DELETE FROM answers;
--- ERROR: permission denied for table answers
-```
-
-Grant `DELETE` privilege to `Graham`:
-
-```sh
-SET ROLE TO adminuser;
-GRANT DELETE ON TABLE answers TO graham;
-SET ROLE TO Graham;
-DELETE FROM answers;
-```
-
-## Displaying Permissions and Roles
-
-Show object permissions and role information:
-
-```sh
-\dp
-\dg
-```
-
-## Role Inheritance
-
-Without `INHERIT`, membership in another role only allows you to `SET ROLE` to that role; privileges are available only after switching.
-
-## Revoking Privileges
-
-Revoke `DELETE` privilege from `Eric`:
-
-```sh
-REVOKE DELETE ON TABLE answers FROM eric;
-SET ROLE TO eric;
-DELETE FROM answers;
-```
-
-**Note:**  
-Eric can still delete records because of his membership in the `monty_python` role.

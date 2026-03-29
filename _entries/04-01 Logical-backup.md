@@ -2,196 +2,173 @@
 sectionid: logicalbackup
 sectionclass: h2
 parent-id: businesscont-sec
-title: Logical Backup
+title: Logical Backup and Restore
 ---
 
-### Plain pg_dump
+PostgreSQL ships three logical backup utilities: `pg_dump` (single database), `pg_dumpall` (entire cluster), and `pg_restore` (restore non-plain formats). In this section you will practice all the common dump and restore patterns using the `orders_demo` database.
 
-First, source the file with libpq variables in your current session:
+> **Note:** If you have already completed the **Index Tuning Lab**, your dump will include the indexes you added. If not, only primary-key indexes will appear — that is expected.
+
+> **Reminder:** If your libpq environment variables are not set, run `source ~/.pg_azure` on the jumpbox first. All commands below run on the **jumpbox Linux shell**, not inside psql.
+
+![Backup and Restore Flow](media/diagram-backup-restore.svg)
+
+---
+
+### Step 1 — Plain-Text Dump
+
+The simplest format. Output is a SQL script you can replay with `psql`.
 
 ```sh
-source .pg_azure
+pg_dump orders_demo > /tmp/orders_demo.plain.sql
 ```
 
-Native PostgreSQL utilities like `pg_dump` use these variables to connect to your database instance.
-
-To dump the `quiz` database:
+Inspect the output:
 
 ```sh
-pg_dump quiz
+less /tmp/orders_demo.plain.sql
 ```
 
-You can redirect the output to another program:
+You will see `CREATE TABLE`, `COPY` data blocks, and `CREATE INDEX` statements.
+
+#### Schema only (no data):
 
 ```sh
-pg_dump quiz | less
+pg_dump --schema-only orders_demo > /tmp/orders_demo_ddl.sql
+less /tmp/orders_demo_ddl.sql
 ```
 
-Or save the output to a file:
+#### Data only:
 
 ```sh
-pg_dump quiz > /tmp/quiz.plain.dump
+pg_dump --data-only orders_demo > /tmp/orders_demo_data.sql
+less /tmp/orders_demo_data.sql
 ```
 
-Check the contents of the file:
+#### INSERT statements instead of COPY:
 
 ```sh
-less /tmp/quiz.plain.dump
+pg_dump --data-only --inserts orders_demo > /tmp/orders_demo_inserts.sql
+less /tmp/orders_demo_inserts.sql
 ```
 
-To dump only the schema (no data):
+> **When to use `--inserts`:** COPY is much faster, but INSERT-based dumps are more portable (e.g., loading into a different RDBMS). Use COPY for PostgreSQL-to-PostgreSQL restores.
+
+#### Single table:
 
 ```sh
-pg_dump --schema-only quiz > /tmp/quiz_ddl.plain.dump
-```
-
-Check the contents:
-
-```sh
-less /tmp/quiz_ddl.plain.dump
-```
-
-You don't need to specify the database name every time. You can overwrite the `PGDATABASE` variable for the session:
-
-```sh
-export PGDATABASE=quiz
-```
-
-To dump only the data:
-
-```sh
-pg_dump --data-only > /tmp/quiz_data.plain.dump
-```
-
-Check the contents:
-
-```sh
-less /tmp/quiz_data.plain.dump
-```
-
-To use `INSERT` statements instead of `COPY`:
-
-```sh
-pg_dump --data-only --inserts > /tmp/quiz_data_insert.plain.dump
-```
-
-Check the contents:
-
-```sh
-less /tmp/quiz_data_insert.plain.dump
-```
-
-To dump a single table:
-
-```sh
-pg_dump --table=answers > /tmp/answers.plain.dump
-```
-
-Check the contents:
-
-```sh
-less /tmp/answers.plain.dump
-```
-
-To see all options for `pg_dump`:
-
-```sh
-pg_dump --help
+pg_dump --table=customers orders_demo > /tmp/customers.sql
+less /tmp/customers.sql
 ```
 
 ---
 
-### Restore from Plain Dump
+### Step 2 — Custom Format Dump
 
-Drop the `quiz` database:
-
-```sh
-dropdb quiz
-```
-
-Recreate it:
+Custom format (`-Fc`) compresses the data and allows selective restore with `pg_restore`:
 
 ```sh
-createdb quiz
+pg_dump -Fc orders_demo -f /tmp/orders_demo.custom.dump
+ls -lh /tmp/orders_demo.custom.dump
 ```
 
-Restore from your dump file:
-
-```sh
-psql -f /tmp/quiz.plain.dump
-```
-
-Watch out for errors!  
-You may want to redirect errors to a separate file:
-
-```sh
-psql -f /tmp/quiz.plain.dump 2> errors.txt
-less errors.txt
-```
-
-Log in to `psql` and check if everything was restored properly.
+Compare the file size to the plain-text dump — custom format is significantly smaller.
 
 ---
 
-### Directory Format
+### Step 3 — Directory Format Dump
 
-Create a dump using the directory format. This is the only format that allows multiple parallel jobs:
+Directory format (`-Fd`) is the only format that supports parallel jobs:
 
 ```sh
-pg_dump quiz -Fd -f /tmp/directorydump
+pg_dump -Fd -j 4 orders_demo -f /tmp/orders_demo_dir
+ls -la /tmp/orders_demo_dir/
 ```
 
-Check the contents of the directory files:
+The `-j 4` flag uses 4 parallel workers. You will see one compressed file per table plus a `toc.dat` table of contents.
+
+---
+
+### Step 4 — Restore to a Separate Test Database
+
+Instead of dropping `orders_demo`, create a **new** database to practice the restore:
 
 ```sh
-zless /tmp/directorydump/*dat.gz
+psql -d postgres -c "CREATE DATABASE orders_demo_restored;"
+```
+
+#### Restore from custom format:
+
+```sh
+pg_restore -d orders_demo_restored --no-owner --verbose /tmp/orders_demo.custom.dump
+```
+
+#### Verify:
+
+```sh
+psql -d orders_demo_restored -c "
+SELECT 'customers' AS tbl, COUNT(*) FROM customers
+UNION ALL SELECT 'products', COUNT(*) FROM products
+UNION ALL SELECT 'orders', COUNT(*) FROM orders
+UNION ALL SELECT 'order_items', COUNT(*) FROM order_items;"
+```
+
+Check the indexes that are present:
+
+```sh
+psql -d orders_demo_restored -c "\di"
+```
+
+#### Restore from directory format (parallel):
+
+```sh
+psql -d postgres -c "DROP DATABASE IF EXISTS orders_demo_restored;"
+psql -d postgres -c "CREATE DATABASE orders_demo_restored;"
+pg_restore -d orders_demo_restored -j 4 --no-owner --verbose /tmp/orders_demo_dir
 ```
 
 ---
 
-### Restore from Directory Format Dump
+### Step 5 — Global Objects Dump
 
-Drop the `quiz` database:
-
-```sh
-dropdb quiz
-```
-
-Recreate it:
+`pg_dumpall` is the only tool that can dump **roles, tablespaces, and other cluster-wide objects** that `pg_dump` cannot:
 
 ```sh
-createdb quiz
+pg_dumpall > /tmp/whole_cluster.sql
+less /tmp/whole_cluster.sql
 ```
 
-Restore from your directory dump:
+For just the global objects (roles + tablespaces):
 
 ```sh
-pg_restore -d quiz /tmp/directorydump
+pg_dumpall -g --no-role-passwords > /tmp/globals.sql
+less /tmp/globals.sql
 ```
 
-Log in to `psql` and verify the restoration.
+> The `--no-role-passwords` flag avoids errors on Azure Flexible Server where you cannot export passwords from managed roles.
 
 ---
 
-### Global Objects Dump
+### Step 6 — Clean Up
 
-To logically dump the whole instance:
-
-```sh
-pg_dumpall > /tmp/whole_cluster.plain.dump
-less /tmp/whole_cluster.plain.dump
-```
-
-To dump only global objects:
+Drop the test database:
 
 ```sh
-pg_dumpall -g > /tmp/globals.plain.dump
-less /tmp/globals.plain.dump
+psql -d postgres -c "DROP DATABASE IF EXISTS orders_demo_restored;"
 ```
 
-You may encounter errors because you cannot export passwords.  
-To avoid these errors, use:
+The original `orders_demo` database is untouched and ready for subsequent sections.
 
-```sh
-pg_dumpall -g --no-role-passwords > /tmp/globals.plain.dump
-```
+---
+
+### Summary
+
+| Tool | Output format | Parallel | Selective restore | Use case |
+|---|---|---|---|---|
+| `pg_dump` (plain) | SQL text | No | No (full replay) | Simple, human-readable, cross-database |
+| `pg_dump -Fc` | Custom binary | No | Yes (`pg_restore -t`) | Standard single-DB backup |
+| `pg_dump -Fd` | Directory | Yes (`-j N`) | Yes | Large databases, fastest backup |
+| `pg_dumpall` | SQL text | No | No | Global objects + all databases |
+| `pg_restore` | *(reads Fc/Fd)* | Yes (`-j N`) | Yes | Restore from custom/directory format |
+
+> **Tip:** For optimizing large migrations using dump and restore, see the [Azure migration optimization guide](https://docs.microsoft.com/en-us/azure/postgresql/howto-migrate-using-dump-and-restore#for-the-restore).

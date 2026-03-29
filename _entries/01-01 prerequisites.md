@@ -9,8 +9,6 @@ parent-id: intro
 
 You can use the Azure Cloud Shell accessible at <https://shell.azure.com> once you login with an Azure subscription. The Azure Cloud Shell has the Azure CLI pre-installed and configured to connect to your Azure subscription as well as `psql` and other Postgres utilities like `pg_dump`, `createdb` or `createuser` that will be used throughout the training, your access to the database might be through a jump-box in between cloudshell and PostgreSQL environment.
 
-
-
 ### Azure subscription
 
 #### If the workshop will run on your Azure subscription
@@ -42,10 +40,10 @@ az login
 For more information follow : <https://www.microsoftazurepass.com/Home/HowTo?Length=5>
 
 {% endcollapsible %}
-#### Azure Cloud Shell
+
+### Azure Cloud Shell
 
 You can use the Azure Cloud Shell accessible at <https://shell.azure.com> once you login with an Azure subscription.
-
 
 Head over to <https://shell.azure.com> and sign in with your Azure Subscription details.
 
@@ -65,9 +63,76 @@ You should now have access to the Azure Cloud Shell
 
 ![Set the storage account and fileshare names](media/cloudshell/3-cloudshell.png)
 
+### Deployment Options
+
+The workshop provides **three** deployment options. Choose the one that best fits your scenario:
+
+---
+
+#### Option 1 — Full Deployment (Recommended for the workshop)
+
+Deploy the complete hub-and-spoke architecture using Bicep. This is the default path used throughout the workshop.
+
+**What gets deployed:**
+
+![Workshop Architecture — Full Deployment](media/architecture.png)
+
+- **Hub VNet** with a jumpbox Linux VM (DNS forwarder, PostgreSQL 18 client pre-installed)
+- **Spoke VNet** with Azure Database for PostgreSQL Flexible Server (private access via delegated subnet)
+- VNet peering between hub and spoke
+- Private DNS zone (`private.postgres.database.azure.com`)
+- NSG with SSH access
+- Storage account (for diagnostic logs)
+
+**How to connect:** SSH into the jumpbox VM → use `psql` to reach PostgreSQL over the private network. See the **Connecting to PostgreSQL** section for SSH tunnel and VS Code options.
+
+**Best for:** Enterprise-like scenarios with private networking, DNS resolution, and a jump-box access pattern.
+
+---
+
+#### Option 2 — Simple Deployment (Public Access)
+
+Deploy only a PostgreSQL Flexible Server with **public network access** and a firewall rule for your IP. No VNet, no jumpbox, no DNS.
+
+![Simple Deployment — Public Access](media/diagram-simple-deployment.svg)
+
+**What gets deployed:**
+- Azure Database for PostgreSQL Flexible Server (public access, firewall whitelist)
+- Optional: read replica in a secondary zone
+
+**How to connect:** Directly from your local machine using `psql`, VS Code PostgreSQL extension, or any PostgreSQL client — no SSH tunnel needed.
+
+**Best for:** Quick start, simple labs, or when you already have a local PostgreSQL client installed and want minimal setup.
+
+**Deploy with:**
+
+```sh
+az group create -l eastus -n PG-Workshop
+az deployment group create --resource-group PG-Workshop \
+  --template-file bicep/simple/main.bicep \
+  --parameters clientIPAddress=$(curl -s ifconfig.me)
+```
+
+---
+
+#### Option 3 — Bring Your Own Server
+
+If you already have an Azure Database for PostgreSQL Flexible Server (or are attending an instructor-led session where infrastructure is pre-provisioned), skip the deployment section entirely and proceed to **Connecting to PostgreSQL**.
+
+In this option your environment includes a **jumpbox VM** with the PostgreSQL 18 client (`psql`) pre-installed, and a **publicly accessible PostgreSQL Flexible Server** with your IP whitelisted in the firewall. You can connect either way — through the VM or directly from your laptop.
+
+![Bring Your Own Server — Jumpbox + Public Access](media/diagram-byos-deployment.svg)
+
+You will need:
+- PostgreSQL server FQDN
+- Admin username and password
+- Jumpbox VM IP address (if applicable) and SSH credentials
+- Network access (either public endpoint with your IP whitelisted, or SSH to the jumpbox)
+
+---
 
 #### Tips for uploading and editing files in Azure Cloud Shell
 
 - You can use `code <file you want to edit>` in Azure Cloud Shell to open the built-in text editor.
-- You can upload files to the Azure Cloud Shell by dragging and dropping them
+- You can upload files to the Azure Cloud Shell by dragging and dropping them.
 - You can also do a `curl -o filename.ext https://file-url/filename.ext` to download a file from the internet.

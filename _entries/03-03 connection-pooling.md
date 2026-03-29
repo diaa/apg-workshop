@@ -34,9 +34,11 @@ Azure Database for PostgreSQL Flexible Server includes a **built-in PgBouncer** 
 
 Connect to `orders_demo`:
 
-```sql
+```sh
 psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 ```
+
+Once connected, check the current connections:
 
 ```sql
 -- Current connections
@@ -87,7 +89,7 @@ SHOW max_connections;
 
 PgBouncer listens on port **6432** (not the default 5432):
 
-```sql
+```sh
 psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo -p 6432
 ```
 
@@ -149,7 +151,7 @@ Typical results:
 
 PgBouncer statistics are available through the `pgbouncer` virtual database:
 
-```sql
+```sh
 psql -h <postgresql-fqdn> -U <pgadmin> -d pgbouncer -p 6432
 
 SHOW POOLS;

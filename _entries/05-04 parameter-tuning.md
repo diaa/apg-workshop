@@ -102,7 +102,7 @@ Compare execution times:
 ```sql
 -- Reset to default and time it
 SET work_mem = '4MB';
-\timing
+\timing                 -- meta-command: toggles execution timing on
 SELECT DISTINCT ON (customer_id) customer_id, order_id, order_date, total_amount
 FROM orders ORDER BY customer_id, total_amount DESC, order_date DESC;
 
@@ -116,7 +116,7 @@ Also test with Query 3 (window functions):
 
 ```sql
 SET work_mem = '4MB';
-\timing
+\timing                 -- meta-command: toggles execution timing on
 SELECT order_id, customer_id, order_date, total_amount,
        SUM(total_amount) OVER (PARTITION BY customer_id ORDER BY order_date) AS running_total,
        ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY total_amount DESC) AS rank_by_amount
@@ -230,7 +230,7 @@ DROP INDEX IF EXISTS idx_orders_cust_amount_date;
 
 -- Create with default maintenance_work_mem
 SET maintenance_work_mem = '64MB';
-\timing
+\timing                 -- meta-command: toggles execution timing on
 CREATE INDEX idx_orders_cust_amount_date ON orders (customer_id, total_amount DESC, order_date DESC);
 
 -- Drop and recreate with more memory

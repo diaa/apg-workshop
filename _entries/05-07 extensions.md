@@ -15,7 +15,7 @@ Extensions are what make PostgreSQL uniquely powerful. They let you add new data
 
 From the jumpbox, connect to `orders_demo`:
 
-```sql
+```sh
 psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 ```
 

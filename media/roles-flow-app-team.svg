@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-labelledby="title desc">
+  <title id="title">App Team access flow</title>
+  <desc id="desc">Numbered access flow for app_team with INHERIT behavior for dev_user.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1e293b" />
+    </marker>
+    <style>
+      .title{font:700 26px 'Segoe UI',Arial,sans-serif; fill:#0f172a}
+      .sub{font:500 15px 'Segoe UI',Arial,sans-serif; fill:#334155}
+      .step{font:700 13px 'Segoe UI',Arial,sans-serif; fill:#fff}
+      .h{font:700 16px 'Segoe UI',Arial,sans-serif; fill:#0f172a}
+      .p{font:500 13px 'Segoe UI',Arial,sans-serif; fill:#334155}
+      .card{stroke:#cbd5e1; stroke-width:2; rx:12}
+      .line{stroke:#1e293b; stroke-width:2.6; fill:none; marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1200" height="420" fill="#f8fafc"/>
+  <text x="28" y="44" class="title">App Team Path (dev_user)</text>
+  <text x="28" y="68" class="sub">Simple flow for read/write access with INHERIT enabled.</text>
+
+  <rect x="40" y="120" width="250" height="190" class="card" fill="#dbeafe"/>
+  <circle cx="72" cy="152" r="16" fill="#2563eb"/><text x="67" y="157" class="step">1</text>
+  <text x="98" y="152" class="h">Admin creates</text>
+  <text x="98" y="174" class="p">role model</text>
+
+  <rect x="340" y="120" width="250" height="190" class="card" fill="#dcfce7"/>
+  <circle cx="372" cy="152" r="16" fill="#16a34a"/><text x="367" y="157" class="step">2</text>
+  <text x="398" y="152" class="h">app_team</text>
+  <text x="398" y="174" class="p">NOLOGIN group role</text>
+  <text x="398" y="196" class="p">holds write privileges</text>
+
+  <rect x="640" y="120" width="250" height="190" class="card" fill="#bbf7d0"/>
+  <circle cx="672" cy="152" r="16" fill="#15803d"/><text x="667" y="157" class="step">3</text>
+  <text x="698" y="152" class="h">dev_user</text>
+  <text x="698" y="174" class="p">LOGIN INHERIT</text>
+  <text x="698" y="196" class="p">member of app_team</text>
+
+  <rect x="940" y="120" width="220" height="190" class="card" fill="#cffafe"/>
+  <circle cx="972" cy="152" r="16" fill="#0891b2"/><text x="967" y="157" class="step">4</text>
+  <text x="998" y="152" class="h">Effective Access</text>
+  <text x="998" y="174" class="p">orders_demo tables</text>
+  <text x="998" y="196" class="p">SELECT/INSERT/</text>
+  <text x="998" y="216" class="p">UPDATE/DELETE</text>
+
+  <path d="M290 215 L340 215" class="line"/>
+  <path d="M590 215 L640 215" class="line"/>
+  <path d="M890 215 L940 215" class="line"/>
+</svg>

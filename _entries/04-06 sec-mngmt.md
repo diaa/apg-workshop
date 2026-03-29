@@ -1,113 +1,93 @@
 ---
 sectionid: tls
 sectionclass: h2
-title: Security Management PostgreSQL
+title: Security Management
 parent-id: businesscont-sec
 
 ---
-### Installing pgAudit extension
-Audit logging of database activities in Azure Database for PostgreSQL - Flexible server is available through the PostgreSQL Audit extension: pgAudit. pgAudit provides detailed session and/or object audit logging.
-To enable pgAudit on Azure Database for PostgreSQL - Flexible Server please follow the steps below.
 
-On the sidebar, select Server Parameters and type **extension** in the search field.
+### Installing pgAudit Extension
 
-![pgAuditWhitelistExtensions](media/pgaudit01.png)
+Audit logging of database activities in Azure Database for PostgreSQL - Flexible Server is available through the PostgreSQL Audit extension: **pgAudit**. It provides detailed session and/or object audit logging.
 
+#### Step 1 — Allow the Extension
 
-Hit **Save**
+1. In the Azure Portal, go to your PostgreSQL server → **Server parameters**
+2. Search for `azure.extensions`
+3. Enable **pgaudit**
+4. Click **Save**
 
-Once deployment is done go back to the Server Parameters and search for **shared_preload_libraries** and choose pgAudit.
+![pgAudit — Allow extension](media/pgaudit01.png)
 
-![pgAuditWhitelistExtensions](media/pgaudit02.png)
+#### Step 2 — Add pgAudit to shared_preload_libraries
 
+1. In **Server parameters**, search for `shared_preload_libraries`
+2. Check **pgaudit**
+3. Click **Save and Restart**
 
-Hit **Save** and then choose **Save and Restart**.
+![pgAudit — shared_preload_libraries](media/pgaudit02.png)
 
-At this point you have the extension installed and you can go ahead and CREATE EXTENSION is the database.
-Connect to your server using a client (like psql) and enable the pgAudit extension.
+#### Step 3 — Create the Extension
+
+Connect to your server from the jumpbox and enable the extension:
 
 ```sql
 CREATE EXTENSION pgaudit;
 ```
 
-Once you have enabled pgAudit, you can configure its parameters to start logging. To configure pgAudit you can follow below instructions. Using the Azure portal:
-On the sidebar, select Server Parameters and search for **pgaudit**. Change the **pgaudit.log** from NONE to ALL:
+#### Step 4 — Configure Audit Logging
 
-![pgAuditWhitelistExtensions](media/pgaudit03.png)
+1. In **Server parameters**, search for `pgaudit.log`
+2. Change from `NONE` to `ALL` (or select specific categories: `READ`, `WRITE`, `DDL`, etc.)
+3. Click **Save**
 
-From now on all the actions in your database will be traced.
+![pgAudit — configure logging](media/pgaudit03.png)
 
-### Viewing audit logs
-The way you access the logs depends on which endpoint you choose. We have configured storage account and mounted it into the VM.
+From this point, all database actions in your server are being audited.
 
-Open two cloud shell terminals, one will be needed to run some SQL commands (**psql**) and on the second we will observe log generation.
-From psql run some queries:
+#### Step 5 — Verify Audit Logging
+
+Open a psql session and run some test commands:
 
 ```sql
-CREATE TABLE a(id int);
-INSERT into a SELECT generate_series(1,1000);
+CREATE TABLE audit_test(id int);
+INSERT INTO audit_test SELECT generate_series(1, 100);
+DROP TABLE audit_test;
 ```
 
-From the second terminal configure a mounted container location so you can have the storage account mounted on your filesystem:
+#### Step 6 — View Audit Logs
 
-### Mounting Storage Account to VM
-In this section you will mount Storage Account to your dns VM to be able to easier manipulate on log files.
+Audit logs are sent to the **Azure diagnostic logs** pipeline. You can view them via:
 
-First let's download and install necessary packages. Feel free to simply copy and paste the following commands:
+**Option A — Log Analytics (recommended):**
 
-```sh
-sudo rpm -Uvh https://packages.microsoft.com/config/rhel/8/packages-microsoft-prod.rpm
-sudo dnf -y install blobfuse
-sudo mkdir /mnt/ramdisk
-sudo mount -t tmpfs -o size=16g tmpfs /mnt/ramdisk
-sudo mkdir /mnt/ramdisk/blobfusetmp
-sudo chown <your VM admin> /mnt/ramdisk/blobfusetmp
+1. Go to your PostgreSQL server → **Diagnostic settings**
+2. Add a diagnostic setting that sends **PostgreSQLLogs** to a **Log Analytics workspace**
+3. Click **Save**
+4. After a few minutes, go to **Logs** in the left menu and run:
+
+```kql
+AzureDiagnostics
+| where Category == "PostgreSQLLogs"
+| where Message contains "AUDIT"
+| project TimeGenerated, Message
+| order by TimeGenerated desc
+| take 50
 ```
 
-#### Authorize access to your storage account
-You can authorize access to your storage account by using the account access key, a shared access signature, a managed identity, or a service principal. Authorization information can be provided on the command line, in a config file, or in environment variables. 
+**Option B — Azure Portal Server Logs:**
 
-For this exercise we will authorize with the account access keys and storing them in a config file. The config file should have the following format:
+1. Go to your PostgreSQL server → **Logs** (under Monitoring)
+2. Browse the recent log entries for `AUDIT:` prefixed messages
 
-```shell
-accountName myaccount
-accountKey storageaccesskey
-containerName insights-logs-postgresqllogs
-```
+> **Note:** There is a 1–2 minute delay before log entries appear in Log Analytics.
 
-Please prepare the following file in editor of your choice. Values for the accountName and accountKey you will find in the Azure Portal. 
-Please navigate to your storage account in the portal and then choose Access keys page:
+### Summary
 
-![Server Parameters](media/sa-accesskeys.png)
-
-Copy accountName and accountKey and paste it to the file. Copy the content of your file and paste it to the ***fuse_connection.cfg*** file in your home directory, then mount your storage account container onto the directory in your VM: 
-
-```shell
-vi fuse_connection.cfg
-chmod 600 fuse_connection.cfg
-mkdir ~/mycontainer
-sudo blobfuse ~/mycontainer --tmp-path=/mnt/resource/blobfusetmp  --config-file=/home/<your VM admin>/fuse_connection.cfg -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120
-
-sudo -i
-cd /home/<your VM admin>/mycontainer/
-ls # check if you see mounted container
-# Please use tab key for directory autocompletion; do not copy and paste!
-cd resourceId\=/SUBSCRIPTIONS/<your subscription id>/RESOURCEGROUPS/PG-WORKSHOP/PROVIDERS/MICROSOFT.DBFORPOSTGRESQL/FLEXIBLESERVERS/PSQLFLEXIKHLYQLERJGTM/y\=2022/m\=06/d\=16/h\=09/m\=00/
-ls
-less
-```
-
-and output appended data as the log file grows with the tail command:
-
-```shell
-tail -f 
-```
-
-After a minute or two (please expect a slight delay) you will see your commands being registered by pgAudit. You should see the following lines:
-
-```shell
-{ "properties": {"timestamp": "2022-05-23 08:23:59.526 UTC","processId": 9300,"errorLevel": "LOG","sqlerrcode": "00000","message": "2022-05-23 08:23:59 UTC 9300 5-1 db-pgbench,user-pgadmin,app-psql,client-192.168.0.4 LOG:  AUDIT: SESSION,1,1,DDL,CREATE TABLE,TABLE,public.a,CREATE TABLE a(id int);,<not logged>"}, "resourceId": "/SUBSCRIPTIONS/***/RESOURCEGROUPS/PG-WORKSHOP/PROVIDERS/MICROSOFT.DBFORPOSTGRESQL/FLEXIBLESERVERS/PSQLFLEXIKHLYQLERJGTM", "category": "PostgreSQLLogs", "operationName": "LogEvent"}
-{ "properties": {"timestamp": "2022-05-23 08:24:00.511 UTC","processId": 9300,"errorLevel": "LOG","sqlerrcode": "00000","message": "2022-05-23 08:24:00 UTC 9300 9-1 db-pgbench,user-pgadmin,app-psql,client-192.168.0.4 LOG:  AUDIT: SESSION,2,1,WRITE,INSERT,,,\"INSERT into a SELECT generate_series(1,1000);\",<not logged>"}, "resourceId": "/SUBSCRIPTIONS/***/RESOURCEGROUPS/PG-WORKSHOP/PROVIDERS/MICROSOFT.DBFORPOSTGRESQL/FLEXIBLESERVERS/PSQLFLEXIKHLYQLERJGTM", "category": "PostgreSQLLogs", "operationName": "LogEvent"}
-```
+| Concept | Key takeaway |
+|---|---|
+| **pgAudit** | Extension for detailed session/object audit logging |
+| **Diagnostic settings** | Route PostgreSQL logs to Log Analytics, Storage Account, or Event Hub |
+| **Log Analytics** | Query audit logs with KQL for compliance and security analysis |
 
 
