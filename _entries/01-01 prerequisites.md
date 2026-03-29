@@ -79,7 +79,7 @@ The workshop provides **three** deployment options. Choose the one that best fit
 
 ---
 
-#### Option 1 — Enterprise Deployment (Recommended)
+#### [Option 1 — Enterprise Deployment (Recommended)](#deploy)
 
 Deploy the complete hub-and-spoke architecture using Bicep. This is the default path used throughout the workshop.
 
@@ -103,7 +103,7 @@ Deploy the complete hub-and-spoke architecture using Bicep. This is the default 
 
 ---
 
-#### Option 2 — Simple Deployment (Public Access)
+#### [Option 2 — Simple Deployment (Public Access)](#deploy)
 
 Deploy only a PostgreSQL Flexible Server with **public network access** and a firewall rule for your IP. No VNet, no jumpbox, no DNS.
 
@@ -125,7 +125,7 @@ No SSH tunnel needed.
 
 ---
 
-#### Option 3 — Bring Your Own Server
+#### [Option 3 — Bring Your Own Server](#deploy)
 
 If you already have an Azure Database for PostgreSQL Flexible Server (or are attending an instructor-led session where infrastructure is pre-provisioned), skip the deployment section entirely and proceed to **Connecting to PostgreSQL**.
 
@@ -147,4 +147,4 @@ If you already have an Azure Database for PostgreSQL Flexible Server (or are att
 
 ---
 
-> **Next:** Once your prerequisites are ready, head to **Deploy Azure Database for PostgreSQL with Bicep** to provision your environment.
+> **Next:** Once your prerequisites are ready, head to **[Deploy Azure Database for PostgreSQL with Bicep](#deploy)** to provision your environment.
