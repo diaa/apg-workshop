@@ -259,11 +259,12 @@
 <h3>Option 1 — Enterprise Deployment (Recommended)</h3>
 <p>Deploys the full hub-and-spoke architecture: jumpbox VM, private VNet, PostgreSQL Flexible Server with private access, and private DNS zone.</p>
 
-<h4>Step 1 — Download and extract the templates</h4>
-<p>Attendees download <strong>bicep.zip</strong> from the workshop page and extract it:</p>
-<pre><code># Extract the zip, then open a terminal:
-cd C:\path\to\extracted\bicep</code></pre>
-<p class="cmd-explain">Cloud Shell users: <code>curl -O https://pg.azure-workshops.cloud/scripts/bicep.zip &amp;&amp; unzip bicep.zip &amp;&amp; cd bicep</code></p>
+<h4>Step 1 — Download the Bicep templates</h4>
+<p>In Azure Cloud Shell (Bash) or a local terminal with Azure CLI:</p>
+<pre><code>curl -O https://pg.azure-workshops.cloud/scripts/bicep.zip
+unzip bicep.zip
+cd bicep</code></pre>
+<p class="cmd-explain">PowerShell alternative: <code>Invoke-WebRequest -Uri https://pg.azure-workshops.cloud/scripts/bicep.zip -OutFile bicep.zip; Expand-Archive bicep.zip -DestinationPath .; cd bicep</code></p>
 
 <h4>Step 2 — Log in to Azure</h4>
 <pre><code>az login</code></pre>
@@ -299,9 +300,9 @@ psql -h &lt;postgresql-fqdn&gt; -U &lt;pgAdminUsername&gt; -d postgres</code></p
 <h3>Option 2 — Simple Deployment (Public Network)</h3>
 <p>Deploys only a PostgreSQL Flexible Server with a public endpoint and a firewall rule. No jumpbox VM — attendees connect directly from their machine.</p>
 
-<h4>Step 1 — Navigate to the simple folder</h4>
-<pre><code># From the extracted bicep folder:
-cd C:\path\to\extracted\bicep\simple</code></pre>
+<h4>Step 1 — Download and navigate to the simple folder</h4>
+<p>If not already downloaded (see Option 1 Step 1), download first. Then:</p>
+<pre><code>cd bicep/simple</code></pre>
 
 <h4>Step 2 — Log in and create the resource group</h4>
 <pre><code>az login

@@ -19,21 +19,20 @@ In this section you will deploy the workshop environment using [Bicep](https://d
 
 Deploys the full hub-and-spoke architecture: jumpbox VM, private VNet, PostgreSQL Flexible Server with private access, and a private DNS zone.
 
-#### Step 1 — Download and extract the templates
+#### Step 1 — Download the Bicep templates
 
-Download the Bicep templates from the workshop page:
-
-📦 [**bicep.zip**](https://pg.azure-workshops.cloud/scripts/bicep.zip)
-
-Extract the zip file and open a terminal in the extracted folder:
+Open [Azure Cloud Shell](https://shell.azure.com) (Bash), or a local terminal with Azure CLI installed, and download the templates:
 
 ```sh
-cd C:\path\to\extracted\bicep
+curl -O https://pg.azure-workshops.cloud/scripts/bicep.zip
+unzip bicep.zip
+cd bicep
 ```
 
-> **Cloud Shell?** Upload the zip or download it directly:
-> ```sh
-> curl -O https://pg.azure-workshops.cloud/scripts/bicep.zip && unzip bicep.zip
+> **PowerShell?** Use `Invoke-WebRequest` instead:
+> ```powershell
+> Invoke-WebRequest -Uri https://pg.azure-workshops.cloud/scripts/bicep.zip -OutFile bicep.zip
+> Expand-Archive bicep.zip -DestinationPath .
 > cd bicep
 > ```
 
@@ -104,12 +103,12 @@ Enter the PostgreSQL password when prompted. If you see the `postgres=>` prompt,
 
 Deploys only a PostgreSQL Flexible Server with a **public endpoint** and a firewall rule for your IP. No jumpbox VM is created — you connect directly from your machine.
 
-#### Step 1 — Navigate to the simple folder
+#### Step 1 — Download templates and navigate to the simple folder
 
-From the extracted `bicep` folder:
+If you haven't already downloaded the templates, do so now (see Option 1 — Step 1). Then navigate to the simple folder:
 
 ```sh
-cd C:\path\to\extracted\bicep\simple
+cd bicep/simple
 ```
 
 #### Step 2 — Log in and create the resource group
