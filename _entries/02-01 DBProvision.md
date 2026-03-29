@@ -5,79 +5,179 @@ title: Deploy Azure Database for PostgreSQL with Bicep
 parent-id: upandrunning
 ---
 
-Azure Database for PostgreSQL Flexible Server is a fully-managed database as a service with built-in capabilities such as high availability, intelligent performance, and enterprise security.
+In this section you will deploy the workshop environment using [Bicep](https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview?tabs=bicep). Choose the option that matches your scenario.
 
-In this section you will use [Bicep](https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview?tabs=bicep) and Azure Cloud Shell to deploy the workshop environment.
+### Prerequisites
 
-### Step 1 — Install Bicep and Create a Resource Group
+- **Windows 10/11** with PowerShell, **macOS**, or **Linux** (or use [Azure Cloud Shell](https://shell.azure.com))
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) installed
+- An Azure subscription with **Contributor** access
 
-Log in to your Azure Cloud Shell (Bash). Install the Bicep CLI:
+---
+
+## Option 1 — Enterprise Deployment
+
+Deploys the full hub-and-spoke architecture: jumpbox VM, private VNet, PostgreSQL Flexible Server with private access, and a private DNS zone.
+
+#### Step 1 — Extract the templates
+
+If you downloaded the zip file, extract it and open a terminal:
 
 ```sh
-az bicep install
+cd C:\path\to\extracted\bicep
 ```
 
-![Install Bicep](media/bicep/1-bicep-install.png)
-
-Create a new [Azure resource group](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal). The name **PG-Workshop** is used throughout the workshop — change it if needed, but be consistent.
-
-```sh
-az group create -l Eastus -n PG-Workshop
-```
-![Create PG workshop resource group](media/bicep/4-create-resource-group.png)
-
-### Step 2 — Download the Bicep Templates
-
-Clone the workshop repository to get the Bicep templates:
+Or clone the repository:
 
 ```sh
 git clone https://github.com/Azure/apg-workshop.git
-cd apg-workshop
+cd apg-workshop/bicep
 ```
 
-> If `git` is not available in your environment, download the templates directly:
+> If `git` is not available, download the templates directly:
 > ```sh
 > wget https://pg.azure-workshops.cloud/scripts/bicep.zip && unzip bicep.zip
+> cd bicep
 > ```
 
-### Step 3 — Deploy the Environment
+#### Step 2 — Log in to Azure
 
-Deploy the Bicep template to the resource group. You will be prompted for four values:
-
-- Admin username for the jumpbox VM
-- Admin password for the jumpbox VM
-- Admin username for the PostgreSQL database (use your name rather than admin/root)
-- Admin password for the PostgreSQL database (use a strong password)
-
-```sh 
-az deployment group create --resource-group PG-Workshop --template-file bicep/main.bicep
+```sh
+az login
 ```
+
+This opens a browser window. Sign in with your Azure account. If you have multiple subscriptions, set the correct one:
+
+```sh
+az account set --subscription "<subscription-name-or-id>"
+```
+
+#### Step 3 — Create the resource group
+
+```sh
+az group create --name PG-Workshop --location uksouth
+```
+
+![Create PG workshop resource group](media/bicep/4-create-resource-group.png)
+
+#### Step 4 — Deploy the Bicep template
+
+```sh
+az deployment group create --resource-group PG-Workshop --template-file main.bicep
+```
+
+You will be prompted for four values:
+
+| Parameter | Description |
+|---|---|
+| `vmAdminUsername` | Username for the jumpbox VM (e.g. `workshopuser`) |
+| `vmAdminPassword` | A strong password for the jumpbox VM |
+| `postgreSqlAdministratorLogin` | Username for PostgreSQL — use your name, avoid `admin` or `root` |
+| `postgreSqlAdministratorLoginPassword` | A strong password (min 8 chars, mix of upper/lower/number/special) |
 
 ![Bicep deployment](media/bicep/5-bicep-deploy.png)
 
-The deployment takes several minutes. When it finishes, the output will show **succeeded** in the last few lines.
+The deployment takes approximately **10–15 minutes**. When it finishes, note the **outputs** — they contain the jumpbox public IP and the PostgreSQL FQDN.
 
 ![Deployment succeeded](media/resource-groups-sucess.png)
 
-### Step 4 — Verify the Deployed Resources
+#### Step 5 — SSH into the jumpbox and verify connectivity
+
+```sh
+ssh <vmAdminUsername>@<jumpbox-public-ip>
+```
+
+Use the password you provided in Step 4. Once connected, verify the PostgreSQL client is installed:
+
+```sh
+psql --version
+```
+
+You should see `psql (PostgreSQL) 18.x`. Then test connectivity to the database:
+
+```sh
+psql -h <postgresql-fqdn> -U <pgAdminUsername> -d postgres
+```
+
+Enter the PostgreSQL password when prompted. If you see the `postgres=>` prompt, the deployment is working correctly.
+
+---
+
+## Option 2 — Simple Deployment (Public Network)
+
+Deploys only a PostgreSQL Flexible Server with a **public endpoint** and a firewall rule for your IP. No jumpbox VM is created — you connect directly from your machine.
+
+#### Step 1 — Navigate to the simple folder
+
+```sh
+cd C:\path\to\extracted\bicep\simple
+```
+
+Or if you cloned the repo:
+
+```sh
+cd apg-workshop/bicep/simple
+```
+
+#### Step 2 — Log in and create the resource group
+
+Skip this step if you already logged in and created the resource group above.
+
+```sh
+az login
+az group create --name PG-Workshop --location uksouth
+```
+
+#### Step 3 — Get your public IP
+
+On **PowerShell** (Windows):
+```powershell
+(Invoke-WebRequest -Uri "https://ifconfig.me/ip").Content
+```
+
+On **Bash** (Linux/macOS/Cloud Shell):
+```sh
+curl -s ifconfig.me
+```
+
+Note the IP address returned.
+
+#### Step 4 — Deploy
+
+```sh
+az deployment group create --resource-group PG-Workshop \
+  --template-file main.bicep \
+  --parameters clientIPAddress="<your-public-ip>"
+```
+
+You will be prompted for:
+
+| Parameter | Description |
+|---|---|
+| `administratorLogin` | Username for PostgreSQL (e.g. `pgadmin`) |
+| `administratorPassword` | A strong password (min 12 chars, mix of upper/lower/number/special) |
+
+#### Step 5 — Connect from your local machine
+
+The deployment output includes a ready-to-use `psqlCommand`. If you have `psql` installed locally:
+
+```sh
+psql "host=<server-fqdn> user=<administratorLogin> dbname=postgres sslmode=require"
+```
+
+If you do not have `psql` installed, you can connect from the Azure Portal: go to your PostgreSQL server → **Connect** blade.
+
+---
+
+### Verify the Deployed Resources
 
 Go to **Resource Groups** in the Azure Portal and click on **PG-Workshop**.
 
-![Resource Groups](media/bicep/6-resource-groups.png)
+You should see the deployed resources (jumpbox VM, PostgreSQL Flexible Server, virtual networks, DNS zone for Option 1 — or just the PostgreSQL server for Option 2).
 
-You should see the jumpbox VM, PostgreSQL Flexible Server, virtual networks, DNS zone, and storage account.
+### Collect Connection Details
 
-![Resource Groups](media/bicep/7-resources-dns-pg.png)
+Keep these values accessible — you will use them in every subsequent section:
 
-### Step 5 — Collect Connection Details
-
-You need two values for the rest of the workshop:
-
-1. **Jumpbox VM public IP** — found on the jumpbox VM overview page
+1. **Jumpbox VM public IP** *(Option 1 only)* — found on the jumpbox VM overview page
 2. **PostgreSQL Flexible Server endpoint** (FQDN) — found on the PostgreSQL server overview page
-
-![Jumpbox public IP](media/bicep/8-dns-publicip.png)
-
-![PostgreSQL endpoint](media/bicep/9-pg-endpoint.png)
-
-Keep both values accessible — you will use them in every subsequent section.

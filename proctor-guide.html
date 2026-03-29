@@ -239,47 +239,117 @@
 <div class="box box-learning">
   <strong>Learning Objectives</strong>
   <ul>
-    <li>Clone the workshop repo</li>
-    <li>Deploy Azure PostgreSQL Flexible Server via Bicep</li>
+    <li>Log in to Azure and set the correct subscription</li>
+    <li>Deploy Azure PostgreSQL Flexible Server via Bicep (Enterprise or Simple path)</li>
     <li>Understand the deployed architecture (VNet, subnets, jumpbox, DNS)</li>
+    <li>Verify connectivity by SSH-ing to the jumpbox and running <code>psql</code></li>
   </ul>
 </div>
 
-<div class="box box-timing"><strong>⏱ Timing: 15–20 minutes</strong> (mostly waiting for deployment)</div>
+<div class="box box-timing"><strong>⏱ Timing: 20–30 minutes</strong> (login + deploy ~15 min + SSH verification)</div>
 
-<h3>Key Commands</h3>
+<h3>Prerequisites Check</h3>
+<p>Before starting, verify each attendee has:</p>
+<ul>
+  <li>Azure CLI installed (<code>az --version</code>)</li>
+  <li>An Azure subscription with Contributor access (<code>az account show</code>)</li>
+  <li>The workshop templates (zip extraction or git clone)</li>
+</ul>
 
-<h4>Step 1 — Install Bicep and create a resource group</h4>
-<pre><code>az bicep install
-az group create -l Eastus -n PG-Workshop</code></pre>
-<p class="cmd-explain">Installs the Bicep CLI and creates the <code>PG-Workshop</code> resource group. The resource group <strong>must exist before deployment</strong>.</p>
+<h3>Option 1 — Enterprise Deployment (Recommended)</h3>
+<p>Deploys the full hub-and-spoke architecture: jumpbox VM, private VNet, PostgreSQL Flexible Server with private access, and private DNS zone.</p>
 
-<h4>Step 2 — Clone the repo</h4>
-<pre><code>git clone https://github.com/Azure/apg-workshop.git
-cd apg-workshop</code></pre>
-<p class="cmd-explain">Downloads the workshop repo which contains Bicep templates and scripts.</p>
+<h4>Step 1 — Extract templates and navigate</h4>
+<pre><code># If using the zip file:
+cd C:\path\to\extracted\bicep
 
-<h4>Step 3 — Deploy the Bicep template</h4>
-<pre><code>az deployment group create --resource-group PG-Workshop --template-file bicep/main.bicep</code></pre>
-<p class="cmd-explain">Deploys the hub-spoke VNet architecture with PostgreSQL Flexible Server, jumpbox VM, and private DNS zone. Attendees will be prompted for VM and PG admin username/password.</p>
+# Or clone the repo:
+git clone https://github.com/Azure/apg-workshop.git
+cd apg-workshop/bicep</code></pre>
+
+<h4>Step 2 — Log in to Azure</h4>
+<pre><code>az login</code></pre>
+<p class="cmd-explain">Opens a browser window for authentication. If multiple subscriptions, set the correct one:</p>
+<pre><code>az account set --subscription "&lt;subscription-name-or-id&gt;"</code></pre>
+
+<h4>Step 3 — Create the resource group</h4>
+<pre><code>az group create --name PG-Workshop --location uksouth</code></pre>
+<p class="cmd-explain">The resource group <strong>must exist before deployment</strong>. If attendees skip this, deployment fails with "ResourceGroupNotFound".</p>
+
+<h4>Step 4 — Deploy the Bicep template</h4>
+<pre><code>az deployment group create --resource-group PG-Workshop --template-file main.bicep</code></pre>
+<p class="cmd-explain">Attendees will be prompted for four values:</p>
+<table>
+  <tr><th>Parameter</th><th>Description</th></tr>
+  <tr><td><code>vmAdminUsername</code></td><td>Username for the jumpbox VM (e.g. <code>workshopuser</code>)</td></tr>
+  <tr><td><code>vmAdminPassword</code></td><td>Strong password for the jumpbox VM</td></tr>
+  <tr><td><code>postgreSqlAdministratorLogin</code></td><td>Username for PostgreSQL — use your name, avoid <code>admin</code> or <code>root</code></td></tr>
+  <tr><td><code>postgreSqlAdministratorLoginPassword</code></td><td>Strong password (min 8 chars, mix of upper/lower/number/special)</td></tr>
+</table>
+<p class="cmd-explain">Deployment takes <strong>10–15 minutes</strong>. The outputs contain the jumpbox public IP and PostgreSQL FQDN.</p>
+
+<h4>Step 5 — SSH into the jumpbox and verify</h4>
+<pre><code>ssh &lt;vmAdminUsername&gt;@&lt;jumpbox-public-ip&gt;</code></pre>
+<p class="cmd-explain">Use the VM password from Step 4. Once connected:</p>
+<pre><code># Verify psql is installed
+psql --version
+
+# Test database connectivity
+psql -h &lt;postgresql-fqdn&gt; -U &lt;pgAdminUsername&gt; -d postgres</code></pre>
+<p class="cmd-explain">If you see <code>postgres=&gt;</code>, the deployment is working. <code>psql</code> should report version 18.x.</p>
+
+<h3>Option 2 — Simple Deployment (Public Network)</h3>
+<p>Deploys only a PostgreSQL Flexible Server with a public endpoint and a firewall rule. No jumpbox VM — attendees connect directly from their machine.</p>
+
+<h4>Step 1 — Navigate to the simple folder</h4>
+<pre><code># From extracted zip:
+cd C:\path\to\extracted\bicep\simple
+
+# Or from cloned repo:
+cd apg-workshop/bicep/simple</code></pre>
+
+<h4>Step 2 — Log in and create the resource group</h4>
+<pre><code>az login
+az group create --name PG-Workshop --location uksouth</code></pre>
+
+<h4>Step 3 — Get your public IP</h4>
+<pre><code># PowerShell (Windows):
+(Invoke-WebRequest -Uri "https://ifconfig.me/ip").Content
+
+# Bash (Linux/macOS/Cloud Shell):
+curl -s ifconfig.me</code></pre>
+
+<h4>Step 4 — Deploy</h4>
+<pre><code>az deployment group create --resource-group PG-Workshop \
+  --template-file main.bicep \
+  --parameters clientIPAddress="&lt;your-public-ip&gt;"</code></pre>
+<p class="cmd-explain">Prompted for <code>administratorLogin</code> and <code>administratorPassword</code> (min 12 chars).</p>
+
+<h4>Step 5 — Connect from local machine</h4>
+<pre><code>psql "host=&lt;server-fqdn&gt; user=&lt;administratorLogin&gt; dbname=postgres sslmode=require"</code></pre>
+<p class="cmd-explain">If <code>psql</code> is not installed locally, use the Azure Portal → PostgreSQL server → <strong>Connect</strong> blade.</p>
 
 <div class="box box-proctor">
   <strong>Proctor Notes</strong>
   <ul>
-    <li>Resource group creation is Step 1 — if attendees skip it, the deployment will fail with "ResourceGroupNotFound".</li>
-    <li>The deployment prompts interactively for VM admin user/password and PG admin user/password.</li>
-    <li>Deployment takes 10–15 minutes. Use this time to walk through the architecture diagram or answer conceptual questions.</li>
-    <li>For the <strong>Simple</strong> path: <code>cd bicep/simple</code> and use those files instead. Public access is enabled by default.</li>
-    <li>If <code>git</code> isn't available, attendees can download templates directly: <code>wget https://pg.azure-workshops.cloud/scripts/bicep.zip &amp;&amp; unzip bicep.zip</code></li>
+    <li><strong>Recommend Option 1</strong> for most workshops — it teaches real-world private networking and gives hands-on SSH experience.</li>
+    <li>Fall back to <strong>Option 2</strong> if time is short, attendees have restricted subscriptions, or the audience is developer-focused.</li>
+    <li><code>az login</code> and subscription selection is the first thing to verify — don't let attendees skip it.</li>
+    <li>If <code>git</code> isn't available: <code>wget https://pg.azure-workshops.cloud/scripts/bicep.zip &amp;&amp; unzip bicep.zip</code></li>
+    <li>During the 10–15 min deployment wait, walk through the architecture diagram or answer conceptual questions about Azure PostgreSQL.</li>
+    <li>For Option 1 Step 5, attendees must use the <strong>jumpbox-public-ip</strong> from deployment outputs, not the PG server IP.</li>
   </ul>
 </div>
 
 <div class="box box-pitfall">
   <strong>Common Pitfalls</strong>
   <ul>
-    <li><strong>Deployment fails with "InternalServerError":</strong> PG v18 may not be available in the selected region yet. Try <code>uksouth</code> or <code>eastus</code>.</li>
-    <li><strong>Password rejected:</strong> Azure requires 8+ chars with uppercase, lowercase, number, and special char.</li>
-    <li><strong>"SubscriptionNotFound":</strong> Attendee isn't logged into the right subscription. Run <code>az account set --subscription &lt;id&gt;</code>.</li>
+    <li><strong>"ResourceGroupNotFound":</strong> Attendee skipped <code>az group create</code>. Must create the resource group before deploying.</li>
+    <li><strong>"SubscriptionNotFound" / wrong subscription:</strong> Run <code>az account set --subscription &lt;id&gt;</code>.</li>
+    <li><strong>Deployment fails with "InternalServerError":</strong> PG v18 may not be available in the selected region. Use <code>uksouth</code>.</li>
+    <li><strong>Password rejected:</strong> Enterprise: min 8 chars. Simple: min 12 chars. Both need upper/lower/number/special.</li>
+    <li><strong>SSH "Connection refused":</strong> Check the jumpbox NSG allows port 22 from the attendee's IP.</li>
+    <li><strong>Option 2 "connection timed out":</strong> The firewall IP doesn't match the attendee's actual public IP (VPN/proxy). Re-run the IP check and update the firewall in the Portal.</li>
   </ul>
 </div>
 

@@ -104,14 +104,7 @@ Deploy only a PostgreSQL Flexible Server with **public network access** and a fi
 
 **Best for:** Quick start, simple labs, or when you already have a local PostgreSQL client installed and want minimal setup.
 
-**Deploy with:**
-
-```sh
-az group create -l eastus -n PG-Workshop
-az deployment group create --resource-group PG-Workshop \
-  --template-file bicep/simple/main.bicep \
-  --parameters clientIPAddress=$(curl -s ifconfig.me)
-```
+> See the **Deploy with Bicep** section for step-by-step instructions.
 
 ---
 
