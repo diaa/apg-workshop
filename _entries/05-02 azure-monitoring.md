@@ -339,7 +339,7 @@ Within a few minutes, you should receive an email alert that CPU exceeded 80%.
 
 This is the key skill — when you see a metric spike in the portal, how do you trace it back to a specific query?
 
-![Correlating Metrics to Queries — 8-step workflow](../media/monitoring-workflow.svg)
+![Correlating Metrics to Queries — 8-step workflow](media/monitoring-workflow.svg)
 
 Here is how each demo query maps to the metrics you observed:
 

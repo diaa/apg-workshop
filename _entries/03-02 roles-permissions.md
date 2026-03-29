@@ -17,7 +17,7 @@ To make this easier to digest, the access model is split into three short diagra
 
 #### 1) app_team path (dev_user)
 
-![App team path](../media/roles-flow-app-team.svg)
+![App team path](media/roles-flow-app-team.svg)
 
 *Footnote - value by step:*
 1. Establishes a controlled admin starting point for governance.
@@ -27,7 +27,7 @@ To make this easier to digest, the access model is split into three short diagra
 
 #### 2) analyst_user path (readonly)
 
-![Analyst path](../media/roles-flow-analyst.svg)
+![Analyst path](media/roles-flow-analyst.svg)
 
 *Footnote - value by step:*
 1. Keeps role creation in a single trusted admin workflow.
@@ -37,7 +37,7 @@ To make this easier to digest, the access model is split into three short diagra
 
 #### 3) contractor_user path (NOINHERIT)
 
-![Contractor path](../media/roles-flow-contractor.svg)
+![Contractor path](media/roles-flow-contractor.svg)
 
 *Footnote - value by step:*
 1. Defines a privileged role, but does not expose it by default.
@@ -60,7 +60,7 @@ PostgreSQL has a single concept for managing access: the **role**. There are no 
 
 This is fundamentally different from Oracle (where users and roles are distinct objects) and SQL Server (where logins, users, and roles are separate layers).
 
-![PostgreSQL vs Oracle vs SQL Server access model](../media/roles-engine-comparison.svg)
+![PostgreSQL vs Oracle vs SQL Server access model](media/roles-engine-comparison.svg)
 
 Quick comparison for customers:
 - PostgreSQL: one role object type; `LOGIN` and `NOLOGIN` define behavior; membership + INHERIT control access.
@@ -240,7 +240,7 @@ RESET ROLE;
 
 **When to use NOINHERIT:** For users who should have access but must consciously "elevate" to use it — similar to `sudo` on Linux or `runas` on Windows. Useful for contractors, automated accounts, or break-glass scenarios.
 
-![INHERIT vs NOINHERIT](../media/roles-inherit-vs-noinherit.svg)
+![INHERIT vs NOINHERIT](media/roles-inherit-vs-noinherit.svg)
 
 ---
 
