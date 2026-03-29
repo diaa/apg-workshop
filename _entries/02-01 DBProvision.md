@@ -42,9 +42,18 @@ cd bicep
 az login
 ```
 
-This opens a browser window. Sign in with your Azure account. If you have multiple subscriptions, set the correct one:
+This opens a browser window. Sign in with your Azure account.
+
+Verify you are on the correct subscription:
 
 ```sh
+az account show --query "{name:name, id:id, state:state}" -o table
+```
+
+If the subscription shown is not the one you intend to use, list all available subscriptions and set the correct one:
+
+```sh
+az account list --query "[].{Name:name, ID:id, Default:isDefault}" -o table
 az account set --subscription "<subscription-name-or-id>"
 ```
 
