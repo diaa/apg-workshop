@@ -14,6 +14,7 @@ You need an Azure subscription with **Contributor** access.
 - Sign in at <https://portal.azure.com>
 - Authenticate the Azure CLI: `az login`
 
+{% comment %}
 {% collapsible If the workshop uses an Azure Pass %}
 
 1. Use the provided link (e.g. `https://azcheck.in/xxxxxxx`) to sign in with a GitHub account.
@@ -22,6 +23,7 @@ You need an Azure subscription with **Contributor** access.
 For details: <https://www.microsoftazurepass.com/Home/HowTo?Length=5>
 
 {% endcollapsible %}
+{% endcomment %}
 
 ### Required Tools
 
