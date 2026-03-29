@@ -3,7 +3,7 @@ sectionid: workshop-overview
 sectionclass: h2
 title: Workshop Overview
 parent-id: intro
-hide: false
+hide: true
 ---
 
 ### Architecture — Full Deployment

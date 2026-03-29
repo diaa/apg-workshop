@@ -144,3 +144,7 @@ If you already have an Azure Database for PostgreSQL Flexible Server (or are att
 - Use `code <filename>` to open the built-in text editor
 - Drag and drop files to upload them
 - Use `curl -o filename.ext https://url/filename.ext` to download files directly
+
+---
+
+> **Next:** Once your prerequisites are ready, head to **Deploy Azure Database for PostgreSQL with Bicep** to provision your environment.
