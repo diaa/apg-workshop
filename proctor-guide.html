@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azure PostgreSQL Workshop — Proctor Guide</title>
+<style>
+  :root {
+    --pg-blue: #336791;
+    --azure-blue: #0078d4;
+    --green: #28a745;
+    --orange: #ff8c00;
+    --red: #dc3545;
+    --purple: #7b2d8e;
+    --bg: #f8f9fa;
+    --border: #dee2e6;
+    --code-bg: #1e1e2e;
+    --code-fg: #cdd6f4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.6;
+    color: #212529;
+    background: #fff;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+  h1 { color: var(--pg-blue); font-size: 2rem; border-bottom: 3px solid var(--azure-blue); padding-bottom: .5rem; margin-bottom: 1.5rem; }
+  h2 { color: var(--pg-blue); font-size: 1.5rem; margin: 2.5rem 0 1rem; border-left: 4px solid var(--azure-blue); padding-left: .75rem; }
+  h3 { color: var(--azure-blue); font-size: 1.2rem; margin: 1.5rem 0 .75rem; }
+  h4 { color: #495057; font-size: 1rem; margin: 1rem 0 .5rem; }
+  p, li { margin-bottom: .5rem; }
+  ul, ol { padding-left: 1.5rem; }
+
+  /* Table of Contents */
+  .toc { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0 2rem; }
+  .toc h2 { margin: 0 0 .75rem; border: none; padding: 0; }
+  .toc ol { counter-reset: toc; list-style: none; padding-left: 0; }
+  .toc > ol > li { margin-bottom: .4rem; }
+  .toc a { text-decoration: none; color: var(--azure-blue); }
+  .toc a:hover { text-decoration: underline; }
+  .toc .day-label { font-weight: 700; color: var(--pg-blue); margin: 1rem 0 .3rem; display: block; font-size: 1.05rem; }
+
+  /* Badges */
+  .badge { display: inline-block; font-size: .7rem; font-weight: 700; padding: .15rem .5rem; border-radius: 3px; text-transform: uppercase; vertical-align: middle; margin-left: .4rem; }
+  .badge-optional { background: #e9ecef; color: #6c757d; }
+  .badge-hands-on { background: #d4edda; color: #155724; }
+  .badge-portal { background: #cce5ff; color: #004085; }
+  .badge-demo { background: #fff3cd; color: #856404; }
+
+  /* Info boxes */
+  .box { border-radius: 6px; padding: 1rem 1.25rem; margin: 1rem 0; }
+  .box-learning { background: #e8f4fd; border-left: 4px solid var(--azure-blue); }
+  .box-proctor  { background: #fff8e1; border-left: 4px solid var(--orange); }
+  .box-pitfall  { background: #fde8e8; border-left: 4px solid var(--red); }
+  .box-timing   { background: #e8f5e9; border-left: 4px solid var(--green); }
+  .box strong { display: block; margin-bottom: .4rem; }
+
+  /* Code blocks */
+  pre { background: var(--code-bg); color: var(--code-fg); border-radius: 6px; padding: 1rem; overflow-x: auto; margin: .75rem 0; font-size: .85rem; line-height: 1.5; }
+  code { font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace; }
+  p code, li code { background: #e9ecef; padding: .1rem .35rem; border-radius: 3px; font-size: .88em; color: #c7254e; }
+  .cmd-explain { color: #6c757d; font-style: italic; font-size: .85rem; margin: .2rem 0 .5rem; }
+
+  /* Tables */
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .9rem; }
+  th, td { border: 1px solid var(--border); padding: .5rem .75rem; text-align: left; }
+  th { background: var(--pg-blue); color: #fff; }
+  tr:nth-child(even) { background: var(--bg); }
+
+  /* Print */
+  @media print {
+    body { max-width: none; padding: 1rem; font-size: 10pt; }
+    pre { font-size: 8pt; white-space: pre-wrap; word-wrap: break-word; }
+    .toc { page-break-after: always; }
+    h2 { page-break-before: always; }
+    .box { break-inside: avoid; }
+  }
+
+  /* Section divider */
+  .section-divider { border: none; border-top: 2px solid var(--border); margin: 3rem 0 1rem; }
+</style>
+</head>
+<body>
+
+<h1>Azure PostgreSQL Flexible Server Workshop<br><small style="font-size:.6em;color:#6c757d;">Proctor / Facilitator Guide — Confidential</small></h1>
+
+<p>This guide provides <strong>everything a proctor needs</strong> to facilitate the 2-day workshop. Each chapter includes learning targets, every command and query with explanation, expected outputs, common pitfalls, and timing guidance.</p>
+
+<div class="box box-proctor">
+  <strong>🎯 How to Use This Guide</strong>
+  <ul>
+    <li>Read each section <em>before</em> the workshop. Familiarise yourself with the flow and expected outputs.</li>
+    <li><strong>Orange boxes</strong> are proctor-specific tips (not visible to attendees).</li>
+    <li><strong>Red boxes</strong> highlight common attendee mistakes and how to fix them.</li>
+    <li><strong>Green boxes</strong> provide timing guidance for each section.</li>
+    <li><strong>Blue boxes</strong> list learning objectives.</li>
+    <li>All commands are shown in the <em>exact order</em> attendees will run them.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ TABLE OF CONTENTS ═══════════════════ -->
+<div class="toc">
+<h2>Table of Contents</h2>
+<ol>
+  <span class="day-label">Day 1 — Foundations &amp; Business Continuity (09:00 – 16:00)</span>
+  <li><a href="#ch-intro">1. Introduction &amp; Agenda</a></li>
+  <li><a href="#ch-prereqs">2. Prerequisites &amp; Deployment</a></li>
+  <li><a href="#ch-overview">3. Workshop Overview</a></li>
+  <li><a href="#ch-provision">4. Deploy with Bicep</a></li>
+  <li><a href="#ch-connect">5. Connecting to PostgreSQL</a></li>
+  <li><a href="#ch-methods">6. Connection Methods &amp; Troubleshooting</a></li>
+  <li><a href="#ch-psql">7. psql Client Tutorial</a></li>
+  <li><a href="#ch-load">8. Load Data (orders_demo)</a></li>
+  <li><a href="#ch-workload">9. Run Demo Workload</a></li>
+  <li><a href="#ch-manage">10. Managing PostgreSQL DB</a></li>
+  <li><a href="#ch-roles">11. Roles &amp; Permissions</a></li>
+  <li><a href="#ch-pgbouncer">12. Connection Pooling (PgBouncer)</a> <span class="badge badge-optional">Optional</span></li>
+  <li><a href="#ch-logical-backup">13. Logical Backup &amp; Restore</a></li>
+  <li><a href="#ch-pitr">14. Physical Backup &amp; PITR</a></li>
+  <li><a href="#ch-replication">15. Logical Replication</a> <span class="badge badge-optional">Optional</span></li>
+  <li><a href="#ch-hadr">16. HA / DR</a></li>
+  <li><a href="#ch-patching">17. Patching &amp; Maintenance</a></li>
+  <li><a href="#ch-security">18. Security Management (pgAudit)</a></li>
+
+  <span class="day-label">Day 2 — Performance &amp; Optimisation (09:00 – 15:30)</span>
+  <li><a href="#ch-profiling">19. Database Profiling &amp; Activity Analysis</a></li>
+  <li><a href="#ch-monitoring">20. Azure Monitoring &amp; Alerting</a></li>
+  <li><a href="#ch-mvcc">21. MVCC Deep Dive</a></li>
+  <li><a href="#ch-params">22. Parameter Tuning</a></li>
+  <li><a href="#ch-sql">23. SQL Characteristics (Partial Indexes + JSONB)</a></li>
+  <li><a href="#ch-stats">24. Statistics &amp; Query Planning</a></li>
+  <li><a href="#ch-index">25. Index Tuning Lab</a></li>
+  <li><a href="#ch-extensions">26. Extensions Overview</a> <span class="badge badge-optional">Optional</span></li>
+  <li><a href="#ch-cleanup">27. Cleanup</a></li>
+</ol>
+</div>
+
+<!-- ═══════════════════ CHAPTER 1: INTRODUCTION ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-intro">1. Introduction &amp; Agenda</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Set expectations for the 2-day workshop</li>
+    <li>Understand the Day 1 / Day 2 agenda structure with breaks</li>
+    <li>Encourage attendees to ask questions any time</li>
+  </ul>
+</div>
+
+<div class="box box-timing">
+  <strong>⏱ Timing: 15 minutes</strong>
+  Covers welcome, introductions (ask attendees their background), and agenda walkthrough.
+</div>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>Ask attendees their experience level with PostgreSQL and Azure. This sets the pace for the day.</li>
+    <li>Emphasize: "There are no silly questions." Mixed audiences (DBA + dev) will have very different knowledge gaps.</li>
+    <li>Mention that sections marked <em>Optional</em> can be skipped if the group is running behind.</li>
+    <li>Day 1 finishes with security at ~16:00. Day 2 finishes with optional extensions by ~15:30.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 2: PREREQUISITES ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-prereqs">2. Prerequisites &amp; Deployment</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Understand the two deployment options (Simple Public vs. BYOS Hub-Spoke)</li>
+    <li>Ensure each attendee has a working Azure subscription with <code>Owner</code> or <code>Contributor</code> role</li>
+    <li>Deploy the workshop infrastructure using Bicep</li>
+  </ul>
+</div>
+
+<div class="box box-timing">
+  <strong>⏱ Timing: 30–45 minutes</strong>
+  Bicep deployment takes ~15 min. Use this wait time for Q&amp;A or a quick intro to Azure PostgreSQL architecture.
+</div>
+
+<h3>Deployment Options</h3>
+<table>
+  <tr><th>Option</th><th>When to Use</th><th>Bicep File</th></tr>
+  <tr><td><strong>Simple (Public Access)</strong></td><td>Quickest start, public endpoint + firewall rules</td><td><code>bicep/simple/main.bicep</code></td></tr>
+  <tr><td><strong>BYOS (Hub-Spoke VNet)</strong></td><td>Enterprise-like private access, jumpbox VM</td><td><code>bicep/main.bicep</code></td></tr>
+</table>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>For most workshops, recommend the <strong>BYOS Hub-Spoke</strong> — it teaches real-world private networking.</li>
+    <li>If time is tight or attendees have restricted subscriptions, fall back to <strong>Simple</strong>.</li>
+    <li>Verify attendees can run <code>az account show</code> successfully before deploying.</li>
+    <li>Cloud Shell is the easiest path — avoids local tool version issues.</li>
+  </ul>
+</div>
+
+<div class="box box-pitfall">
+  <strong>Common Pitfalls</strong>
+  <ul>
+    <li><strong>Subscription quota:</strong> Some subscriptions lack quota for General Purpose compute. May need to request quota increase or use Burstable.</li>
+    <li><strong>Region mismatch:</strong> Ensure the region supports PG Flexible Server v18. <code>uksouth</code> is the default.</li>
+    <li><strong>MFA / Conditional Access:</strong> Corporate accounts may block Cloud Shell. Have attendees test access in advance.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 3: OVERVIEW ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-overview">3. Workshop Overview</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Understand the 10-step journey from deployment to cleanup</li>
+    <li>See how each lab builds on the previous one</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 5 minutes</strong> Quick overview — attendees read this themselves.</div>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>Walk through the 10-step journey table briefly. Emphasize that Day 2 depends on the workload from Day 1.</li>
+    <li>Steps: Deploy → Connect → Load Data → Break It → Administer → Protect → Monitor → Tune → Optimise → Clean Up</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 4: DEPLOY WITH BICEP ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-provision">4. Deploy with Bicep</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Clone the workshop repo</li>
+    <li>Deploy Azure PostgreSQL Flexible Server via Bicep</li>
+    <li>Understand the deployed architecture (VNet, subnets, jumpbox, DNS)</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 15–20 minutes</strong> (mostly waiting for deployment)</div>
+
+<h3>Key Commands</h3>
+
+<h4>Step 1 — Clone the repo</h4>
+<pre><code>git clone https://github.com/diaa/apg-workshop.git
+cd apg-workshop/bicep</code></pre>
+<p class="cmd-explain">Downloads the workshop repo which contains Bicep templates and scripts.</p>
+
+<h4>Step 2 — Deploy the Bicep template</h4>
+<pre><code>az deployment group create \
+  --resource-group PG-Workshop \
+  --template-file main.bicep \
+  --parameters main.bicepparam</code></pre>
+<p class="cmd-explain">Deploys the hub-spoke VNet architecture with PostgreSQL Flexible Server, jumpbox VM, and private DNS zone.</p>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>Attendees may need to create the resource group first: <code>az group create --name PG-Workshop --location uksouth</code></li>
+    <li>The <code>main.bicepparam</code> file has default values. Attendees must fill in their admin username/password.</li>
+    <li>Deployment takes 10–15 minutes. Use this time to walk through the architecture diagram or answer conceptual questions.</li>
+    <li>For the <strong>Simple</strong> path: <code>cd bicep/simple</code> and use those files instead. Public access is enabled by default.</li>
+  </ul>
+</div>
+
+<div class="box box-pitfall">
+  <strong>Common Pitfalls</strong>
+  <ul>
+    <li><strong>Deployment fails with "InternalServerError":</strong> PG v18 may not be available in the selected region yet. Try <code>uksouth</code> or <code>eastus</code>.</li>
+    <li><strong>Password rejected:</strong> Azure requires 8+ chars with uppercase, lowercase, number, and special char.</li>
+    <li><strong>"SubscriptionNotFound":</strong> Attendee isn't logged into the right subscription. Run <code>az account set --subscription &lt;id&gt;</code>.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 5: CONNECTING ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-connect">5. Connecting to PostgreSQL</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>SSH into the jumpbox VM</li>
+    <li>Connect to PostgreSQL using <code>psql</code></li>
+    <li>Understand private DNS resolution within VNet</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 10–15 minutes</strong></div>
+
+<h3>Key Commands</h3>
+
+<h4>SSH into the jumpbox</h4>
+<pre><code>ssh &lt;admin-user&gt;@&lt;jumpbox-public-ip&gt;</code></pre>
+<p class="cmd-explain">The jumpbox is in the hub VNet and can reach the PG server via private DNS.</p>
+
+<h4>Set environment variables for convenience</h4>
+<pre><code>export PGHOST=&lt;postgresql-fqdn&gt;
+export PGUSER=&lt;pgadmin&gt;
+export PGDATABASE=postgres
+export PGSSLMODE=require</code></pre>
+<p class="cmd-explain">Avoids typing host/user on every psql command. PGHOST is the private DNS name of the server.</p>
+
+<h4>Connect with psql</h4>
+<pre><code>psql</code></pre>
+<p class="cmd-explain">With env vars set, a bare <code>psql</code> connects automatically. Prompt should show <code>postgres=&gt;</code>.</p>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>The jumpbox public IP is in the deployment outputs tab in the Portal.</li>
+    <li>For <strong>Simple</strong> deployments, attendees connect directly from Cloud Shell or their laptop (public endpoint).</li>
+    <li>Suggest attendees save env vars in <code>~/.pg_azure</code> and <code>source</code> it — the workshop provides a helper script.</li>
+  </ul>
+</div>
+
+<div class="box box-pitfall">
+  <strong>Common Pitfalls</strong>
+  <ul>
+    <li><strong>"Connection refused" / timeout:</strong> NSG may be blocking SSH. Check the jumpbox NSG allows port 22 from the attendee's IP.</li>
+    <li><strong>"could not translate host name":</strong> Private DNS zone isn't linked to the hub VNet. Check the DNS zone virtual network links in the Portal.</li>
+    <li><strong>SSL errors:</strong> Ensure <code>PGSSLMODE=require</code> is set.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 6: CONNECTION METHODS ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-methods">6. Connection Methods &amp; Troubleshooting</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Understand multiple connection methods (psql, pgAdmin, Azure Data Studio, VS Code)</li>
+    <li>Use <code>.pgpass</code> for password-less connections</li>
+    <li>SSH tunnel as a fallback for private endpoints</li>
+    <li>Troubleshoot common connection failures</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 10 minutes</strong></div>
+
+<h3>Key Commands</h3>
+
+<h4>Create a .pgpass file (password-less auth)</h4>
+<pre><code>echo "&lt;pg-fqdn&gt;:5432:*:&lt;admin&gt;:&lt;password&gt;" &gt; ~/.pgpass
+chmod 600 ~/.pgpass</code></pre>
+<p class="cmd-explain"><code>.pgpass</code> stores credentials securely. <code>chmod 600</code> is required — psql refuses to read the file otherwise.</p>
+
+<h4>SSH tunnel (for GUI tools on laptop)</h4>
+<pre><code>ssh -L 5432:&lt;pg-private-ip&gt;:5432 &lt;admin&gt;@&lt;jumpbox-ip&gt;</code></pre>
+<p class="cmd-explain">Forwards local port 5432 through the jumpbox to the private PG endpoint. GUI tools connect to <code>localhost:5432</code>.</p>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>Most attendees will use <code>psql</code> on the jumpbox. GUI tools are nice-to-have, not required.</li>
+    <li>If anyone is stuck with <code>.pgpass</code>, check that the hostname in <code>.pgpass</code> matches <code>$PGHOST</code> exactly.</li>
+    <li>The file covers pgAdmin 4, Azure Data Studio, and VS Code PostgreSQL extension — all optional.</li>
+  </ul>
+</div>
+
+<div class="box box-pitfall">
+  <strong>Common Pitfalls</strong>
+  <ul>
+    <li><strong><code>.pgpass</code> ignored:</strong> Permissions must be <code>600</code>. Run <code>chmod 600 ~/.pgpass</code>.</li>
+    <li><strong>SSH tunnel drops:</strong> Add <code>-o ServerAliveInterval=60</code> to the SSH command.</li>
+    <li><strong>DNS mismatch in <code>.pgpass</code>:</strong> Use the same FQDN as <code>$PGHOST</code>.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 7: PSQL CLIENT ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-psql">7. psql Client Tutorial</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Master essential <code>psql</code> meta-commands (<code>\l</code>, <code>\dt</code>, <code>\d</code>, <code>\di</code>, <code>\du</code>, <code>\conninfo</code>)</li>
+    <li>Navigate databases and schemas</li>
+    <li>Use <code>\timing</code>, <code>\x</code>, <code>\pset pager off</code></li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 10 minutes</strong></div>
+
+<h3>Key Meta-Commands</h3>
+<table>
+  <tr><th>Command</th><th>Purpose</th></tr>
+  <tr><td><code>\l</code></td><td>List all databases</td></tr>
+  <tr><td><code>\c orders_demo</code></td><td>Switch to a database</td></tr>
+  <tr><td><code>\dt</code></td><td>List tables in current schema</td></tr>
+  <tr><td><code>\d orders</code></td><td>Describe table structure (columns, types, constraints)</td></tr>
+  <tr><td><code>\di</code></td><td>List indexes</td></tr>
+  <tr><td><code>\du</code></td><td>List roles/users</td></tr>
+  <tr><td><code>\conninfo</code></td><td>Show current connection details</td></tr>
+  <tr><td><code>\timing</code></td><td>Toggle query execution timing display</td></tr>
+  <tr><td><code>\x</code></td><td>Toggle expanded (vertical) output</td></tr>
+  <tr><td><code>\pset pager off</code></td><td>Disable paging (avoids <code>less</code> confusion)</td></tr>
+  <tr><td><code>\q</code></td><td>Quit psql</td></tr>
+</table>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>Attendees unfamiliar with CLI may get stuck in the <code>less</code> pager. Teach them <code>\pset pager off</code> or press <code>q</code> to exit.</li>
+    <li>Emphasize <code>\timing</code> — they'll use it heavily in Day 2 for performance comparisons.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 8: LOAD DATA ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-load">8. Load Data (orders_demo)</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Create and restore the <code>orders_demo</code> database from a custom-format dump</li>
+    <li>Understand the database schema (4 tables, ~410K rows)</li>
+    <li>Enable and verify <code>pg_stat_statements</code></li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 15–20 minutes</strong></div>
+
+<h3>Database Schema</h3>
+<table>
+  <tr><th>Table</th><th>Rows</th><th>Purpose</th></tr>
+  <tr><td><code>customers</code></td><td>~10,000</td><td>Customer profiles with loyalty points</td></tr>
+  <tr><td><code>products</code></td><td>~500</td><td>Product catalog with categories</td></tr>
+  <tr><td><code>orders</code></td><td>~100,000</td><td>Orders with status, shipping country, amounts</td></tr>
+  <tr><td><code>order_items</code></td><td>~300,000</td><td>Line items with quantity, price, discount</td></tr>
+</table>
+
+<h3>Key Commands (in order)</h3>
+
+<h4>Step 1 — SSH to jumpbox</h4>
+<pre><code>ssh &lt;admin-user&gt;@&lt;jumpbox-ip&gt;
+source ~/.pg_azure</code></pre>
+
+<h4>Step 2 — Connect and create database</h4>
+<pre><code>psql
+CREATE DATABASE orders_demo;</code></pre>
+
+<h4>Step 3 — Download and restore the dump</h4>
+<pre><code>cd /tmp
+curl -O https://pg.azure-workshops.cloud/database/workshop_backup.dump
+pg_restore -h $PGHOST -U $PGUSER -d orders_demo --no-owner --verbose /tmp/workshop_backup.dump</code></pre>
+<p class="cmd-explain">Downloads the pre-built dump file from the workshop CDN and restores it with <code>pg_restore</code>. The <code>--no-owner</code> flag avoids errors about missing original roles.</p>
+
+<h4>Step 4 — Verify the data</h4>
+<pre><code>psql -d orders_demo
+
+SELECT 'customers' AS tbl, COUNT(*) FROM customers
+UNION ALL SELECT 'products', COUNT(*) FROM products
+UNION ALL SELECT 'orders', COUNT(*) FROM orders
+UNION ALL SELECT 'order_items', COUNT(*) FROM order_items;</code></pre>
+<p class="cmd-explain">Should show ~10K, ~500, ~100K, ~300K rows respectively.</p>
+
+<h4>Step 5 — Enable pg_stat_statements</h4>
+<pre><code>CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+SELECT calls, total_exec_time, mean_exec_time, LEFT(query, 60)
+FROM pg_stat_statements ORDER BY total_exec_time DESC LIMIT 5;</code></pre>
+<p class="cmd-explain">Must be enabled BEFORE running the workload — it captures query statistics from this point forward.</p>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li><strong>This is a critical checkpoint.</strong> Every attendee must finish this section before proceeding. All subsequent labs depend on <code>orders_demo</code>.</li>
+    <li>If <code>curl</code> fails: check if the jumpbox has internet access. For VNet-injected servers, the outbound route may be missing. Help configure NAT gateway or use the Portal to download.</li>
+    <li>If <code>pg_stat_statements</code> fails with "must be loaded via shared_preload_libraries": go to Portal → Server parameters → search <code>shared_preload_libraries</code> → check <code>pg_stat_statements</code> → Save (requires restart).</li>
+  </ul>
+</div>
+
+<div class="box box-pitfall">
+  <strong>Common Pitfalls</strong>
+  <ul>
+    <li><strong>pg_restore errors about "role does not exist":</strong> Safe to ignore — <code>--no-owner</code> handles ownership, but warnings about the original dump owner still appear.</li>
+    <li><strong>Database already exists:</strong> <code>DROP DATABASE orders_demo;</code> and recreate. Check nobody else is connected first.</li>
+    <li><strong>Dump URL doesn't work:</strong> Verify internet access from jumpbox with <code>curl -I https://pg.azure-workshops.cloud</code>.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 9: DEMO WORKLOAD ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-workload">9. Run Demo Workload</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Generate intentionally heavy CPU, IOPS, and temp file load</li>
+    <li>Understand why these queries are expensive (cross-joins, correlated subqueries, window functions, md5 loops)</li>
+    <li>Practice observing active queries via <code>pg_stat_activity</code></li>
+    <li>Create baseline metrics for later monitoring and tuning labs</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 20–30 minutes</strong> (queries themselves take time; use waiting periods for discussion)</div>
+
+<h3>The 6 Heavy Queries</h3>
+<p>Attendees open <strong>multiple psql sessions</strong> (at least 2–3 terminals) and run queries concurrently to generate load.</p>
+
+<h4>Query 1 — Cross-Join Aggregation (CPU + IOPS heavy)</h4>
+<pre><code>SELECT c.city, c.country, p.category,
+       COUNT(DISTINCT o.order_id) AS total_orders,
+       SUM(oi.quantity * oi.unit_price * (1 - oi.discount/100)) AS revenue
+FROM customers c
+JOIN orders o ON o.customer_id = c.customer_id
+JOIN order_items oi ON oi.order_id = o.order_id
+JOIN products p ON p.product_id = oi.product_id
+GROUP BY c.city, c.country, p.category
+ORDER BY revenue DESC;</code></pre>
+<p class="cmd-explain"><strong>Why it's expensive:</strong> 4-table join with GROUP BY on high-cardinality columns. Produces large intermediate hash tables. No indexes help yet.</p>
+
+<h4>Query 2 — Correlated Subquery (N+1 anti-pattern)</h4>
+<pre><code>SELECT c.customer_id, c.first_name, c.last_name,
+       (SELECT COUNT(*) FROM orders o WHERE o.customer_id = c.customer_id) AS order_count,
+       (SELECT COALESCE(SUM(total_amount),0) FROM orders o WHERE o.customer_id = c.customer_id) AS lifetime_value
+FROM customers c
+ORDER BY lifetime_value DESC
+LIMIT 100;</code></pre>
+<p class="cmd-explain"><strong>Why it's expensive:</strong> Two correlated subqueries execute once per customer row (10K × 2 = 20K sub-plans). This is the classic "N+1" problem solvable by indexing.</p>
+
+<h4>Query 3 — Window Functions (memory + sort heavy)</h4>
+<pre><code>SELECT order_id, customer_id, order_date, total_amount,
+       SUM(total_amount) OVER (PARTITION BY customer_id ORDER BY order_date) AS running_total,
+       ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY total_amount DESC) AS rank_by_amount,
+       AVG(total_amount) OVER (PARTITION BY shipping_country ORDER BY order_date
+            ROWS BETWEEN 100 PRECEDING AND CURRENT ROW) AS moving_avg
+FROM orders;</code></pre>
+<p class="cmd-explain"><strong>Why it's expensive:</strong> Three window functions with different PARTITION BY clauses require multiple full sorts of 100K rows. Generates temp files when <code>work_mem</code> is low.</p>
+
+<h4>Query 4 — Heavy Text Computation + Sort</h4>
+<pre><code>SELECT c.email, md5(c.email || o.order_id::TEXT) AS hash_key,
+       string_agg(p.product_name, ', ' ORDER BY oi.unit_price DESC) AS products_bought
+FROM customers c
+JOIN orders o ON o.customer_id = c.customer_id
+JOIN order_items oi ON oi.order_id = o.order_id
+JOIN products p ON p.product_id = oi.product_id
+GROUP BY c.email, o.order_id
+ORDER BY hash_key;</code></pre>
+<p class="cmd-explain"><strong>Why it's expensive:</strong> MD5 computation on every row, string aggregation, and final sort on computed hash key. Pure CPU burn.</p>
+
+<h4>Query 5 — Repeated Sequential Scan Loop</h4>
+<pre><code>DO $$
+BEGIN
+  FOR i IN 1..20 LOOP
+    PERFORM COUNT(*) FROM orders o
+    JOIN order_items oi ON oi.order_id = o.order_id
+    WHERE md5(o.status || oi.quantity::TEXT) LIKE '00%';
+  END LOOP;
+END $$;</code></pre>
+<p class="cmd-explain"><strong>Why it's expensive:</strong> The <code>md5()</code> filter is not indexable — forces full sequential scan every iteration. 20 loops × full table scan. Increase to 50–100 for more load.</p>
+
+<h4>Query 6 — Large Temp-Table Sort + Distinct</h4>
+<pre><code>SELECT DISTINCT ON (customer_id)
+       customer_id, order_id, order_date, total_amount
+FROM orders
+ORDER BY customer_id, total_amount DESC, order_date DESC;</code></pre>
+<p class="cmd-explain"><strong>Why it's expensive:</strong> Full sort of 100K rows on a composite key. Without a matching index, PG writes temp files. Solvable with a composite index in the index tuning lab.</p>
+
+<h3>Diagnostic Queries (run from a separate session)</h3>
+
+<h4>Active queries</h4>
+<pre><code>SELECT pid, state, query_start, LEFT(query, 80) AS query_snippet
+FROM pg_stat_activity
+WHERE datname = 'orders_demo' AND state != 'idle'
+ORDER BY query_start;</code></pre>
+
+<h4>Sequential scan stats</h4>
+<pre><code>SELECT relname AS table, seq_scan, seq_tup_read, idx_scan, idx_tup_fetch
+FROM pg_stat_user_tables ORDER BY seq_tup_read DESC;</code></pre>
+
+<h4>Temp file usage</h4>
+<pre><code>SELECT datname, temp_files, pg_size_pretty(temp_bytes) AS temp_size
+FROM pg_stat_database WHERE datname = 'orders_demo';</code></pre>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li><strong>This section is critical for Day 2.</strong> The monitoring and index tuning labs depend on query stats generated here.</li>
+    <li>Have attendees enable <code>\timing</code> before running queries so they capture baseline timings.</li>
+    <li>Encourage them to write down the execution times — they'll compare before/after in the index tuning lab.</li>
+    <li>Walk around and ensure at least 2–3 queries are running concurrently across sessions.</li>
+    <li>If attendees finish quickly, have them increase Query 5's loop count to 50 or 100.</li>
+    <li>The diagnostic queries are a great teaching moment — explain <code>pg_stat_activity</code> and <code>pg_stat_user_tables</code>.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 10: MANAGING DB ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-manage">10. Managing PostgreSQL DB</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Scale compute &amp; storage via Portal</li>
+    <li>Modify server parameters at different levels (server, database, role, session)</li>
+    <li>Enable built-in PgBouncer</li>
+    <li>Add resource locks for delete protection</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 15–20 minutes</strong></div>
+
+<h3>Portal Actions</h3>
+<ol>
+  <li>Navigate to <strong>Compute + Storage</strong> blade → observe SKU options (Burstable, General Purpose, Memory Optimized)</li>
+  <li>Navigate to <strong>Server parameters</strong> → search and modify a parameter (e.g., <code>work_mem</code>)</li>
+  <li>Search <code>pgbouncer</code> → set to <strong>TRUE</strong> → Save</li>
+  <li>Navigate to <strong>Locks</strong> → <strong>+Add</strong> → Lock name: <code>DoNotDelete</code> → Type: <strong>Delete</strong></li>
+</ol>
+
+<h3>Verify PgBouncer</h3>
+<pre><code>psql -p 6432
+SHOW pgbouncer;</code></pre>
+<p class="cmd-explain">Port 6432 is the PgBouncer port. <code>SHOW pgbouncer</code> returns the current status.</p>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>Emphasize that parameter changes have different contexts: <code>user</code> (session SET), <code>sighup</code> (no restart), <code>postmaster</code> (requires restart).</li>
+    <li>After enabling PgBouncer, the server restarts. Warn attendees it takes 1–2 minutes.</li>
+    <li>Resource locks are a quick but powerful governance feature — good talking point for ops teams.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 11: ROLES & PERMISSIONS ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-roles">11. Roles &amp; Permissions</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>PostgreSQL role model — no "users" or "groups", only roles</li>
+    <li>INHERIT vs NOINHERIT behavior</li>
+    <li>GRANT and REVOKE privileges</li>
+    <li>DEFAULT PRIVILEGES for future objects</li>
+    <li>Schema isolation</li>
+    <li>Azure-specific roles (<code>azure_pg_admin</code>, <code>azuresu</code>)</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 25–35 minutes</strong> (lots of SQL; take it step by step)</div>
+
+<h3>Role Setup</h3>
+<pre><code>CREATE ROLE app_team NOLOGIN;
+CREATE ROLE readonly NOLOGIN;
+CREATE ROLE dev_user LOGIN PASSWORD 'Workshop#Dev1' IN ROLE app_team INHERIT;
+CREATE ROLE analyst_user LOGIN PASSWORD 'Workshop#Read1' IN ROLE readonly INHERIT;
+CREATE ROLE contractor_user LOGIN PASSWORD 'Workshop#Ext1' IN ROLE app_team NOINHERIT CONNECTION LIMIT 2;</code></pre>
+<p class="cmd-explain">Creates a role hierarchy: <code>app_team</code> (read/write), <code>readonly</code> (read-only). <code>dev_user</code> inherits from <code>app_team</code>. <code>contractor_user</code> does NOT inherit — must explicitly <code>SET ROLE</code>.</p>
+
+<h3>Grant Privileges</h3>
+<pre><code>GRANT USAGE ON SCHEMA public TO app_team;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO app_team;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO app_team;
+GRANT USAGE ON SCHEMA public TO readonly;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO readonly;
+
+-- Required for SET ROLE to work:
+GRANT dev_user TO &lt;your-admin&gt;;
+GRANT analyst_user TO &lt;your-admin&gt;;
+GRANT contractor_user TO &lt;your-admin&gt;;</code></pre>
+
+<h3>Test INHERIT vs NOINHERIT</h3>
+
+<h4>dev_user (INHERIT) — should succeed</h4>
+<pre><code>SET ROLE dev_user;
+SELECT customer_id, first_name, last_name, email FROM customers LIMIT 5;
+INSERT INTO customers (first_name, last_name, email, city, country)
+VALUES ('Test', 'User', 'test@workshop.dev', 'London', 'United Kingdom');
+RESET ROLE;</code></pre>
+<p class="cmd-explain">dev_user inherits app_team's privileges → SELECT and INSERT both work.</p>
+
+<h4>analyst_user (readonly) — INSERT should fail</h4>
+<pre><code>SET ROLE analyst_user;
+SELECT status, COUNT(*) FROM orders GROUP BY status;          -- ✅ works
+INSERT INTO customers (...) VALUES (...);                     -- ❌ ERROR: permission denied
+RESET ROLE;</code></pre>
+
+<h4>contractor_user (NOINHERIT) — SELECT should fail until SET ROLE</h4>
+<pre><code>SET ROLE contractor_user;
+SELECT * FROM customers LIMIT 1;       -- ❌ ERROR (no inherited privs)
+SET ROLE app_team;                      -- Explicitly assume the role
+SELECT * FROM customers LIMIT 5;       -- ✅ works
+RESET ROLE;</code></pre>
+<p class="cmd-explain">This is the key lesson: NOINHERIT requires an explicit <code>SET ROLE</code> to assume privileges. Useful for contractors/external users.</p>
+
+<h3>Cleanup (important!)</h3>
+<pre><code>-- Must revoke grants, drop schemas, then drop roles in order
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM app_team;
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM readonly;
+REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM app_team;
+REVOKE USAGE ON SCHEMA public FROM app_team;
+REVOKE USAGE ON SCHEMA public FROM readonly;
+GRANT CREATE ON SCHEMA public TO PUBLIC;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE SELECT ON TABLES FROM readonly;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM app_team;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO &lt;your-admin&gt;;
+DROP SCHEMA IF EXISTS app;
+DROP ROLE IF EXISTS dev_user;
+DROP ROLE IF EXISTS analyst_user;
+DROP ROLE IF EXISTS contractor_user;
+DROP ROLE IF EXISTS app_team;
+DROP ROLE IF EXISTS readonly;
+DELETE FROM customers WHERE email IN ('test@workshop.dev', 'another@workshop.dev');</code></pre>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li><strong>Cleanup is essential.</strong> If roles are left behind, later labs may behave unexpectedly.</li>
+    <li>Common question: "Why can't I drop a role?" → Role still owns objects or has dependencies. Must REVOKE first.</li>
+    <li>Explain the privilege code shorthand: <code>r</code> = SELECT, <code>a</code> = INSERT, <code>w</code> = UPDATE, <code>d</code> = DELETE, <code>D</code> = TRUNCATE.</li>
+    <li>Highlight that <code>azure_pg_admin</code> is the highest role attendees can use — <code>azuresu</code> is reserved by Azure.</li>
+  </ul>
+</div>
+
+<div class="box box-pitfall">
+  <strong>Common Pitfalls</strong>
+  <ul>
+    <li><strong>"permission denied for role":</strong> Admin must GRANT the role to themselves before <code>SET ROLE</code>. The workshop includes <code>GRANT dev_user TO &lt;admin&gt;;</code> — don't skip it.</li>
+    <li><strong>Roles not dropped in order:</strong> Must revoke privileges → drop dependent roles → drop parent roles.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 12: PGBOUNCER ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-pgbouncer">12. Connection Pooling (PgBouncer) <span class="badge badge-optional">Optional</span></h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Understand the process-per-connection model in PostgreSQL</li>
+    <li>Configure built-in PgBouncer on Azure Flexible Server</li>
+    <li>Compare performance with and without pooling using <code>pgbench</code></li>
+    <li>Monitor PgBouncer via its virtual database</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 15–20 minutes (skip if behind schedule)</strong></div>
+
+<h3>Portal Configuration</h3>
+<p>Server parameters → set: <code>pgbouncer.enabled = true</code>, <code>pgbouncer.pool_mode = transaction</code>, <code>pgbouncer.default_pool_size = 20</code>, <code>pgbouncer.max_client_conn = 200</code>, <code>pgbouncer.min_pool_size = 5</code> → Save (restart required).</p>
+
+<h3>pgbench Comparison</h3>
+<pre><code># Direct connection (port 5432)
+pgbench -h $PGHOST -U $PGUSER -d orders_demo -p 5432 -c 50 -j 4 -T 30 -S
+
+# Through PgBouncer (port 6432)
+pgbench -h $PGHOST -U $PGUSER -d orders_demo -p 6432 -c 50 -j 4 -T 30 -S</code></pre>
+<p class="cmd-explain"><code>-c 50</code> = 50 concurrent clients, <code>-j 4</code> = 4 threads, <code>-T 30</code> = 30 seconds run, <code>-S</code> = SELECT-only. Compare TPS between direct and pooled.</p>
+
+<h3>Monitor via PgBouncer virtual database</h3>
+<pre><code>psql -h $PGHOST -U $PGUSER -d pgbouncer -p 6432
+SHOW POOLS;
+SHOW STATS;
+SHOW CLIENTS;
+SHOW SERVERS;</code></pre>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>PgBouncer TPS improvement is dramatic — typically 3–10× with 50 connections.</li>
+    <li>Explain pool modes: <strong>transaction</strong> (recommended), <strong>session</strong> (legacy), <strong>statement</strong> (rare, breaks multi-statement transactions).</li>
+    <li>This is a great section for DBAs; devs may find it less engaging. Adjust depth accordingly.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 13: LOGICAL BACKUP ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-logical-backup">13. Logical Backup &amp; Restore</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Understand three dump formats: plain SQL, custom, directory</li>
+    <li>Use <code>pg_dump</code> with selective options (schema-only, data-only, single table)</li>
+    <li>Restore with <code>pg_restore</code> including parallel restore (<code>-j 4</code>)</li>
+    <li>Use <code>pg_dumpall</code> for global objects</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 20–25 minutes</strong></div>
+
+<h3>Key Commands</h3>
+
+<h4>Three dump formats</h4>
+<pre><code># Plain SQL
+pg_dump orders_demo > /tmp/orders_demo.plain.sql
+
+# Custom format (compressed, pg_restore required)
+pg_dump -Fc orders_demo -f /tmp/orders_demo.custom.dump
+
+# Directory format (parallel-ready)
+pg_dump -Fd -j 4 orders_demo -f /tmp/orders_demo_dir</code></pre>
+
+<h4>Selective dumps</h4>
+<pre><code>pg_dump --schema-only orders_demo > /tmp/orders_demo_ddl.sql
+pg_dump --data-only orders_demo > /tmp/orders_demo_data.sql
+pg_dump --data-only --inserts orders_demo > /tmp/orders_demo_inserts.sql
+pg_dump --table=customers orders_demo > /tmp/customers.sql</code></pre>
+
+<h4>Restore</h4>
+<pre><code>psql -d postgres -c "CREATE DATABASE orders_demo_restored;"
+pg_restore -d orders_demo_restored --no-owner --verbose /tmp/orders_demo.custom.dump
+
+# Verify
+psql -d orders_demo_restored -c "SELECT 'customers' AS tbl, COUNT(*) FROM customers
+UNION ALL SELECT 'products', COUNT(*) FROM products
+UNION ALL SELECT 'orders', COUNT(*) FROM orders
+UNION ALL SELECT 'order_items', COUNT(*) FROM order_items;"</code></pre>
+
+<h4>Parallel Restore</h4>
+<pre><code>pg_restore -d orders_demo_restored -j 4 --no-owner --verbose /tmp/orders_demo_dir</code></pre>
+
+<h4>Global objects</h4>
+<pre><code>pg_dumpall > /tmp/whole_cluster.sql
+pg_dumpall -g --no-role-passwords > /tmp/globals.sql</code></pre>
+
+<h4>Cleanup</h4>
+<pre><code>psql -d postgres -c "DROP DATABASE IF EXISTS orders_demo_restored;"</code></pre>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>Emphasize the difference: <code>pg_dump</code> = logical (portable, selective). PITR (next section) = physical (point-in-time, full server).</li>
+    <li>Have attendees <code>less /tmp/orders_demo.plain.sql</code> to see what a plain dump looks like vs. the binary custom format.</li>
+    <li>Parallel restore only works with directory or custom format — not plain SQL.</li>
+    <li>Mention that this section also links to migration scenarios (Azure Database Migration Service) for attendees doing lift-and-shift.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 14: PITR ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-pitr">14. Physical Backup &amp; Point-in-Time Restore (PITR)</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Understand managed backup retention periods (7–35 days)</li>
+    <li>Perform a point-in-time restore from the Portal</li>
+    <li>Understand that PITR creates a <em>new server</em> (not in-place)</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 15–20 minutes</strong> (restore takes ~10 min; demo or walkthrough)</div>
+
+<h3>Portal Actions</h3>
+<ol>
+  <li>Navigate to server → <strong>Overview</strong> → click <strong>Restore</strong></li>
+  <li>Select a point-in-time (datetime picker)</li>
+  <li>Name the new server (e.g., <code>pg-workshop-restored</code>)</li>
+  <li>Click <strong>Create</strong> and wait ~10 minutes</li>
+  <li>After restore: configure firewall/VNet rules on the new server (not inherited)</li>
+</ol>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li><strong>PITR creates a new server</strong> — this surprises many attendees. Firewall rules, VNet integration, and server parameters must be reconfigured.</li>
+    <li>If time is tight, do this as a <strong>demo</strong> from the proctor's screen rather than having every attendee restore.</li>
+    <li>Highlight: backup retention is set under Compute + Storage blade. Default 7 days, max 35.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 15: LOGICAL REPLICATION ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-replication">15. Logical Replication <span class="badge badge-optional">Optional</span></h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Native PostgreSQL logical replication (publisher/subscriber model)</li>
+    <li>Create a publication on the primary server</li>
+    <li>Create a subscription on a replica server</li>
+    <li>Observe initial data sync</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 25–30 minutes (skip if behind schedule)</strong></div>
+
+<h3>Prerequisites (Portal)</h3>
+<ul>
+  <li>Set <code>wal_level</code> to <code>logical</code> (Server parameters → Save → Restart)</li>
+  <li>Set <code>max_worker_processes</code> to at least 16</li>
+</ul>
+
+<h3>Key Commands</h3>
+
+<h4>Create a second Flex Server (replica)</h4>
+<pre><code>az postgres flexible-server create \
+  --resource-group PG-Workshop \
+  --vnet spoke-vnet --subnet subnet-02 \
+  --name replication-flex-&lt;unique&gt; \
+  --admin-user replica \
+  --admin-password '&lt;strong-password&gt;' \
+  --sku-name Standard_B1ms --tier Burstable \
+  --storage-size 128 --version 18 \
+  --high-availability Disabled</code></pre>
+
+<h4>On the primary</h4>
+<pre><code>ALTER ROLE &lt;adminname&gt; WITH REPLICATION;
+\c orders_demo
+CREATE PUBLICATION customers_pub FOR TABLE customers;</code></pre>
+
+<h4>On the replica</h4>
+<pre><code>CREATE DATABASE orders_demo;
+\connect orders_demo
+
+-- Must create table schema first (logical replication doesn't sync DDL)
+CREATE TABLE public.customers (
+    customer_id  serial PRIMARY KEY,
+    first_name   text NOT NULL,
+    last_name    text NOT NULL,
+    email        text NOT NULL,
+    city         text,
+    country      text,
+    loyalty_points integer DEFAULT 0,
+    created_at   timestamp DEFAULT now()
+);
+
+CREATE SUBSCRIPTION customers_sub
+  CONNECTION 'host=&lt;primary-private-ip&gt; user=&lt;pgadmin&gt; dbname=orders_demo password=&lt;password&gt;'
+  PUBLICATION customers_pub;
+
+-- Verify
+SELECT COUNT(*) FROM customers;</code></pre>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li><strong>Skip this section</strong> if the group is running behind — it requires a second server and takes time.</li>
+    <li>The table <em>must</em> exist on the subscriber before creating the subscription — logical replication doesn't sync DDL.</li>
+    <li>Both servers must be in the same VNet (or have network connectivity). The private DNS zone helps here.</li>
+    <li>Remind attendees to <strong>delete the replica server</strong> during cleanup to avoid ongoing charges.</li>
+  </ul>
+</div>
+
+<div class="box box-pitfall">
+  <strong>Common Pitfalls</strong>
+  <ul>
+    <li><strong>"wal_level must be logical":</strong> Requires server restart. The Portal warns about this.</li>
+    <li><strong>Connection refused between servers:</strong> Both servers must be in the same VNet, or the firewall must allow the replica's IP.</li>
+    <li><strong>Schema mismatch:</strong> Column names and types must match exactly between publisher and subscriber.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 16: HA/DR ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-hadr">16. HA / DR</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Zone-redundant HA deployment model</li>
+    <li>Synchronous streaming replication between primary and standby</li>
+    <li>Forced vs. planned failover</li>
+    <li>Enabling and disabling HA from the Portal</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 15–20 minutes</strong></div>
+
+<h3>Portal Actions</h3>
+<ol>
+  <li>Navigate to <strong>High Availability</strong> tab → Enable HA → Save</li>
+  <li>Wait for deployment (~5 minutes)</li>
+  <li>Click <strong>Forced Failover</strong> → observe primary/secondary zones interchange</li>
+  <li>Click <strong>Planned Failover</strong> → zones swap back</li>
+  <li>Disable HA → Save</li>
+</ol>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>Enabling HA doubles the compute cost. Disable it at the end if attendees are cost-conscious.</li>
+    <li>Forced failover simulates a zone failure — there is brief downtime. Planned failover is graceful (minimal downtime).</li>
+    <li>Good discussion topic: when to use zone-redundant HA vs. read replicas vs. logical replication.</li>
+    <li>If time is tight, this can be done as a <strong>proctor demo</strong>.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 17: PATCHING ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-patching">17. Patching &amp; Maintenance</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Understand Azure's automatic patching model</li>
+    <li>Configure custom maintenance windows</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 5–10 minutes</strong> (quick Portal walkthrough)</div>
+
+<h3>Portal Actions</h3>
+<p>Navigate to <strong>Maintenance</strong> tab → select custom schedule (day + time window) → Save.</p>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>Azure patches automatically within the chosen window. PostgreSQL minor version upgrades also happen here.</li>
+    <li>Good talking point for ops teams: coordinate maintenance windows with your release calendar.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 18: SECURITY ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-security">18. Security Management (pgAudit)</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Enable the <code>pgaudit</code> extension for audit logging</li>
+    <li>Route PostgreSQL logs to Azure Log Analytics</li>
+    <li>Query audit logs with KQL</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 15–20 minutes</strong></div>
+
+<h3>Portal Setup</h3>
+<ol>
+  <li>Server parameters → search <code>azure.extensions</code> → enable <strong>pgaudit</strong> → Save</li>
+  <li>Search <code>shared_preload_libraries</code> → check <strong>pgaudit</strong> → Save (restart required)</li>
+  <li>Diagnostic settings → Add → send <strong>PostgreSQLLogs</strong> to Log Analytics workspace</li>
+</ol>
+
+<h3>SQL Commands</h3>
+<pre><code>CREATE EXTENSION pgaudit;
+
+-- Generate some auditable activity
+CREATE TABLE audit_test(id int);
+INSERT INTO audit_test SELECT generate_series(1, 100);
+DROP TABLE audit_test;</code></pre>
+
+<h3>KQL Query (Log Analytics)</h3>
+<pre><code>AzureDiagnostics
+| where Category == "PostgreSQLLogs"
+| where Message contains "AUDIT"
+| project TimeGenerated, Message
+| order by TimeGenerated desc
+| take 50</code></pre>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>Log Analytics may take 5–15 minutes to ingest the first logs. Set up diagnostic settings <em>early</em> and query later.</li>
+    <li>If Log Analytics isn't set up yet, this is a good time to do it — the data will be ready for the monitoring section on Day 2.</li>
+    <li>The KQL query may return empty if logs haven't been ingested yet. Explain this is normal lag.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ DAY 2 SEPARATOR ═══════════════════ -->
+<hr class="section-divider">
+<h2 style="text-align:center;border:none;color:var(--pg-blue);font-size:1.8rem;margin:2rem 0;">Day 2 — Performance &amp; Optimisation</h2>
+
+<!-- ═══════════════════ CHAPTER 19: PROFILING ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-profiling">19. Database Profiling &amp; Activity Analysis</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Run a comprehensive 13-query "health check" script against <code>orders_demo</code></li>
+    <li>Understand core catalog views: <code>pg_stat_user_tables</code>, <code>pg_stat_database</code>, <code>pg_stat_wal</code>, <code>pg_class</code>, <code>pg_stat_replication</code></li>
+    <li>Identify table bloat, unused indexes, cache hit ratio, and WAL activity</li>
+    <li>Compare PostgreSQL internals to Oracle/SQL Server equivalents</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 30–40 minutes</strong> (13 queries with discussion)</div>
+
+<h3>Setup</h3>
+<pre><code>\pset pager off
+\timing on
+\x off</code></pre>
+
+<h3>Script A — Health Check (13 queries)</h3>
+
+<table>
+  <tr><th>#</th><th>Query</th><th>What It Reveals</th></tr>
+  <tr><td>A1</td><td>Server Identity (<code>version()</code>, <code>current_database()</code>)</td><td>Confirms server version, database, current role, IP, port</td></tr>
+  <tr><td>A2</td><td>Non-system schemas (<code>pg_namespace</code>)</td><td>Identifies custom schemas beyond pg_catalog</td></tr>
+  <tr><td>A3</td><td>Object inventory (<code>pg_class</code> by <code>relkind</code>)</td><td>Count of tables, indexes, views, sequences per schema</td></tr>
+  <tr><td>A4</td><td>Largest relations (<code>pg_total_relation_size</code>)</td><td>Top 25 tables by total size (heap + indexes + TOAST)</td></tr>
+  <tr><td>A5</td><td>Row estimates &amp; dead tuples</td><td>Bloat detection — dead_pct &gt; 10% needs VACUUM</td></tr>
+  <tr><td>A6</td><td>Vacuum &amp; analyze health</td><td>Last autovacuum/autoanalyze timestamps</td></tr>
+  <tr><td>A7</td><td>Read/write access patterns</td><td>Seq vs. index scan ratio — highlight tables with 0% idx_scan</td></tr>
+  <tr><td>A8</td><td>Unused indexes (<code>idx_scan = 0</code>)</td><td>Indexes consuming space but never used</td></tr>
+  <tr><td>A9</td><td>Database throughput &amp; cache hit ratio</td><td><strong>cache_hit_pct should be &gt; 99%</strong>; rollback_pct and temp_bytes</td></tr>
+  <tr><td>A10</td><td>WAL, checkpoint, bgwriter stats</td><td>Write activity, checkpoint frequency</td></tr>
+  <tr><td>A11</td><td>Replication connections &amp; slots</td><td>Streaming replication health (if HA enabled)</td></tr>
+  <tr><td>A12</td><td>Monitoring settings check</td><td>Verify <code>track_io_timing</code>, <code>compute_query_id</code>, etc. are ON</td></tr>
+  <tr><td>A13</td><td>Installed extensions</td><td>Verify <code>pg_stat_statements</code> is loaded</td></tr>
+</table>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>This is the most <strong>discussion-heavy</strong> section. Walk through each query output and explain what the numbers mean.</li>
+    <li><strong>A5 (dead tuples):</strong> Should show dead tuples from the MVCC updates in the workload. If dead_pct is 0, autovacuum already ran — explain that's the system working as designed.</li>
+    <li><strong>A7 (seq vs. idx):</strong> Before index tuning, <code>orders</code> and <code>order_items</code> will show 0 idx_scan. Point this out — "this is what we'll fix in the index tuning lab."</li>
+    <li><strong>A9 (cache hit):</strong> If cache_hit_pct is below 99%, the server may need more memory. Good discussion about shared_buffers sizing.</li>
+    <li>For Oracle/SQL Server DBAs: draw parallels (AWR = Script A, V$SESSION = pg_stat_activity, etc.).</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 20: AZURE MONITORING ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-monitoring">20. Azure Monitoring &amp; Alerting</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Use Metrics Explorer for CPU, memory, IOPS, temp files, connections</li>
+    <li>Use Query Performance Insight (QPI) for top queries by CPU/IO</li>
+    <li>Configure <code>pg_stat_statements</code> settings</li>
+    <li>Set up Diagnostic Settings → Log Analytics</li>
+    <li>Write KQL queries for slow queries, connections, and wait events</li>
+    <li>Create alert rules with action groups</li>
+    <li>Explore built-in Workbooks</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 30–40 minutes</strong></div>
+
+<h3>Metrics Explorer</h3>
+<p>Key metrics to demonstrate:</p>
+<ul>
+  <li><strong>CPU percent</strong> (Max aggregation) — should show spikes from the workload</li>
+  <li><strong>Memory percent</strong></li>
+  <li><strong>Read/Write IOPS</strong></li>
+  <li><strong>Temp Files Size</strong> — shows disk spillage from sort-heavy queries</li>
+  <li><strong>Active Connections</strong></li>
+</ul>
+
+<h3>Query Performance Insight</h3>
+<p>Under <strong>Intelligent Performance</strong> → <strong>Query Performance Insight</strong>:</p>
+<ul>
+  <li><strong>Long running queries</strong> tab — click on a bar to see full query text</li>
+  <li><strong>Top queries by CPU</strong> tab</li>
+  <li><strong>Top queries by IO</strong> tab</li>
+</ul>
+
+<h3>KQL Queries</h3>
+
+<h4>Slow queries (&gt; 5 seconds)</h4>
+<pre><code>AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.DBFORPOSTGRESQL"
+| where Category == "PostgreSQLQueryStoreRuntimeStatistics"
+| where mean_time_s > 5
+| project TimeGenerated, db_name_s, query_id_s, calls_d, mean_time_s, total_time_s
+| order by total_time_s desc
+| take 20</code></pre>
+
+<h4>Connection events</h4>
+<pre><code>AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.DBFORPOSTGRESQL"
+| where Category == "PostgreSQLSessions"
+| project TimeGenerated, event_s, user_s, client_ip_s, db_name_s
+| order by TimeGenerated desc
+| take 50</code></pre>
+
+<h4>Wait events</h4>
+<pre><code>AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.DBFORPOSTGRESQL"
+| where Category == "PostgreSQLQueryStoreWaitStatistics"
+| summarize total_wait_ms = sum(total_time_s * 1000) by event_s, query_id_s
+| order by total_wait_ms desc
+| take 20</code></pre>
+
+<h3>Create an Alert Rule</h3>
+<ol>
+  <li>PostgreSQL server → <strong>Alerts</strong> → <strong>+ Create</strong> → <strong>Alert rule</strong></li>
+  <li>Signal: <code>CPU percent</code>, Operator: Greater than, Threshold: <code>80%</code>, Aggregation: Maximum, Granularity: 5 min</li>
+  <li>Create action group (email notification)</li>
+  <li>Alert name: "High CPU Alert", Severity: 2 - Warning</li>
+  <li>Review and create</li>
+</ol>
+
+<h4>Test the alert</h4>
+<pre><code>DO $$
+BEGIN
+  FOR i IN 1..100 LOOP
+    PERFORM COUNT(*) FROM orders o
+    JOIN order_items oi ON oi.order_id = o.order_id
+    WHERE md5(o.status || oi.quantity::TEXT) LIKE '00%';
+  END LOOP;
+END $$;</code></pre>
+<p class="cmd-explain">This runs the heavy md5 loop 100 times to spike CPU above 80% and trigger the alert.</p>
+
+<h3>Server Parameters to Verify</h3>
+<table>
+  <tr><th>Parameter</th><th>Value</th><th>Why</th></tr>
+  <tr><td><code>track_io_timing</code></td><td>on</td><td>Enables IO time tracking in EXPLAIN ANALYZE</td></tr>
+  <tr><td><code>track_activities</code></td><td>on</td><td>Enables pg_stat_activity</td></tr>
+  <tr><td><code>track_counts</code></td><td>on</td><td>Enables pg_stat_user_tables counters</td></tr>
+  <tr><td><code>pg_stat_statements.track</code></td><td>all</td><td>Tracks statements inside functions too</td></tr>
+  <tr><td><code>log_min_duration_statement</code></td><td>5000</td><td>Logs queries &gt; 5 seconds</td></tr>
+  <tr><td><code>log_checkpoints</code></td><td>on</td><td>Logs checkpoint events</td></tr>
+  <tr><td><code>log_connections</code></td><td>on</td><td>Logs new connections</td></tr>
+  <tr><td><code>log_disconnections</code></td><td>on</td><td>Logs disconnections</td></tr>
+  <tr><td><code>log_temp_files</code></td><td>0</td><td>Logs all temp file usage</td></tr>
+  <tr><td><code>log_autovacuum_min_duration</code></td><td>0</td><td>Logs all autovacuum runs</td></tr>
+  <tr><td><code>log_lock_waits</code></td><td>on</td><td>Logs lock wait events</td></tr>
+</table>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>QPI (Query Performance Insight) depends on <code>pg_stat_statements</code> being enabled and having data. If it's empty, the workload queries weren't run with the extension enabled.</li>
+    <li>Log Analytics ingestion has 5–15 minute latency. If KQL returns empty, wait and try again.</li>
+    <li>The alert email can take a few minutes to arrive. Warn attendees it's not instant.</li>
+    <li>Workbooks are pre-built dashboards — show the gallery and let attendees explore.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 21: MVCC ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-mvcc">21. MVCC Deep Dive</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Understand MVCC mechanism — <code>xmin</code>/<code>xmax</code> system columns</li>
+    <li>UPDATE creates a new row version; DELETE marks rows dead</li>
+    <li>VACUUM reclaims dead tuple space (doesn't shrink file)</li>
+    <li>VACUUM FULL rewrites the table (shrinks file, needs exclusive lock)</li>
+    <li>Autovacuum thresholds and per-table tuning</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 25–35 minutes</strong></div>
+
+<h3>Key Flow</h3>
+<ol>
+  <li>Check baseline: <code>n_live_tup</code>, <code>n_dead_tup</code>, table size</li>
+  <li>Observe MVCC columns: <code>SELECT ctid, xmin, xmax FROM customers LIMIT 5</code></li>
+  <li>Generate dead tuples: <code>UPDATE customers SET loyalty_points = loyalty_points + 10</code> (×2)</li>
+  <li>Check dead tuples increased, table size grew</li>
+  <li>Run <code>VACUUM VERBOSE customers</code> — dead tuples reclaimed, but table size unchanged</li>
+  <li>Run <code>VACUUM FULL VERBOSE customers</code> — table rewritten, size shrinks</li>
+  <li>DELETE rows and repeat the cycle with orders/order_items</li>
+  <li>Explore autovacuum settings: <code>SHOW autovacuum_vacuum_scale_factor</code></li>
+  <li>Set per-table threshold: <code>ALTER TABLE orders SET (autovacuum_vacuum_scale_factor = 0.05)</code></li>
+</ol>
+
+<h3>Key SQL Queries</h3>
+
+<h4>Observe MVCC columns</h4>
+<pre><code>SELECT ctid, xmin, xmax, customer_id, first_name
+FROM customers LIMIT 5;</code></pre>
+<p class="cmd-explain"><code>ctid</code> = physical row location (page, offset). <code>xmin</code> = transaction that created this version. <code>xmax</code> = transaction that deleted/updated it (0 = still live).</p>
+
+<h4>Generate dead tuples</h4>
+<pre><code>UPDATE customers SET loyalty_points = loyalty_points + 10;
+UPDATE customers SET loyalty_points = loyalty_points + 10;
+
+SELECT relname, pg_size_pretty(pg_relation_size(relid)) AS table_size,
+       n_live_tup, n_dead_tup
+FROM pg_stat_user_tables WHERE relname = 'customers';</code></pre>
+<p class="cmd-explain">After two UPDATEs, there are ~20K dead tuples (10K per UPDATE). Table size has grown.</p>
+
+<h4>VACUUM vs VACUUM FULL</h4>
+<pre><code>VACUUM VERBOSE customers;    -- Reclaims dead space for reuse, but file size stays same
+VACUUM FULL VERBOSE customers;  -- Rewrites entire table, file shrinks</code></pre>
+
+<h4>Autovacuum tuning</h4>
+<pre><code>SHOW autovacuum_vacuum_threshold;       -- default 50
+SHOW autovacuum_vacuum_scale_factor;    -- default 0.20 (20%)
+-- Formula: vacuum triggers when dead_tuples > threshold + scale_factor × n_live_tup
+
+ALTER TABLE orders SET (autovacuum_vacuum_scale_factor = 0.05);  -- 5% for high-traffic tables</code></pre>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>This is conceptually challenging for attendees from Oracle/SQL Server backgrounds. In Oracle, dead data goes to the undo tablespace. In SQL Server, tempdb. In PostgreSQL, dead tuples stay <em>in the table</em> until VACUUM.</li>
+    <li>Key insight: <strong>VACUUM</strong> is like clearing recycle bin (space is reusable but file doesn't shrink). <strong>VACUUM FULL</strong> is like defragmenting (rewrites file, needs exclusive lock).</li>
+    <li>Warn that <code>VACUUM FULL</code> takes an <strong>ACCESS EXCLUSIVE lock</strong> — never run it on production during business hours.</li>
+    <li>DELETE of orders/order_items may fail with FK constraint. If so, delete order_items first, then orders.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 22: PARAMETER TUNING ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-params">22. Parameter Tuning</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Understand parameter context levels (user, superuser, sighup, postmaster)</li>
+    <li>Tune <code>work_mem</code> and observe impact on sorts/temp files</li>
+    <li>Tune <code>maintenance_work_mem</code> and observe index creation speed</li>
+    <li>Tune <code>random_page_cost</code> and observe planner behavior change</li>
+    <li>Sizing guidelines for each parameter</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 25–35 minutes</strong></div>
+
+<h3>work_mem Lab</h3>
+<pre><code>-- Low work_mem → sort spills to disk
+SET work_mem = '4MB';
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT DISTINCT ON (customer_id) customer_id, order_id, order_date, total_amount
+FROM orders ORDER BY customer_id, total_amount DESC, order_date DESC;
+
+-- High work_mem → in-memory sort
+SET work_mem = '64MB';
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT DISTINCT ON (customer_id) customer_id, order_id, order_date, total_amount
+FROM orders ORDER BY customer_id, total_amount DESC, order_date DESC;
+
+RESET work_mem;</code></pre>
+<p class="cmd-explain">With 4MB, the EXPLAIN output shows <code>Sort Method: external merge Disk</code>. With 64MB, it shows <code>Sort Method: quicksort Memory</code>. Dramatic timing difference.</p>
+
+<h3>maintenance_work_mem Lab</h3>
+<pre><code>SET maintenance_work_mem = '64MB';
+\timing
+CREATE INDEX idx_orders_cust_amount_date ON orders (customer_id, total_amount DESC, order_date DESC);
+DROP INDEX idx_orders_cust_amount_date;
+
+SET maintenance_work_mem = '512MB';
+CREATE INDEX idx_orders_cust_amount_date ON orders (customer_id, total_amount DESC, order_date DESC);
+RESET maintenance_work_mem;</code></pre>
+<p class="cmd-explain">More maintenance_work_mem = faster index creation/VACUUM. Time the difference.</p>
+
+<h3>random_page_cost Lab</h3>
+<pre><code>SET random_page_cost = 4.0;    -- default (spinning disk assumption)
+EXPLAIN SELECT * FROM orders WHERE customer_id BETWEEN 100 AND 200;
+
+SET random_page_cost = 1.1;    -- SSD-appropriate
+EXPLAIN SELECT * FROM orders WHERE customer_id BETWEEN 100 AND 200;
+RESET random_page_cost;</code></pre>
+<p class="cmd-explain">With 4.0, the planner may choose Seq Scan (random IO is expensive). With 1.1, it prefers Index Scan (random IO is cheap on SSD). Azure uses SSDs → 1.1 is appropriate.</p>
+
+<h3>Sizing Guidelines</h3>
+<table>
+  <tr><th>Parameter</th><th>Guideline</th><th>Notes</th></tr>
+  <tr><td><code>work_mem</code></td><td>total_RAM × 0.25 / max_connections</td><td>Each sort/hash uses one allocation</td></tr>
+  <tr><td><code>shared_buffers</code></td><td>~25% RAM (auto-tuned by Azure)</td><td>Don't change in Azure</td></tr>
+  <tr><td><code>effective_cache_size</code></td><td>~75% RAM (auto-tuned by Azure)</td><td>Planner hint only</td></tr>
+  <tr><td><code>maintenance_work_mem</code></td><td>256MB–1GB</td><td>For VACUUM, CREATE INDEX</td></tr>
+  <tr><td><code>random_page_cost</code></td><td>1.1–2.0 for SSD</td><td>Azure uses Premium SSD</td></tr>
+</table>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>The work_mem lab is the <strong>highest-impact demo</strong> — attendees can see the dramatic difference between disk sort and memory sort in EXPLAIN.</li>
+    <li>Emphasize that <code>work_mem</code> is per-sort-operation, <em>not</em> per-connection. A complex query can use multiple allocations.</li>
+    <li>In Azure Flexible Server, <code>shared_buffers</code> and <code>effective_cache_size</code> are auto-tuned. Don't encourage attendees to change them.</li>
+    <li>The Azure CLI command <code>az postgres flexible-server parameter set</code> can also set parameters — useful for automation.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 23: SQL CHARACTERISTICS ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-sql">23. SQL Characteristics (Partial Indexes + JSONB)</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Partial indexes — index only rows matching a WHERE condition</li>
+    <li>JSONB data type — semi-structured data in PostgreSQL</li>
+    <li>JSONB operators: <code>-&gt;</code>, <code>-&gt;&gt;</code>, <code>@&gt;</code>, <code>?</code>, <code>#&gt;&gt;</code></li>
+    <li>GIN indexes on JSONB columns</li>
+    <li><code>jsonb_set</code>, <code>jsonb_each_text</code></li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 25–30 minutes</strong></div>
+
+<h3>Partial Index Lab</h3>
+<pre><code>CREATE SCHEMA IF NOT EXISTS games;
+SET SEARCH_PATH TO games;
+
+CREATE TABLE games (
+    id         BIGINT PRIMARY KEY GENERATED BY DEFAULT AS IDENTITY,
+    start_time TIMESTAMP NOT NULL DEFAULT now(),
+    end_time   TIMESTAMP NOT NULL,
+    players    INTEGER[] NOT NULL,
+    winner     INTEGER,
+    is_activ   BOOLEAN DEFAULT TRUE
+);
+
+-- Insert ~15M rows
+INSERT INTO games (start_time, end_time, players, winner, is_activ)
+SELECT d, d + '1 hour', ('{' || n || ',' || n + 4 || '}')::INT[], n, TRUE
+FROM generate_series(1, 10000) n,
+     generate_series('2021-01-01'::TIMESTAMP, now()::TIMESTAMP, '1 day'::INTERVAL) d;
+
+-- Mark most games as inactive
+UPDATE games SET is_activ = FALSE WHERE start_time::date &lt;&gt; CURRENT_DATE;
+
+-- Run 4–5 times, observe timing
+SELECT count(*) FROM games WHERE is_activ;
+
+-- Create partial index
+CREATE INDEX ON games(id) WHERE is_activ;
+
+-- Run again — dramatic speedup
+SELECT count(*) FROM games WHERE is_activ;</code></pre>
+<p class="cmd-explain">Without the partial index, PG scans millions of rows. With the partial index, it only scans the few thousand active rows. Typically 100×+ improvement.</p>
+
+<h3>JSONB Lab</h3>
+<pre><code>-- Create table with JSONB column
+CREATE TABLE products (name TEXT, attributes JSONB);
+
+INSERT INTO products (name, attributes)
+VALUES ('Leffe Blonde Ale',
+        '{"category": "Golden / Blonde Ale", "region": "Belgium", "ABV": 6.6}');
+
+-- Operators demo
+SELECT name, attributes -> 'ABV' FROM products;           -- returns JSON value
+SELECT name, attributes ->> 'ABV' FROM products;          -- returns text
+SELECT name FROM products WHERE attributes @> '{"region": "Belgium"}';  -- containment
+
+-- GIN index
+CREATE INDEX ON products USING gin(attributes);
+EXPLAIN SELECT name FROM products WHERE attributes @> '{"region": "Belgium"}';</code></pre>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>The partial index lab generates ~15M rows — the INSERT takes a minute or two. Warn attendees.</li>
+    <li>Emphasize the <strong>practical use case</strong> for partial indexes: active/inactive flags, status columns, soft deletes.</li>
+    <li>For JSONB: the key insight is <code>-&gt;</code> returns JSON, <code>-&gt;&gt;</code> returns text. This matters for WHERE clauses (text comparison vs. JSON containment).</li>
+    <li>GIN indexes are <strong>essential</strong> for JSONB queries to be fast. Without GIN, <code>@&gt;</code> does a full table scan.</li>
+    <li>The beer products dataset is fun — play with it!</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 24: STATISTICS ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-stats">24. Statistics &amp; Query Planning</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Read EXPLAIN output: node types, costs, actual vs. estimated rows</li>
+    <li>Understand cost calculation formula: <code>relpages × seq_page_cost + reltuples × cpu_tuple_cost</code></li>
+    <li>Compare EXPLAIN vs. EXPLAIN ANALYZE</li>
+    <li>Observe index scan vs. sequential scan decision</li>
+    <li>Compare join algorithms: nested loop, hash join, merge join</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 25–35 minutes</strong></div>
+
+<h3>Key Queries</h3>
+
+<h4>Basic EXPLAIN</h4>
+<pre><code>EXPLAIN SELECT * FROM orders;
+SELECT relpages, reltuples FROM pg_class WHERE relname = 'orders';
+VACUUM ANALYZE orders;   -- Update statistics
+EXPLAIN SELECT * FROM orders;   -- Cost may change after fresh ANALYZE</code></pre>
+
+<h4>Cost calculation</h4>
+<pre><code>SELECT relpages * current_setting('seq_page_cost')::numeric
+     + reltuples * current_setting('cpu_tuple_cost')::numeric
+       AS estimated_cost
+FROM pg_class WHERE relname = 'orders';</code></pre>
+<p class="cmd-explain">This should match the total cost in the EXPLAIN output — demonstrates how the planner calculates cost.</p>
+
+<h4>WHERE filter selectivity</h4>
+<pre><code>EXPLAIN ANALYZE SELECT * FROM orders WHERE customer_id &lt; 200;</code></pre>
+
+<h4>Index scan comparison</h4>
+<pre><code>CREATE INDEX idx_orders_customer_id ON orders(customer_id);
+EXPLAIN ANALYZE SELECT * FROM orders WHERE customer_id &lt; 200;
+-- Now shows Index Scan instead of Seq Scan</code></pre>
+
+<h4>Join algorithms</h4>
+<pre><code>EXPLAIN ANALYZE
+SELECT o.order_id, c.name, o.total_amount
+FROM orders o JOIN customers c ON c.customer_id = o.customer_id
+WHERE o.customer_id &lt; 200;
+
+-- Force different algorithms
+SET enable_nestloop TO off;
+EXPLAIN ANALYZE ...   -- Planner picks Hash Join
+
+SET enable_hashjoin TO off;
+EXPLAIN ANALYZE ...   -- Planner picks Merge Join
+
+RESET enable_nestloop;
+RESET enable_hashjoin;</code></pre>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li><strong>"Why did the planner choose Index Scan rather than Index Only Scan?"</strong> — Because the query selects columns not in the index. An Index Only Scan requires all selected columns to be in the index.</li>
+    <li><strong>"Which algorithm was fastest?"</strong> — Compare <code>Execution Time</code> values. Usually Nested Loop for small result sets, Hash Join for larger.</li>
+    <li>The cost formula demo is a powerful "aha" moment — the planner's math is transparent.</li>
+    <li>Remind attendees to <code>DROP INDEX idx_orders_customer_id</code> at the end — the index tuning lab starts from scratch.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 25: INDEX TUNING LAB ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-index">25. Index Tuning Lab — Fix the Broken Workload</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Apply the index tuning methodology: baseline → identify problem → add indexes → re-measure → compare</li>
+    <li>Understand which queries benefit from indexing and which don't</li>
+    <li>Create covering indexes and composite indexes</li>
+    <li>Measure improvement with <code>pg_stat_statements</code> before/after</li>
+    <li>Understand index cost/benefit tradeoffs (storage, write overhead)</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 30–40 minutes</strong> (the "capstone" lab of the workshop)</div>
+
+<h3>Step 1 — Reset Statistics</h3>
+<pre><code>SELECT pg_stat_reset();
+SELECT pg_stat_statements_reset();</code></pre>
+<p class="cmd-explain">Clean slate for before/after comparison.</p>
+
+<h3>Step 2 — Baseline (run problem queries with EXPLAIN ANALYZE)</h3>
+<p>Re-run Queries 1, 2, and 6 from the workload section with <code>EXPLAIN (ANALYZE, BUFFERS)</code>. Record execution times.</p>
+
+<h3>Step 3 — Create Indexes</h3>
+<pre><code>CREATE INDEX idx_orders_customer_id ON orders (customer_id);
+CREATE INDEX idx_order_items_order_id ON order_items (order_id);
+CREATE INDEX idx_order_items_product_id ON order_items (product_id);
+CREATE INDEX idx_orders_cust_amount_date ON orders (customer_id, total_amount DESC, order_date DESC);
+CREATE INDEX idx_orders_cust_total ON orders (customer_id, total_amount);
+
+\di    -- Verify indexes created
+ANALYZE customers, orders, order_items, products;</code></pre>
+
+<h3>Step 4 — Re-measure</h3>
+<p>Re-run the same EXPLAIN ANALYZE queries. Compare execution times.</p>
+
+<h3>Expected Improvements</h3>
+<table>
+  <tr><th>Query</th><th>Before</th><th>After</th><th>Improvement</th></tr>
+  <tr><td>Q2 (Correlated Subquery)</td><td>Slow (N+1 scans)</td><td>Fast (index lookup)</td><td><strong>10–50×</strong></td></tr>
+  <tr><td>Q1 (Cross-Join Aggregation)</td><td>Full table scans</td><td>Index-assisted joins</td><td><strong>2–5×</strong></td></tr>
+  <tr><td>Q6 (DISTINCT ON)</td><td>Full sort, temp files</td><td>Composite index eliminates sort</td><td><strong>3–10×</strong></td></tr>
+</table>
+
+<h3>Step 5 — Queries That DON'T Benefit</h3>
+<pre><code>-- Q3 (Window Functions) — still slow
+\timing
+SELECT order_id, customer_id, order_date, total_amount,
+       SUM(total_amount) OVER (...) AS running_total, ...
+FROM orders;
+
+-- Q5 (md5 Loop) — still slow
+DO $$ BEGIN FOR i IN 1..20 LOOP ... END LOOP; END $$;</code></pre>
+<p class="cmd-explain"><strong>Why?</strong> Q3: Window functions must process the entire result set regardless of indexes. Q5: <code>md5()</code> computed filter can't be indexed with B-tree. These need <strong>parameter tuning</strong> (work_mem) or <strong>query rewrites</strong>.</p>
+
+<h3>Step 6 — Check Index Sizes</h3>
+<pre><code>SELECT tablename, indexname,
+       pg_size_pretty(pg_relation_size(indexname::regclass)) AS index_size
+FROM pg_indexes WHERE schemaname = 'public'
+ORDER BY pg_relation_size(indexname::regclass) DESC;</code></pre>
+
+<h3>Analysis (pg_stat_statements)</h3>
+<pre><code>SELECT calls,
+       ROUND(total_exec_time::numeric, 2) AS total_ms,
+       ROUND(mean_exec_time::numeric, 2) AS mean_ms,
+       shared_blks_hit, shared_blks_read, temp_blks_written,
+       LEFT(query, 120) AS query
+FROM pg_stat_statements
+ORDER BY total_exec_time DESC LIMIT 10;</code></pre>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>This is the <strong>capstone lab</strong> — tie together everything from monitoring, statistics, and parameter tuning.</li>
+    <li>Walk attendees through the before/after EXPLAIN output side by side. Highlight:
+      <ul>
+        <li><strong>Seq Scan → Index Scan</strong></li>
+        <li><strong>Sort Method: external merge Disk → quicksort Memory</strong></li>
+        <li><strong>Execution Time</strong> reduction</li>
+        <li><strong>Buffers: shared hit</strong> vs <strong>shared read</strong> changes</li>
+      </ul>
+    </li>
+    <li>Key discussion point: <strong>Indexes have a cost</strong> — each index adds write overhead and storage. Don't create indexes blindly.</li>
+    <li>"Why doesn't indexing help Q3 and Q5?" is a great question to pose to the group before revealing the answer.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 26: EXTENSIONS ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-extensions">26. Extensions Overview <span class="badge badge-optional">Optional</span></h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Discover available extensions (<code>pg_available_extensions</code>)</li>
+    <li>Hands-on with: <code>pg_trgm</code> (fuzzy text search), <code>uuid-ossp</code>, <code>pgcrypto</code>, <code>pg_cron</code></li>
+    <li>Practical use cases: typo-tolerant search, password hashing, scheduled jobs</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 20–30 minutes (skip if behind schedule)</strong></div>
+
+<h3>Extension Discovery</h3>
+<pre><code>SHOW azure.extensions;
+SELECT name, default_version, comment FROM pg_available_extensions ORDER BY name;</code></pre>
+
+<h3>pg_trgm — Fuzzy Text Search</h3>
+<pre><code>CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+-- Before index: Seq Scan
+EXPLAIN (ANALYZE) SELECT customer_id, first_name, last_name, email
+FROM customers WHERE email LIKE '%jones%';
+
+-- Create GIN trigram index
+CREATE INDEX idx_customers_email_trgm ON customers USING gin (email gin_trgm_ops);
+
+-- After index: Bitmap Index Scan
+EXPLAIN (ANALYZE) SELECT customer_id, first_name, last_name, email
+FROM customers WHERE email LIKE '%jones%';
+
+-- Fuzzy matching
+SELECT customer_id, first_name, last_name, similarity(last_name, 'Smith') AS sim
+FROM customers WHERE last_name % 'Smith'
+ORDER BY sim DESC LIMIT 10;</code></pre>
+
+<h3>pgcrypto — Password Hashing</h3>
+<pre><code>CREATE EXTENSION IF NOT EXISTS pgcrypto;
+SELECT crypt('my_password', gen_salt('bf', 10)) AS hashed;
+
+-- Verify password
+SELECT (crypt('my_password', hashed) = hashed) AS password_matches
+FROM (SELECT crypt('my_password', gen_salt('bf', 10)) AS hashed) sub;</code></pre>
+
+<h3>pg_cron — Scheduled Jobs</h3>
+<pre><code>CREATE EXTENSION IF NOT EXISTS pg_cron;
+SELECT cron.schedule('nightly-vacuum', '0 3 * * *', 'VACUUM ANALYZE orders');
+SELECT cron.schedule('weekly-stats-reset', '0 0 * * 0', 'SELECT pg_stat_reset()');
+SELECT * FROM cron.job;
+SELECT cron.unschedule('nightly-vacuum');</code></pre>
+<p class="cmd-explain">Requires <code>shared_preload_libraries = pg_cron</code> and <code>cron.database_name = orders_demo</code> in server parameters (restart needed).</p>
+
+<h3>Practical Demo on orders_demo</h3>
+<pre><code>-- Typo-tolerant city search
+CREATE INDEX idx_cust_city_trgm ON customers USING gin (city gin_trgm_ops);
+SELECT customer_id, city, country FROM customers
+WHERE city % 'Londen' ORDER BY similarity(city, 'Londen') DESC LIMIT 10;
+
+-- Anonymised export
+SELECT gen_random_uuid() AS anon_id, city, country, loyalty_points
+FROM customers LIMIT 5;
+
+-- Email hashing for GDPR
+SELECT customer_id, encode(digest(email, 'sha256'), 'hex') AS email_hash, city, country
+FROM customers LIMIT 5;</code></pre>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>This is the last hands-on section. Keep it light and fun.</li>
+    <li>The city typo search ("Londen" → finds "London") always gets a good reaction.</li>
+    <li>pg_cron requires a server restart — check if attendees have already configured <code>shared_preload_libraries</code> correctly.</li>
+    <li>Mention PostGIS, hstore, citext, pg_buffercache as other notable extensions but don't demo them.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 27: CLEANUP ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-cleanup">27. Cleanup</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Delete all workshop resources to avoid ongoing charges</li>
+    <li>Verify deletion completed</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 5–10 minutes</strong></div>
+
+<h3>CLI Cleanup</h3>
+<pre><code># List everything in the resource group
+az resource list --resource-group PG-Workshop --output table
+
+# Delete the entire resource group (non-blocking)
+az group delete --name PG-Workshop --yes --no-wait
+
+# Verify deletion (may take a few minutes)
+az group show --name PG-Workshop</code></pre>
+
+<h3>Portal Cleanup (alternative)</h3>
+<ol>
+  <li>Go to <strong>Resource groups</strong> → <code>PG-Workshop</code></li>
+  <li>Click <strong>Delete resource group</strong></li>
+  <li>Type <code>PG-Workshop</code> in confirmation → <strong>Delete</strong></li>
+</ol>
+
+<h3>Local Cleanup (optional)</h3>
+<pre><code>rm -f ~/.pg_azure ~/.pgpass</code></pre>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li><strong>This is critical.</strong> Walk the room and verify every attendee has started the deletion. Leftover resources = unexpected Azure bills.</li>
+    <li>If an attendee created a replica server (logical replication section), remind them to delete that too — it's in the same resource group.</li>
+    <li>If the resource group has a <strong>Delete lock</strong> (from the managing DB section), it must be removed first: Locks → select lock → Delete.</li>
+    <li>Resource group deletion takes 5–15 minutes. The <code>--no-wait</code> flag returns immediately.</li>
+  </ul>
+</div>
+
+<div class="box box-pitfall">
+  <strong>Common Pitfalls</strong>
+  <ul>
+    <li><strong>"Cannot delete resource group because of locks":</strong> Remove the delete lock from the Locks blade first.</li>
+    <li><strong>Attendee forgot their resource group name:</strong> <code>az group list --output table</code> shows all groups.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ APPENDIX ═══════════════════ -->
+<hr class="section-divider">
+<h2 style="border-left-color:var(--purple);">Appendix A — Quick Reference Cards</h2>
+
+<h3>Essential psql Commands</h3>
+<table>
+  <tr><th>Command</th><th>Purpose</th></tr>
+  <tr><td><code>\l</code></td><td>List databases</td></tr>
+  <tr><td><code>\c dbname</code></td><td>Connect to database</td></tr>
+  <tr><td><code>\dt</code></td><td>List tables</td></tr>
+  <tr><td><code>\d tablename</code></td><td>Describe table</td></tr>
+  <tr><td><code>\di</code></td><td>List indexes</td></tr>
+  <tr><td><code>\du</code></td><td>List roles</td></tr>
+  <tr><td><code>\dp</code></td><td>Show privileges</td></tr>
+  <tr><td><code>\conninfo</code></td><td>Connection details</td></tr>
+  <tr><td><code>\timing</code></td><td>Toggle timing</td></tr>
+  <tr><td><code>\x</code></td><td>Toggle expanded view</td></tr>
+  <tr><td><code>\pset pager off</code></td><td>Disable paging</td></tr>
+</table>
+
+<h3>Essential Diagnostic Queries</h3>
+<table>
+  <tr><th>Query</th><th>Purpose</th></tr>
+  <tr><td><code>SELECT * FROM pg_stat_activity WHERE state != 'idle';</code></td><td>Active queries</td></tr>
+  <tr><td><code>SELECT * FROM pg_stat_user_tables;</code></td><td>Table statistics (scans, tuples, vacuum)</td></tr>
+  <tr><td><code>SELECT * FROM pg_stat_user_indexes;</code></td><td>Index usage stats</td></tr>
+  <tr><td><code>SELECT * FROM pg_stat_statements ORDER BY total_exec_time DESC LIMIT 10;</code></td><td>Top queries by time</td></tr>
+  <tr><td><code>SELECT * FROM pg_stat_database WHERE datname = current_database();</code></td><td>Database-level stats</td></tr>
+</table>
+
+<h3>Parameter Sizing Cheat Sheet</h3>
+<table>
+  <tr><th>Parameter</th><th>Formula / Guideline</th></tr>
+  <tr><td><code>work_mem</code></td><td>RAM × 0.25 / max_connections</td></tr>
+  <tr><td><code>shared_buffers</code></td><td>~25% RAM (Azure auto-tunes)</td></tr>
+  <tr><td><code>effective_cache_size</code></td><td>~75% RAM (Azure auto-tunes)</td></tr>
+  <tr><td><code>maintenance_work_mem</code></td><td>256MB – 1GB</td></tr>
+  <tr><td><code>random_page_cost</code></td><td>1.1 – 2.0 (SSD)</td></tr>
+</table>
+
+<hr class="section-divider">
+<h2 style="border-left-color:var(--purple);">Appendix B — Workshop Statistics</h2>
+
+<table>
+  <tr><th>Metric</th><th>Count</th></tr>
+  <tr><td>Total Sections</td><td>27 (including 3 optional)</td></tr>
+  <tr><td>CLI Commands</td><td>~85</td></tr>
+  <tr><td>SQL Queries</td><td>~140</td></tr>
+  <tr><td>Azure Portal Actions</td><td>~80</td></tr>
+  <tr><td>Concepts Covered</td><td>200+</td></tr>
+  <tr><td>Major Hands-On Labs</td><td>15</td></tr>
+  <tr><td>Total Duration</td><td>2 days (~12 hours including breaks)</td></tr>
+</table>
+
+<hr class="section-divider">
+<h2 style="border-left-color:var(--purple);">Appendix C — Pre-Workshop Checklist</h2>
+
+<div class="box box-proctor">
+  <strong>1–2 Weeks Before</strong>
+  <ul>
+    <li>☐ Verify all attendees have Azure subscriptions with Owner/Contributor</li>
+    <li>☐ Test Bicep deployment in target region (ensure PG v18 is available)</li>
+    <li>☐ Verify dump URL is accessible: <code>curl -I https://pg.azure-workshops.cloud/database/workshop_backup.dump</code></li>
+    <li>☐ Send pre-read to attendees: prerequisites page</li>
+    <li>☐ Book room with good WiFi and power outlets</li>
+  </ul>
+</div>
+
+<div class="box box-proctor">
+  <strong>Day Of — Morning Setup</strong>
+  <ul>
+    <li>☐ Arrive 30 min early; test projector, WiFi</li>
+    <li>☐ Deploy your own environment end-to-end as a proctor backup</li>
+    <li>☐ Have this guide open on a second screen</li>
+    <li>☐ Pre-open: Azure Portal, Cloud Shell, workshop site</li>
+    <li>☐ Ensure attendees can access the workshop URL</li>
+  </ul>
+</div>
+
+<div class="box box-proctor">
+  <strong>End of Day 2</strong>
+  <ul>
+    <li>☐ Walk the room: verify all attendees have started resource group deletion</li>
+    <li>☐ Remind about replica servers (if logical replication was done)</li>
+    <li>☐ Remind to remove delete locks before deleting resource groups</li>
+    <li>☐ Collect feedback</li>
+  </ul>
+</div>
+
+<hr style="margin-top:3rem;">
+<p style="text-align:center;color:#6c757d;font-size:.85rem;">
+  Azure PostgreSQL Flexible Server Workshop — Proctor Guide<br>
+  Generated for internal use only. Not part of the attendee-facing workshop materials.
+</p>
+
+</body>
+</html>
