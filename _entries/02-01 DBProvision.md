@@ -86,7 +86,27 @@ The deployment takes approximately **10–15 minutes**. When it finishes, note t
 
 ![Deployment succeeded](media/resource-groups-sucess.png)
 
-#### Step 5 — SSH into the jumpbox and verify connectivity
+#### Step 5 — Verify resources and collect connection details
+
+Go to **Resource Groups** in the Azure Portal and click on **PG-Workshop**. You should see:
+
+- Jumpbox VM (`jumpbox`)
+- PostgreSQL Flexible Server
+- Hub and Spoke virtual networks
+- Private DNS zone
+- Network security group
+- Storage account
+
+Keep these values accessible — you will use them in every subsequent section:
+
+| Value | Where to find it |
+|---|---|
+| **Jumpbox VM public IP** | Azure Portal → `PG-Workshop` → `jumpbox` VM → **Overview** → Public IP address |
+| **PostgreSQL FQDN** | Azure Portal → `PG-Workshop` → PostgreSQL Flexible Server → **Overview** → Server name |
+| **VM admin username** | The `vmAdminUsername` you entered in Step 4 |
+| **PostgreSQL admin username** | The `postgreSqlAdministratorLogin` you entered in Step 4 |
+
+#### Step 6 — SSH into the jumpbox and verify connectivity
 
 ```sh
 ssh <vmAdminUsername>@<jumpbox-public-ip>
@@ -168,17 +188,16 @@ psql "host=<server-fqdn> user=<administratorLogin> dbname=postgres sslmode=requi
 
 If you do not have `psql` installed, you can connect from the Azure Portal: go to your PostgreSQL server → **Connect** blade.
 
----
+#### Step 6 — Verify resources and collect connection details
 
-### Verify the Deployed Resources
+Go to **Resource Groups** in the Azure Portal and click on **PG-Workshop**. You should see:
 
-Go to **Resource Groups** in the Azure Portal and click on **PG-Workshop**.
-
-You should see the deployed resources (jumpbox VM, PostgreSQL Flexible Server, virtual networks, DNS zone for Option 1 — or just the PostgreSQL server for Option 2).
-
-### Collect Connection Details
+- PostgreSQL Flexible Server
+- Firewall rule with your IP address
 
 Keep these values accessible — you will use them in every subsequent section:
 
-1. **Jumpbox VM public IP** *(Option 1 only)* — found on the jumpbox VM overview page
-2. **PostgreSQL Flexible Server endpoint** (FQDN) — found on the PostgreSQL server overview page
+| Value | Where to find it |
+|---|---|
+| **PostgreSQL FQDN** | Azure Portal → `PG-Workshop` → PostgreSQL Flexible Server → **Overview** → Server name |
+| **PostgreSQL admin username** | The `administratorLogin` you entered in Step 4 |
