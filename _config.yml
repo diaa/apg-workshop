@@ -3,6 +3,8 @@ name: "The Azure PostgreSQL Workshop"
 tracking: "apgworkshop"
 author: Microsoft
 encoding: utf-8
+url: "https://diaa.github.io"
+baseurl: "/apg-workshop"
 defaults:
   -
     values:
@@ -12,7 +14,8 @@ kramdown:
   input: GFM
 relative_permalinks: false
 collections:
-- entries
+  entries:
+    output: false
 sass:
   sass_dir: _sass
   style: :compressed
