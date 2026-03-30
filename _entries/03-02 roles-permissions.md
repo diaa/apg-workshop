@@ -11,6 +11,34 @@ In this section you will learn how PostgreSQL manages access control through its
 
 ---
 
+### What You Will Build
+
+By the end of this lab you will have built a complete access model for the `orders_demo` database with three different user profiles, each demonstrating a different security pattern:
+
+![Roles and Permissions Flow](media/roles-access-flow.svg)
+
+<div style="max-width:800px; margin:1em 0;">
+
+| Who | Role chain | Behaviour | Real-world scenario |
+|---|---|---|---|
+| **dev_user** | `dev_user` → `app_team` (INHERIT) | Connects and **immediately** has read/write access to all tables | Application service account, backend developer |
+| **analyst_user** | `analyst_user` → `readonly` (INHERIT) | Connects and **immediately** has SELECT-only access — cannot modify data | BI analyst, reporting dashboard, read replica user |
+| **contractor_user** | `contractor_user` → `app_team` (NOINHERIT) | Connects with **no privileges** — must explicitly `SET ROLE app_team` to elevate | External contractor, break-glass admin, audited access |
+
+</div>
+
+**Why this matters:** In production, you should never give every user the admin credentials you created during deployment. Instead, create group roles that hold privileges, then assign users to those groups. This is the same principle as Active Directory groups or IAM roles — but implemented at the PostgreSQL level.
+
+**Key concepts you will practice:**
+
+1. **Roles are the only access object** — PostgreSQL has no separate "users" and "groups." Everything is a role. `CREATE USER` is just an alias for `CREATE ROLE ... LOGIN`.
+2. **INHERIT vs NOINHERIT** — controls whether a member automatically gets the parent role's privileges (like a normal group) or must explicitly activate them (like `sudo`).
+3. **Privilege codes** — the compact letter codes (`r`, `a`, `w`, `d`, `D`, `x`, `t`) that PostgreSQL uses to represent SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, and TRIGGER.
+4. **Default privileges** — ensuring future tables get the right grants automatically, not just tables that exist today.
+5. **Schema isolation** — revoking the overly permissive default on the `public` schema.
+
+---
+
 ### Lab Overview
 
 To make this easier to digest, the access model is split into three short diagrams.
