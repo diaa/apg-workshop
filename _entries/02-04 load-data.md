@@ -110,7 +110,7 @@ Before restoring any data, run the following meta-commands to understand what is
 The workshop uses a pre-built custom-format dump that contains four tables with realistic e-commerce data (~410K rows total).
 
 ```sh
-curl -L -o orders_demo.dump "https://pg.azure-workshops.cloud/database/workshop_backup.dump"
+curl -L -O "https://pg.azure-workshops.cloud/database/orders_demo.dump"
 ```
 
 Verify the file downloaded correctly:

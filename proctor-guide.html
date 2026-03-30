@@ -344,6 +344,12 @@ curl -s ifconfig.me</code></pre>
     <li><strong>"SubscriptionNotFound" / wrong subscription:</strong> Run <code>az account set --subscription &lt;id&gt;</code>.</li>
     <li><strong>Deployment fails with "InternalServerError":</strong> PG v18 may not be available in the selected region. Use <code>uksouth</code>.</li>
     <li><strong>Password rejected:</strong> Enterprise: min 8 chars. Simple: min 12 chars. Both need upper/lower/number/special.</li>
+    <li><strong>Password contains special characters (<code>!</code>, <code>$</code>, etc.):</strong> Bash mangles <code>!</code> inside double quotes (history expansion). If attendees stored passwords in <code>~/.pg_azure</code> or <code>~/.pgpass</code> using <code>echo "..."</code>, the password is corrupted. Fix: use <code>nano</code> to edit the files directly, or choose a password without shell metacharacters. To reset the PostgreSQL password via CLI:
+<pre><code>az postgres flexible-server update \
+  --resource-group PG-Workshop \
+  --name &lt;server-name&gt; \
+  --admin-password "NewStrongPassword123"</code></pre>
+    Recommend passwords that avoid <code>!</code> <code>$</code> <code>`</code> <code>\</code> <code>"</code> <code>'</code> — safe specials: <code>-</code> <code>_</code> <code>.</code> <code>@</code> <code>#</code> <code>%</code> <code>^</code> <code>+</code> <code>=</code></li>
     <li><strong>SSH "Connection refused":</strong> Check the jumpbox NSG allows port 22 from the attendee's IP.</li>
     <li><strong>Option 2 "connection timed out":</strong> The firewall IP doesn't match the attendee's actual public IP (VPN/proxy). Re-run the IP check and update the firewall in the Portal.</li>
   </ul>
@@ -519,8 +525,8 @@ CREATE DATABASE orders_demo;</code></pre>
 
 <h4>Step 3 — Download and restore the dump</h4>
 <pre><code>cd /tmp
-curl -O https://pg.azure-workshops.cloud/database/workshop_backup.dump
-pg_restore -h $PGHOST -U $PGUSER -d orders_demo --no-owner --verbose /tmp/workshop_backup.dump</code></pre>
+curl -O https://pg.azure-workshops.cloud/database/orders_demo.dump
+pg_restore -h $PGHOST -U $PGUSER -d orders_demo --no-owner --verbose /tmp/orders_demo.dump</code></pre>
 <p class="cmd-explain">Downloads the pre-built dump file from the workshop CDN and restores it with <code>pg_restore</code>. The <code>--no-owner</code> flag avoids errors about missing original roles.</p>
 
 <h4>Step 4 — Verify the data</h4>
@@ -1857,7 +1863,7 @@ az group show --name PG-Workshop</code></pre>
   <ul>
     <li>☐ Verify all attendees have Azure subscriptions with Owner/Contributor</li>
     <li>☐ Test Bicep deployment in target region (ensure PG v18 is available)</li>
-    <li>☐ Verify dump URL is accessible: <code>curl -I https://pg.azure-workshops.cloud/database/workshop_backup.dump</code></li>
+    <li>☐ Verify dump URL is accessible: <code>curl -I https://pg.azure-workshops.cloud/database/orders_demo.dump</code></li>
     <li>☐ Send pre-read to attendees: prerequisites page</li>
     <li>☐ Book room with good WiFi and power outlets</li>
   </ul>

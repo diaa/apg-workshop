@@ -99,10 +99,10 @@ SELECT count(*) FROM pg_stat_activity;
 ```
 
 ```psql
-\watch 2    -- meta-command: re-runs the last query every 2 seconds. Press Ctrl+C to stop.
+\watch 2
 ```
 
-This runs the count every 2 seconds. Press `Ctrl+C` to stop.
+This re-runs the query every 2 seconds. Press `Ctrl+C` to stop.
 
 ---
 
@@ -143,6 +143,16 @@ psql -f /path/to/script.sql
 ```
 
 This is how you will restore database dumps and run batch scripts later in the workshop.
+
+#### Running a single command from the shell
+
+If `.pgpass` and `.pg_azure` are set up, you can run one-off SQL directly from the shell with `-c`:
+
+```sh
+psql -c "CREATE DATABASE orders_demo;"
+```
+
+You will use this in the next section to create the workshop database before loading data.
 
 ---
 
