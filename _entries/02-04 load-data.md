@@ -127,11 +127,21 @@ You should see a file of roughly 5–10 MB. If the file is missing or 0 bytes, c
 psql -h <postgresql-fqdn> -U <pgadmin> -d postgres -c "CREATE DATABASE orders_demo;"
 ```
 
+> **Tip:** If you configured `.pg_azure` and `.pgpass` in the previous section, you can omit `-h` and `-U` and you won't be prompted for a password:
+> ```sh
+> psql -c "CREATE DATABASE orders_demo;"
+> ```
+
 #### 4.4 — Restore the dump with pg_restore
 
 ```sh
 pg_restore -h <postgresql-fqdn> -U <pgadmin> -d orders_demo --no-owner --no-privileges --verbose orders_demo.dump
 ```
+
+> With `.pg_azure` and `.pgpass` configured:
+> ```sh
+> pg_restore -d orders_demo --no-owner --no-privileges --verbose orders_demo.dump
+> ```
 
 Flag reference:
 - `--no-owner` — skip ownership assignment (avoids errors when the original owner doesn't exist on this server)
