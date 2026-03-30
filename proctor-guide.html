@@ -105,7 +105,7 @@
 <div class="toc">
 <h2>Table of Contents</h2>
 <ol>
-  <span class="day-label">Day 1 — Foundations &amp; Business Continuity (09:00 – 16:00)</span>
+  <span class="day-label">Day 1 — Deploy, Connect, Monitor, Administer &amp; Protect (09:00 – 16:00)</span>
   <li><a href="#ch-intro">1. Introduction &amp; Agenda</a></li>
   <li><a href="#ch-prereqs">2. Prerequisites &amp; Deployment</a></li>
   <li><a href="#ch-overview">3. Workshop Overview</a></li>
@@ -115,19 +115,19 @@
   <li><a href="#ch-psql">7. psql Client Tutorial</a></li>
   <li><a href="#ch-load">8. Load Data (orders_demo)</a></li>
   <li><a href="#ch-workload">9. Run Demo Workload</a></li>
-  <li><a href="#ch-manage">10. Managing PostgreSQL DB</a></li>
-  <li><a href="#ch-roles">11. Roles &amp; Permissions</a></li>
-  <li><a href="#ch-pgbouncer">12. Connection Pooling (PgBouncer)</a> <span class="badge badge-optional">Optional</span></li>
-  <li><a href="#ch-logical-backup">13. Logical Backup &amp; Restore</a></li>
-  <li><a href="#ch-pitr">14. Physical Backup &amp; PITR</a></li>
-  <li><a href="#ch-replication">15. Logical Replication</a> <span class="badge badge-optional">Optional</span></li>
-  <li><a href="#ch-hadr">16. HA / DR</a></li>
-  <li><a href="#ch-patching">17. Patching &amp; Maintenance</a></li>
-  <li><a href="#ch-security">18. Security Management (pgAudit)</a></li>
+  <li><a href="#ch-monitoring">10. Azure Monitoring &amp; Alerting</a> <span class="badge badge-demo">Moved — was Day 2</span></li>
+  <li><a href="#ch-manage">11. Managing PostgreSQL DB</a></li>
+  <li><a href="#ch-roles">12. Roles &amp; Permissions</a></li>
+  <li><a href="#ch-pgbouncer">13. Connection Pooling (PgBouncer)</a> <span class="badge badge-optional">Optional</span></li>
+  <li><a href="#ch-logical-backup">14. Logical Backup &amp; Restore</a></li>
+  <li><a href="#ch-pitr">15. Physical Backup &amp; PITR</a></li>
+  <li><a href="#ch-replication">16. Logical Replication</a> <span class="badge badge-optional">Optional</span></li>
+  <li><a href="#ch-hadr">17. HA / DR</a></li>
+  <li><a href="#ch-patching">18. Patching &amp; Maintenance</a></li>
+  <li><a href="#ch-security">19. Security Management (pgAudit)</a></li>
 
-  <span class="day-label">Day 2 — Performance &amp; Optimisation (09:00 – 15:30)</span>
-  <li><a href="#ch-profiling">19. Database Profiling &amp; Activity Analysis</a></li>
-  <li><a href="#ch-monitoring">20. Azure Monitoring &amp; Alerting</a></li>
+  <span class="day-label">Day 2 — Profile, Diagnose &amp; Fix (09:00 – 15:15)</span>
+  <li><a href="#ch-profiling">20. Database Profiling &amp; Activity Analysis</a></li>
   <li><a href="#ch-mvcc">21. MVCC Deep Dive</a></li>
   <li><a href="#ch-params">22. Parameter Tuning</a></li>
   <li><a href="#ch-sql">23. SQL Characteristics (Partial Indexes + JSONB)</a></li>
@@ -135,6 +135,10 @@
   <li><a href="#ch-index">25. Index Tuning Lab</a></li>
   <li><a href="#ch-extensions">26. Extensions Overview</a> <span class="badge badge-optional">Optional</span></li>
   <li><a href="#ch-cleanup">27. Cleanup</a></li>
+
+  <span class="day-label">Reference</span>
+  <li><a href="#ch-flow">Workshop Flow &amp; Pacing Guide</a></li>
+  <li><a href="#ch-objections">Common Objections &amp; How to Handle Them</a></li>
 </ol>
 </div>
 
@@ -162,7 +166,9 @@
     <li>Ask attendees their experience level with PostgreSQL and Azure. This sets the pace for the day.</li>
     <li>Emphasize: "There are no silly questions." Mixed audiences (DBA + dev) will have very different knowledge gaps.</li>
     <li>Mention that sections marked <em>Optional</em> can be skipped if the group is running behind.</li>
-    <li>Day 1 finishes with security at ~16:00. Day 2 finishes with optional extensions by ~15:30.</li>
+    <li>Day 1: Deploy → Break Things → <strong>Monitor immediately</strong> (while damage is fresh) → Admin → Business Continuity. Finishes ~16:00.</li>
+    <li>Day 2: Profiling → MVCC → Parameter Tuning → SQL Features → Index Tuning Lab. Finishes ~15:15.</li>
+    <li><strong>Key change:</strong> Azure Monitoring is now on Day 1 (right after the workload), not Day 2. This lets attendees see metrics while CPU spikes are still visible in the portal charts.</li>
   </ul>
 </div>
 
@@ -228,7 +234,7 @@
   <strong>Proctor Notes</strong>
   <ul>
     <li>Walk through the 10-step journey table briefly. Emphasize that Day 2 depends on the workload from Day 1.</li>
-    <li>Steps: Deploy → Connect → Load Data → Break It → Administer → Protect → Monitor → Tune → Optimise → Clean Up</li>
+    <li>Steps: Deploy → Connect → Load Data → Break It → <strong>Monitor</strong> (immediately — while damage is fresh) → Administer → Protect → Profile &amp; Diagnose → Fix → Clean Up</li>
   </ul>
 </div>
 
@@ -670,7 +676,7 @@ FROM pg_stat_database WHERE datname = 'orders_demo';</code></pre>
 
 <!-- ═══════════════════ CHAPTER 10: MANAGING DB ═══════════════════ -->
 <hr class="section-divider">
-<h2 id="ch-manage">10. Managing PostgreSQL DB</h2>
+<h2 id="ch-manage">11. Managing PostgreSQL DB</h2>
 
 <div class="box box-learning">
   <strong>Learning Objectives</strong>
@@ -708,7 +714,7 @@ SHOW pgbouncer;</code></pre>
 
 <!-- ═══════════════════ CHAPTER 11: ROLES & PERMISSIONS ═══════════════════ -->
 <hr class="section-divider">
-<h2 id="ch-roles">11. Roles &amp; Permissions</h2>
+<h2 id="ch-roles">12. Roles &amp; Permissions</h2>
 
 <div class="box box-learning">
   <strong>Learning Objectives</strong>
@@ -807,7 +813,7 @@ DELETE FROM customers WHERE email IN ('test@workshop.dev', 'another@workshop.dev
 
 <!-- ═══════════════════ CHAPTER 12: PGBOUNCER ═══════════════════ -->
 <hr class="section-divider">
-<h2 id="ch-pgbouncer">12. Connection Pooling (PgBouncer) <span class="badge badge-optional">Optional</span></h2>
+<h2 id="ch-pgbouncer">13. Connection Pooling (PgBouncer) <span class="badge badge-optional">Optional</span></h2>
 
 <div class="box box-learning">
   <strong>Learning Objectives</strong>
@@ -850,7 +856,7 @@ SHOW SERVERS;</code></pre>
 
 <!-- ═══════════════════ CHAPTER 13: LOGICAL BACKUP ═══════════════════ -->
 <hr class="section-divider">
-<h2 id="ch-logical-backup">13. Logical Backup &amp; Restore</h2>
+<h2 id="ch-logical-backup">14. Logical Backup &amp; Restore</h2>
 
 <div class="box box-learning">
   <strong>Learning Objectives</strong>
@@ -914,7 +920,7 @@ pg_dumpall -g --no-role-passwords > /tmp/globals.sql</code></pre>
 
 <!-- ═══════════════════ CHAPTER 14: PITR ═══════════════════ -->
 <hr class="section-divider">
-<h2 id="ch-pitr">14. Physical Backup &amp; Point-in-Time Restore (PITR)</h2>
+<h2 id="ch-pitr">15. Physical Backup &amp; Point-in-Time Restore (PITR)</h2>
 
 <div class="box box-learning">
   <strong>Learning Objectives</strong>
@@ -947,7 +953,7 @@ pg_dumpall -g --no-role-passwords > /tmp/globals.sql</code></pre>
 
 <!-- ═══════════════════ CHAPTER 15: LOGICAL REPLICATION ═══════════════════ -->
 <hr class="section-divider">
-<h2 id="ch-replication">15. Logical Replication <span class="badge badge-optional">Optional</span></h2>
+<h2 id="ch-replication">16. Logical Replication <span class="badge badge-optional">Optional</span></h2>
 
 <div class="box box-learning">
   <strong>Learning Objectives</strong>
@@ -1029,19 +1035,31 @@ SELECT COUNT(*) FROM customers;</code></pre>
 
 <!-- ═══════════════════ CHAPTER 16: HA/DR ═══════════════════ -->
 <hr class="section-divider">
-<h2 id="ch-hadr">16. HA / DR</h2>
+<h2 id="ch-hadr">17. HA / DR</h2>
 
 <div class="box box-learning">
   <strong>Learning Objectives</strong>
   <ul>
-    <li>Zone-redundant HA deployment model</li>
-    <li>Synchronous streaming replication between primary and standby</li>
-    <li>Forced vs. planned failover</li>
+    <li>Zone-redundant HA deployment model (synchronous streaming replication)</li>
+    <li>Understand RPO (zero for HA) and RTO (60–120 seconds)</li>
+    <li>Forced vs. planned failover — what happens to connections</li>
     <li>Enabling and disabling HA from the Portal</li>
+    <li>Application retry logic requirements</li>
   </ul>
 </div>
 
 <div class="box box-timing"><strong>⏱ Timing: 15–20 minutes</strong></div>
+
+<h3>Key Concepts (now in the attendee material)</h3>
+<table>
+  <tr><th>Concept</th><th>Details</th></tr>
+  <tr><td><strong>Replication</strong></td><td>Synchronous streaming — every commit is written to the standby before the client gets acknowledgement</td></tr>
+  <tr><td><strong>Forced failover</strong></td><td>Simulates unplanned outage. Standby promoted. 60–120 seconds downtime. DNS updates automatically.</td></tr>
+  <tr><td><strong>Planned failover</strong></td><td>Graceful switch. Primary finishes in-flight transactions. 30–60 seconds downtime.</td></tr>
+  <tr><td><strong>RPO</strong></td><td>Zero — synchronous replication means no committed data is lost</td></tr>
+  <tr><td><strong>RTO</strong></td><td>60–120 seconds including DNS propagation</td></tr>
+  <tr><td><strong>App impact</strong></td><td>Connections drop during failover. FQDN stays the same — apps reconnect automatically if they have retry logic.</td></tr>
+</table>
 
 <h3>Portal Actions</h3>
 <ol>
@@ -1056,7 +1074,8 @@ SELECT COUNT(*) FROM customers;</code></pre>
   <strong>Proctor Notes</strong>
   <ul>
     <li>Enabling HA doubles the compute cost. Disable it at the end if attendees are cost-conscious.</li>
-    <li>Forced failover simulates a zone failure — there is brief downtime. Planned failover is graceful (minimal downtime).</li>
+    <li>Forced failover simulates a zone failure — there is brief downtime (60–120s). Planned failover is graceful (30–60s).</li>
+    <li>The attendee material now includes an <strong>RPO/RTO table and connection retry guidance</strong>. Emphasize that <strong>HA ≠ backup</strong> — HA protects against infrastructure failure, not DROP TABLE.</li>
     <li>Good discussion topic: when to use zone-redundant HA vs. read replicas vs. logical replication.</li>
     <li>If time is tight, this can be done as a <strong>proctor demo</strong>.</li>
   </ul>
@@ -1064,20 +1083,37 @@ SELECT COUNT(*) FROM customers;</code></pre>
 
 <!-- ═══════════════════ CHAPTER 17: PATCHING ═══════════════════ -->
 <hr class="section-divider">
-<h2 id="ch-patching">17. Patching &amp; Maintenance</h2>
+<h2 id="ch-patching">18. Patching &amp; Maintenance</h2>
 
 <div class="box box-learning">
   <strong>Learning Objectives</strong>
   <ul>
-    <li>Understand Azure's automatic patching model</li>
-    <li>Configure custom maintenance windows</li>
+    <li>Understand Azure's automatic patching model (OS, minor PG versions, platform updates)</li>
+    <li>Know the frequency (~monthly), notification period (5 days), and expected downtime (seconds to minutes)</li>
+    <li>Configure custom maintenance windows via Portal and CLI</li>
   </ul>
 </div>
 
 <div class="box box-timing"><strong>⏱ Timing: 5–10 minutes</strong> (quick Portal walkthrough)</div>
 
+<h3>Key Concepts (now in the attendee material)</h3>
+<table>
+  <tr><th>Aspect</th><th>Details</th></tr>
+  <tr><td><strong>What's patched</strong></td><td>OS security patches, PostgreSQL minor version upgrades, Azure platform updates</td></tr>
+  <tr><td><strong>Frequency</strong></td><td>~once per month; critical security patches may arrive sooner</td></tr>
+  <tr><td><strong>Downtime</strong></td><td>A few seconds to a couple of minutes — server restarts. If HA is enabled, failover minimises the window.</td></tr>
+  <tr><td><strong>Notification</strong></td><td>Azure sends a 5-day advance notification to subscription admins</td></tr>
+  <tr><td><strong>Custom schedule</strong></td><td>Choose your day + start hour (30-min window) or let Azure decide (system-managed)</td></tr>
+</table>
+
 <h3>Portal Actions</h3>
 <p>Navigate to <strong>Maintenance</strong> tab → select custom schedule (day + time window) → Save.</p>
+
+<h3>CLI Alternative</h3>
+<pre><code>az postgres flexible-server update \
+  --resource-group PG-Workshop \
+  --name &lt;server-name&gt; \
+  --maintenance-window "Sat:02:00"</code></pre>
 
 <div class="box box-proctor">
   <strong>Proctor Notes</strong>
@@ -1089,7 +1125,7 @@ SELECT COUNT(*) FROM customers;</code></pre>
 
 <!-- ═══════════════════ CHAPTER 18: SECURITY ═══════════════════ -->
 <hr class="section-divider">
-<h2 id="ch-security">18. Security Management (pgAudit)</h2>
+<h2 id="ch-security">19. Security Management (pgAudit)</h2>
 
 <div class="box box-learning">
   <strong>Learning Objectives</strong>
@@ -1136,11 +1172,11 @@ DROP TABLE audit_test;</code></pre>
 
 <!-- ═══════════════════ DAY 2 SEPARATOR ═══════════════════ -->
 <hr class="section-divider">
-<h2 style="text-align:center;border:none;color:var(--pg-blue);font-size:1.8rem;margin:2rem 0;">Day 2 — Performance &amp; Optimisation</h2>
+<h2 style="text-align:center;border:none;color:var(--pg-blue);font-size:1.8rem;margin:2rem 0;">Day 2 — Profile, Diagnose &amp; Fix</h2>
 
 <!-- ═══════════════════ CHAPTER 19: PROFILING ═══════════════════ -->
 <hr class="section-divider">
-<h2 id="ch-profiling">19. Database Profiling &amp; Activity Analysis</h2>
+<h2 id="ch-profiling">20. Database Profiling &amp; Activity Analysis</h2>
 
 <div class="box box-learning">
   <strong>Learning Objectives</strong>
@@ -1191,7 +1227,7 @@ DROP TABLE audit_test;</code></pre>
 
 <!-- ═══════════════════ CHAPTER 20: AZURE MONITORING ═══════════════════ -->
 <hr class="section-divider">
-<h2 id="ch-monitoring">20. Azure Monitoring &amp; Alerting</h2>
+<h2 id="ch-monitoring">10. Azure Monitoring &amp; Alerting</h2>
 
 <div class="box box-learning">
   <strong>Learning Objectives</strong>
@@ -1296,6 +1332,8 @@ END $$;</code></pre>
     <li>Log Analytics ingestion has 5–15 minute latency. If KQL returns empty, wait and try again.</li>
     <li>The alert email can take a few minutes to arrive. Warn attendees it's not instant.</li>
     <li>Workbooks are pre-built dashboards — show the gallery and let attendees explore.</li>
+    <li><strong>This section was moved to Day 1</strong> (right after the demo workload) so attendees can see CPU/IOPS spikes while they are still fresh in the portal charts. If you prefer the old flow (monitoring on Day 2), the content works either way — just adjust the schedule.</li>
+    <li>If <code>pg_stat_statements</code> was already enabled in the Load Data section (Step 6), attendees can skip Step 7 here.</li>
   </ul>
 </div>
 
@@ -1889,6 +1927,257 @@ az group show --name PG-Workshop</code></pre>
     <li>☐ Collect feedback</li>
   </ul>
 </div>
+
+<!-- ═══════════════════ WORKSHOP FLOW & PACING GUIDE ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-flow" style="border-left-color:var(--purple);">Workshop Flow &amp; Pacing Guide</h2>
+
+<p>This section gives you the narrative arc of the workshop — how each section connects to the next, where the energy peaks are, and where you need to adjust pacing based on the audience.</p>
+
+<h3>The Story Arc</h3>
+<p>The workshop follows a <strong>build → break → observe → understand → fix</strong> cycle that mirrors real production operations:</p>
+
+<table>
+  <tr><th>Phase</th><th>Sections</th><th>Attendee Mindset</th><th>Your Role</th></tr>
+  <tr><td><strong>1. Build</strong></td><td>Ch 1–8 (Deploy → Load Data)</td><td>Excited but anxious — "will my deployment work?"</td><td>Troubleshooter. Walk the room. Fix password issues, DNS failures, and subscription problems fast.</td></tr>
+  <tr><td><strong>2. Break</strong></td><td>Ch 9 (Demo Workload)</td><td>Fun — intentionally causing chaos</td><td>Cheerleader. Encourage concurrent sessions, bigger loop counts. "Let's melt this server."</td></tr>
+  <tr><td><strong>3. Observe</strong></td><td>Ch 10 (Azure Monitoring)</td><td>Aha moment — "my queries did THAT?"</td><td>Guide. Walk through each metric and connect it to a specific query. This is the highest-engagement section of Day 1.</td></tr>
+  <tr><td><strong>4. Govern</strong></td><td>Ch 11–19 (Admin → Security)</td><td>Settling in — absorbing concepts</td><td>Instructor. More explanation, less hands-on. Roles section is the most SQL-heavy — go step by step.</td></tr>
+  <tr><td><strong>5. Diagnose</strong></td><td>Ch 20–22 (Profiling → Params)</td><td>Deep focus — densest material</td><td>Teacher. Pause for questions frequently. Draw Oracle/SQL Server parallels for experienced DBAs.</td></tr>
+  <tr><td><strong>6. Fix</strong></td><td>Ch 23–25 (SQL → Index Lab)</td><td>Satisfaction — seeing 10–50× improvements</td><td>Coach. Let them struggle with EXPLAIN output before revealing answers. The before/after comparison is the payoff.</td></tr>
+  <tr><td><strong>7. Explore</strong></td><td>Ch 26 (Extensions)</td><td>Light, curious — winding down</td><td>Entertainer. The "London" typo search and beer database are crowd-pleasers.</td></tr>
+</table>
+
+<h3>Day 1 Detailed Flow</h3>
+
+<h4>Morning (09:00 – 12:00) — Deploy, Connect, Load, Break</h4>
+<div class="box box-timing">
+  <strong>⏱ Pacing</strong>
+  <ul>
+    <li><strong>09:00–09:30</strong> — Welcome + Prerequisites (~15 min presenting, ~15 min for attendees to log in and verify subscriptions)</li>
+    <li><strong>09:30–10:05</strong> — Deploy. Start the Bicep deployment first (10–15 min wait), use that time for architecture discussion. Walk the room during deployment.</li>
+    <li><strong>10:05–10:45</strong> — Connect. SSH + psql basics + .pgpass setup. This is where most first-time issues surface. <strong>Don't rush this</strong> — if a few attendees are stuck, others can read ahead.</li>
+    <li><strong>10:45–11:00</strong> — Break. Use this to quietly help anyone still stuck on connecting.</li>
+    <li><strong>11:00–11:25</strong> — Load Data. Critical checkpoint — everyone must have <code>orders_demo</code> before proceeding.</li>
+    <li><strong>11:25–11:50</strong> — Demo Workload. Fun section. Encourage them to open 3 terminals and run queries concurrently.</li>
+    <li><strong>11:50–12:00</strong> — Q&amp;A. Good moment to recap what they've built.</li>
+  </ul>
+</div>
+
+<h4>Afternoon (13:00 – 16:00) — Monitor, Admin, Protect</h4>
+<div class="box box-timing">
+  <strong>⏱ Pacing</strong>
+  <ul>
+    <li><strong>13:00–13:35</strong> — Azure Monitoring. Start here while workload metrics are still visible. Walk through CPU spike → QPI → identify the query → explain the root cause. This is the highest-engagement section.</li>
+    <li><strong>13:35–14:25</strong> — Admin &amp; Roles. Start with server parameters (quick), then deep-dive into roles. The INHERIT vs NOINHERIT demo is the key teaching moment. Go slow — lots of SQL.</li>
+    <li><strong>14:25–14:40</strong> — Break.</li>
+    <li><strong>14:40–15:05</strong> — Logical Backup. Hands-on with pg_dump formats. Keep it moving.</li>
+    <li><strong>15:05–15:35</strong> — Business Continuity block. Physical backup (quick Portal walkthrough), HA/DR (enable → failover → discuss RPO/RTO), security (pgAudit + KQL). These are lighter sections — portal-focused rather than SQL-heavy.</li>
+    <li><strong>15:35–16:00</strong> — Wrap-up. Recap the day, preview Day 2. Leave room for open questions.</li>
+  </ul>
+</div>
+
+<div class="box box-proctor">
+  <strong>If Running Behind on Day 1</strong>
+  <ul>
+    <li><strong>First to drop:</strong> PgBouncer (Ch 13) — it's marked optional</li>
+    <li><strong>Second to drop:</strong> Logical Replication (Ch 16) — requires a second server, high time cost</li>
+    <li><strong>Third to compress:</strong> HA/DR (Ch 17) — do as a proctor demo instead of hands-on</li>
+    <li><strong>Never skip:</strong> Monitoring (Ch 10) — essential foundation for Day 2</li>
+  </ul>
+</div>
+
+<h4>Day 2 Detailed Flow (09:00 – 15:15)</h4>
+<div class="box box-timing">
+  <strong>⏱ Pacing</strong>
+  <ul>
+    <li><strong>09:00–09:10</strong> — Day 2 Kick-off. Quick recap, answer overnight questions. Ask: "What surprised you yesterday?"</li>
+    <li><strong>09:10–10:00</strong> — Database Profiling. This is the <strong>densest section</strong>. Don't try to cover all 22 queries — focus on A5 (dead tuples), A7 (seq vs idx scans), A9 (cache hit), B1 (active sessions), B7 (top queries by time). Save the rest as reference material.</li>
+    <li><strong>10:00–10:15</strong> — Break.</li>
+    <li><strong>10:15–10:45</strong> — MVCC. The xmin/xmax demo is powerful. Run UPDATE → check dead tuples → VACUUM → VACUUM FULL. Draw on the whiteboard.</li>
+    <li><strong>10:45–11:15</strong> — Parameter Tuning. The work_mem lab (disk sort → memory sort) is the single best demo. Run it and let the numbers speak.</li>
+    <li><strong>11:15–11:30</strong> — Q&amp;A. This is the densest part — give people time to absorb.</li>
+    <li><strong>11:30–11:50</strong> — SQL Characteristics. Partial indexes are quick (15M row insert takes a minute). JSONB is fun but don't overdo the operators.</li>
+    <li><strong>11:50–12:15</strong> — Statistics &amp; Query Planning. EXPLAIN output, cost formula, join algorithms. The cost calculation demo ("planner's math is transparent") is an aha moment.</li>
+    <li><strong>12:15–13:15</strong> — Lunch.</li>
+    <li><strong>13:15–14:00</strong> — Index Tuning Lab. The <strong>capstone</strong>. Reset stats → re-run queries → create indexes → re-run → compare. Before/after EXPLAIN side by side. This is where everything clicks.</li>
+    <li><strong>14:00–14:15</strong> — Break.</li>
+    <li><strong>14:15–14:35</strong> — Extensions (optional). The pg_trgm "Londen" → "London" search always gets a reaction.</li>
+    <li><strong>14:35–14:45</strong> — Cleanup. <strong>Walk the room.</strong> Verify every attendee has started deletion.</li>
+    <li><strong>14:45–15:15</strong> — Final Q&amp;A. Open floor — this is where the best conversations happen.</li>
+  </ul>
+</div>
+
+<div class="box box-proctor">
+  <strong>If Running Behind on Day 2</strong>
+  <ul>
+    <li><strong>First to drop:</strong> Extensions (Ch 26) — optional self-study</li>
+    <li><strong>Second to compress:</strong> SQL Characteristics (Ch 23) — show partial index only, skip JSONB</li>
+    <li><strong>Third to compress:</strong> Database Profiling (Ch 20) — cover 5 key queries instead of all 22</li>
+    <li><strong>Never skip:</strong> Index Tuning Lab (Ch 25) — it's the payoff for the entire workshop</li>
+  </ul>
+</div>
+
+<h3>Energy Management</h3>
+<table>
+  <tr><th>Time of Day</th><th>Energy Level</th><th>Strategy</th></tr>
+  <tr><td>09:00–10:00</td><td>High</td><td>Front-load hands-on work (deploy, connect). People are fresh.</td></tr>
+  <tr><td>10:00–11:00</td><td>Medium-high</td><td>Hands-on continues. Good for complex SQL labs.</td></tr>
+  <tr><td>11:00–12:00</td><td>Medium</td><td>Alternate explanation and hands-on. Don't lecture for more than 10 min without interaction.</td></tr>
+  <tr><td>13:00–14:00</td><td>Low (post-lunch)</td><td>Start with something interactive — monitoring (Day 1) or profiling (Day 2). Avoid pure lecture.</td></tr>
+  <tr><td>14:00–15:00</td><td>Medium</td><td>Hands-on labs work well. The index tuning lab is perfect here — satisfying results keep energy up.</td></tr>
+  <tr><td>15:00–16:00</td><td>Winding down</td><td>Lighter material or wrap-up. Don't introduce new complex concepts.</td></tr>
+</table>
+
+<!-- ═══════════════════ OBJECTIONS & HOW TO HANDLE THEM ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-objections" style="border-left-color:var(--purple);">Common Objections &amp; How to Handle Them</h2>
+
+<p>These are questions and pushback you will hear from attendees. Having ready answers builds credibility and keeps the workshop on track.</p>
+
+<h3>Architecture &amp; Platform</h3>
+
+<table>
+  <tr><th style="width:35%;">Objection</th><th style="width:65%;">How to Respond</th></tr>
+  <tr>
+    <td>"Why PostgreSQL and not SQL Server / Oracle / MySQL?"</td>
+    <td>Don't argue. Acknowledge their platform's strengths, then focus on PostgreSQL's unique position: <strong>no licensing cost, rich extension ecosystem, cross-cloud portability</strong>. Many Azure customers run PostgreSQL alongside SQL Server — it's not either/or. Point to the extension section (pg_trgm, JSONB, PostGIS) for capabilities that don't have direct equivalents elsewhere.</td>
+  </tr>
+  <tr>
+    <td>"Why Flexible Server and not Single Server / Cosmos DB for PostgreSQL?"</td>
+    <td>Single Server is <strong>deprecated</strong> (end of life March 2025). Cosmos DB for PostgreSQL (Citus) is for <strong>distributed/sharded workloads</strong> — if their dataset is under a few TB, Flexible Server is the right choice. Flexible Server gives you full PostgreSQL compatibility, zone-redundant HA, and built-in PgBouncer.</td>
+  </tr>
+  <tr>
+    <td>"We can't use public endpoints. Is private networking production-ready?"</td>
+    <td>Yes. Option 1 (Enterprise) deploys exactly this: <strong>VNet-integrated private access via delegated subnet + private DNS zone</strong>. No public IP is exposed. Show the architecture diagram. Private DNS resolves within the VNet.</td>
+  </tr>
+  <tr>
+    <td>"Why not use managed identity / Microsoft Entra auth instead of passwords?"</td>
+    <td>Great question — <strong>you should, in production</strong>. The workshop uses passwords for simplicity and speed. Azure Flexible Server supports <strong>Microsoft Entra authentication</strong>. Mention it, point to the docs, but don't derail the lab by switching auth methods mid-session.</td>
+  </tr>
+  <tr>
+    <td>"Bicep is too complex. Can we use Terraform / ARM / Portal?"</td>
+    <td>You absolutely can in production. Bicep was chosen because it's Azure-native and the templates are self-contained. If attendees prefer Terraform, they can bring their own deployment — see <strong>Option 3 (BYOS)</strong>. The focus is on PostgreSQL, not IaC.</td>
+  </tr>
+</table>
+
+<h3>Operations &amp; DBA Concerns</h3>
+
+<table>
+  <tr><th style="width:35%;">Objection</th><th style="width:65%;">How to Respond</th></tr>
+  <tr>
+    <td>"We don't have superuser access. What can't we do?"</td>
+    <td>Correct — <code>azuresu</code> is reserved by Azure. Your admin role is a member of <code>azure_pg_admin</code>, which can do <strong>almost everything</strong>: create roles, databases, extensions (from the allowed list), configure parameters. You <strong>cannot</strong>: load arbitrary C extensions, access the file system, modify pg_hba.conf directly, or use <code>COPY ... FROM/TO</code> local files (use <code>\copy</code> instead).</td>
+  </tr>
+  <tr>
+    <td>"Can autovacuum keep up with our write-heavy workload?"</td>
+    <td>The defaults are conservative — they're tuned for small databases. For high-write tables (millions of updates/day), you <strong>must</strong> lower <code>autovacuum_vacuum_scale_factor</code> per table (e.g., from 0.20 to 0.02–0.05). The MVCC section demonstrates this. Show them the <code>ALTER TABLE ... SET (autovacuum_vacuum_scale_factor = 0.05)</code> command.</td>
+  </tr>
+  <tr>
+    <td>"VACUUM FULL locks the table. How do we handle bloat in production?"</td>
+    <td>Don't use VACUUM FULL on production tables during business hours. Options: (1) Regular VACUUM keeps up if autovacuum is tuned. (2) <code>pg_repack</code> extension can rebuild tables online with minimal locking. (3) Schedule VACUUM FULL during maintenance windows for extreme cases. VACUUM FULL is intentionally shown in the workshop to explain the concept — it's not the production recommendation.</td>
+  </tr>
+  <tr>
+    <td>"We already have monitoring (Datadog / Grafana / New Relic). Why use Azure Monitor?"</td>
+    <td>You don't have to choose one. Azure Monitor gives you <strong>zero-config metrics</strong> that are always on — CPU, IOPS, connections, QPI. Your third-party tool can <strong>supplement</strong> it with application-level metrics. Many customers use both: Azure Monitor for infrastructure, Datadog/Grafana for application observability. The KQL and diagnostic settings setup also feeds into Sentinel, Defender, etc.</td>
+  </tr>
+  <tr>
+    <td>"How is HA/DR different from backup?"</td>
+    <td><strong>They solve different problems.</strong> HA protects against <strong>infrastructure failure</strong> (VM crash, zone outage) — synchronous replication, zero data loss, 60–120s failover. Backup/PITR protects against <strong>data loss</strong> (accidental DROP TABLE, bad UPDATE) — restore to a point-in-time, creates a new server. You need <strong>both</strong>.</td>
+  </tr>
+  <tr>
+    <td>"pg_stat_statements requires a restart. Can we enable it in production without downtime?"</td>
+    <td>It requires adding to <code>shared_preload_libraries</code>, which is a static parameter — yes, a restart is needed. On Azure Flexible Server, a restart is brief (seconds if HA is enabled). The extension should be enabled from day one on any production server. If it's not enabled already, schedule it during the next maintenance window.</td>
+  </tr>
+</table>
+
+<h3>Performance &amp; Query Tuning</h3>
+
+<table>
+  <tr><th style="width:35%;">Objection</th><th style="width:65%;">How to Respond</th></tr>
+  <tr>
+    <td>"Why are the demo queries intentionally bad? That's not realistic."</td>
+    <td>They <strong>are</strong> realistic — these patterns appear in real applications every day. Cross-joins on un-indexed FKs, correlated subqueries (N+1), missing indexes, sorting without work_mem tuning. The point is to generate visible symptoms (high CPU, temp files) so you can practice diagnosing them. Every query maps to a real-world anti-pattern.</td>
+  </tr>
+  <tr>
+    <td>"Why doesn't indexing help Query 3 (window functions) and Query 5 (md5 loop)?"</td>
+    <td>Great question — and the answer is the key lesson. <strong>Not all problems are solved by indexes.</strong> Window functions must process the entire result set regardless of indexes — you fix them by increasing <code>work_mem</code> so sorts stay in memory. The md5() loop can't be indexed because the filter is on a <strong>computed expression</strong> — you'd need a functional index, or better yet, rewrite the query to avoid computing md5 on every row.</td>
+  </tr>
+  <tr>
+    <td>"Index creation takes too long. How do we create indexes on large tables in production?"</td>
+    <td>Use <code>CREATE INDEX CONCURRENTLY</code> — it builds the index without holding an exclusive lock on the table. It takes longer, but the table stays available for reads and writes during the build. The workshop uses regular <code>CREATE INDEX</code> for speed, but production should always use CONCURRENTLY.</td>
+  </tr>
+  <tr>
+    <td>"Our ORM generates the queries. We can't change the SQL."</td>
+    <td>You can still: (1) Add indexes that match the ORM's WHERE/JOIN/ORDER BY patterns. (2) Tune <code>work_mem</code>, <code>random_page_cost</code> to influence the planner. (3) Use <code>pg_stat_statements</code> to find the top queries and optimise the most impactful ones. (4) Some ORMs support raw SQL or query hints for critical paths. The profiling workflow (Ch 20) works regardless of whether queries are hand-written or ORM-generated.</td>
+  </tr>
+  <tr>
+    <td>"How do we know which indexes to create in production?"</td>
+    <td>The workflow: (1) Enable <code>pg_stat_statements</code>. (2) Let the workload run for a representative period. (3) Query B7/B8 from the profiling scripts to find top queries by time/IO. (4) Run <code>EXPLAIN ANALYZE</code> on those queries. (5) Look for Seq Scans on large tables — add indexes on WHERE/JOIN columns. (6) Check <code>pg_stat_user_indexes</code> to verify the new index is being used. The Index Tuning Lab (Ch 25) teaches exactly this methodology.</td>
+  </tr>
+</table>
+
+<h3>Security &amp; Compliance</h3>
+
+<table>
+  <tr><th style="width:35%;">Objection</th><th style="width:65%;">How to Respond</th></tr>
+  <tr>
+    <td>"Is pgAudit sufficient for SOC 2 / PCI / HIPAA compliance?"</td>
+    <td>pgAudit provides <strong>detailed database-level audit logging</strong> (session and object level). Combined with <strong>Azure diagnostic settings → Log Analytics</strong> and <strong>Microsoft Defender for Cloud</strong>, you have a solid compliance foundation. For specific frameworks, you'll also need network isolation (VNet), encryption at rest (Azure-managed), encryption in transit (TLS enforced), and access reviews. The workshop covers the database layer; your security team handles the broader compliance architecture.</td>
+  </tr>
+  <tr>
+    <td>"Why did you use passwords instead of certificates or managed identity?"</td>
+    <td>Simplicity for the lab. In production, use <strong>Microsoft Entra authentication</strong> (managed identity for applications, Entra accounts for humans). The workshop intentionally uses password auth so attendees can focus on PostgreSQL, not Azure AD/Entra configuration. Note: the <code>.pgpass</code> setup teaches the principle of credential separation even with passwords.</td>
+  </tr>
+  <tr>
+    <td>"Storing passwords in .pgpass and .pg_azure files feels insecure."</td>
+    <td>For a lab, it's fine. In production: (1) Use <strong>managed identity</strong> — no passwords at all. (2) Use <strong>Azure Key Vault</strong> to store and rotate secrets. (3) <code>.pgpass</code> with <code>chmod 600</code> is actually the PostgreSQL-recommended approach for interactive use — it's more secure than <code>PGPASSWORD</code> in the environment. The key principle: <strong>never put passwords in shell history, scripts, or environment variables that other processes can read</strong>.</td>
+  </tr>
+</table>
+
+<h3>Cost &amp; Commercial</h3>
+
+<table>
+  <tr><th style="width:35%;">Objection</th><th style="width:65%;">How to Respond</th></tr>
+  <tr>
+    <td>"This workshop is going to cost me a lot on Azure."</td>
+    <td>The full Enterprise deployment costs approximately <strong>$2–5 per hour</strong> (Burstable B2s VM + Burstable PG Flex). A 2-day workshop costs roughly <strong>$15–30</strong> total. Cleanup deletes everything. The Simple deployment is even cheaper (no VM). Remind attendees to delete their resource groups at the end.</td>
+  </tr>
+  <tr>
+    <td>"Why General Purpose and not Burstable for cost savings?"</td>
+    <td>The Bicep templates use Burstable by default for cost savings. General Purpose is recommended for <strong>production workloads</strong> that need consistent CPU. The demo workload will temporarily max out a Burstable SKU (which is the point — it creates visible metrics). If attendees are on free trials or limited budgets, Burstable is fine for the workshop.</td>
+  </tr>
+  <tr>
+    <td>"Can we use a smaller SKU?"</td>
+    <td>The minimum (Standard_B1ms) works for everything except concurrent workload queries, which may be slow. Standard_B2s is the sweet spot for the workshop — fast enough to be interactive, cheap enough to be disposable.</td>
+  </tr>
+</table>
+
+<h3>Process &amp; Facilitation</h3>
+
+<table>
+  <tr><th style="width:35%;">Objection</th><th style="width:65%;">How to Respond</th></tr>
+  <tr>
+    <td>"I'm stuck / my deployment failed / I can't connect."</td>
+    <td>This is the #1 time sink. <strong>Triage fast:</strong> (1) Is the subscription correct? (<code>az account show</code>) (2) Is the resource group created? (3) Is the deployment finished in the Portal? (4) For SSH: is the IP correct? Is NSG open? (5) For psql: is the FQDN correct? Is DNS resolving? Is the password right? Use the password reset command if in doubt. If an attendee is stuck for more than 5 min, have them pair with a neighbor while you debug.</td>
+  </tr>
+  <tr>
+    <td>"Can I do this workshop on my own later?"</td>
+    <td>Yes — the entire workshop is available at <code>pg.azure-workshops.cloud</code>. Every command is documented with expected outputs. The dump file is publicly downloadable. The only requirement is an Azure subscription.</td>
+  </tr>
+  <tr>
+    <td>"We're running behind schedule."</td>
+    <td>Use the "If Running Behind" boxes in this guide. Drop optional sections first (PgBouncer, Logical Replication, Extensions). Compress HA/DR and patching to proctor demos. <strong>Never skip:</strong> Monitoring (Day 1) and Index Tuning Lab (Day 2) — they are the payoff moments.</td>
+  </tr>
+  <tr>
+    <td>"This is too fast / too slow for our group."</td>
+    <td><strong>Too fast:</strong> Add more discussion at each checkpoint. Ask "what do you expect to see?" before running a query. Let attendees explore the data on their own between sections.<br><strong>Too slow:</strong> Skip the explanation and go straight to commands. Let fast attendees read ahead. Use the optional sections as bonus material for those who finish early.</td>
+  </tr>
+  <tr>
+    <td>"The audience is mixed — some are DBAs, some are devs, some are ops."</td>
+    <td>This is the most common scenario. The workshop is designed for it. Day 1 is accessible to everyone (deploy, connect, admin). Day 2's profiling section has Oracle/SQL Server comparison boxes that DBAs appreciate. The index tuning lab and SQL characteristics appeal to developers. Ops teams benefit from monitoring, HA/DR, and patching. <strong>Call out who each section is most relevant for</strong> — it helps attendees feel seen.</td>
+  </tr>
+</table>
 
 <hr style="margin-top:3rem;">
 <p style="text-align:center;color:#6c757d;font-size:.85rem;">
