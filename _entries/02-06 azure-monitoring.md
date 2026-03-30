@@ -2,7 +2,7 @@
 
 sectionid: azure-monitoring
 sectionclass: h2
-parent-id: day2
+parent-id: upandrunning
 title: Monitoring PostgreSQL with Azure Portal
 ---
 

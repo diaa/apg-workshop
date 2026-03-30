@@ -25,7 +25,7 @@ psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 > \timing
 > ```
 
-These queries are **intentionally unoptimised** — they trigger full sequential scans, large sorts, and heavy computation. This is exactly the kind of workload you want to observe in the monitoring section of the workshop.
+These queries are **intentionally unoptimised** — they trigger full sequential scans, large sorts, and heavy computation. This is exactly the kind of workload you will observe in the **next section** — [Monitoring PostgreSQL with Azure Portal](#azure-monitoring).
 
 ---
 
@@ -174,6 +174,17 @@ FROM pg_stat_user_tables
 ORDER BY seq_tup_read DESC;
 ```
 
+**How to read this output:**
+
+| Column | What it means | What to look for |
+|---|---|---|
+| `seq_scan` | Number of sequential (full table) scans since last stats reset | High on large tables = missing index. After the demo workload, `orders` should show thousands of seq_scans from Query 2 and 5 |
+| `seq_tup_read` | Total rows read by sequential scans | The real cost indicator. Millions or billions = massive wasted I/O |
+| `idx_scan` | Number of index scans | Should be **much higher** than `seq_scan` on large, frequently queried tables. If it is 0, no index is being used |
+| `idx_tup_fetch` | Rows fetched via indexes | Each row was targeted — this is efficient. Compare to `seq_tup_read`: a large gap means most reads are wasteful full scans |
+
+> **Rule of thumb:** If `seq_tup_read` is orders of magnitude larger than `idx_tup_fetch` on a table, that table almost certainly needs an index on the columns used in WHERE/JOIN clauses. You will fix this in the **Index Tuning Lab**.
+
 #### Temp file usage
 
 ```sql
@@ -182,10 +193,17 @@ FROM pg_stat_database
 WHERE datname = 'orders_demo';
 ```
 
+**How to read this output:**
+
+| Column | What it means | What to look for |
+|---|---|---|
+| `temp_files` | Number of temp files created since last stats reset | Any value > 0 means queries spilled sorts or hashes to disk because they exceeded `work_mem` |
+| `temp_bytes` | Total bytes written to temp files | Large values (hundreds of MB+) indicate heavy sort/hash operations. Queries 3, 4, and 6 are the likely culprits |
+
 #### Total database size
 
 ```sql
 SELECT pg_size_pretty(pg_database_size('orders_demo')) AS db_size;
 ```
 
-> These statistics feed directly into the **Monitoring** section of the workshop. Leave them as-is — do not reset the stats yet.
+> These statistics feed directly into the **next section** — [Monitoring PostgreSQL with Azure Portal](#azure-monitoring). Leave them as-is — do not reset the stats yet.

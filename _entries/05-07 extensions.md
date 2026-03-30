@@ -39,7 +39,7 @@ List extensions already installed in this database:
 SELECT extname, extversion FROM pg_extension ORDER BY extname;
 ```
 
-You should see at least `plpgsql` (always installed) and `pg_stat_statements` (if you enabled it in the monitoring section).
+You should see at least `plpgsql` (always installed) and `pg_stat_statements` (if you enabled it in the [Monitoring](#azure-monitoring) section).
 
 ---
 
