@@ -108,6 +108,16 @@ END $$;
 
 **Why it is heavy:** This PL/pgSQL anonymous block runs the same expensive query **20 times** in a tight loop. Each iteration joins 100K orders with 300K order items, computes `md5()` on every joined row, and then filters by a text pattern. The `LIKE '00%'` filter on the hash cannot use any index, so every iteration is a full sequential scan + hash join + function evaluation. The result is sustained, constant CPU utilisation for tens of seconds.
 
+**Understanding the syntax:**
+
+| Element | What it does |
+|---|---|
+| [`DO`](https://www.postgresql.org/docs/current/sql-do.html) | Executes an anonymous code block — like a one-off function you don't need to save |
+| `$$ ... $$` | [Dollar-quoted string](https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING) delimiters — replaces single quotes so you don't have to escape quotes inside the block |
+| `BEGIN ... END` | Marks the start and end of the [PL/pgSQL](https://www.postgresql.org/docs/current/plpgsql.html) code block |
+| [`FOR i IN 1..20 LOOP`](https://www.postgresql.org/docs/current/plpgsql-control-structures.html#PLPGSQL-INTEGER-FOR) | Integer FOR loop — runs the body 20 times with `i` counting from 1 to 20 |
+| [`PERFORM`](https://www.postgresql.org/docs/current/plpgsql-statements.html#PLPGSQL-STATEMENTS-SQL-ONEROW) | Runs a SELECT but discards the result — used when you want the side effects (CPU load) but don't need the output |
+
 > **Tip:** Increase the loop count to `50` or `100` for longer sustained load:
 > ```sql
 > DO $$
