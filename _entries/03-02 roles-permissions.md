@@ -17,6 +17,12 @@ By the end of this lab you will have built a complete access model for the `orde
 
 **Why this matters:** In production, you should never give every user the admin credentials you created during deployment. Instead, create group roles that hold privileges, then assign users to those groups. This is the same principle as Active Directory groups or IAM roles — but implemented at the PostgreSQL level.
 
+| Who | Role chain | Behaviour | Real-world scenario |
+|---|---|---|---|
+| **dev_user** | `dev_user` → `app_team` (INHERIT) | Connects and **immediately** has read/write access | Application service account, backend developer |
+| **analyst_user** | `analyst_user` → `readonly` (INHERIT) | Connects and **immediately** has SELECT-only access | BI analyst, reporting dashboard, read replica user |
+| **contractor_user** | `contractor_user` → `app_team` (NOINHERIT) | Connects with **no privileges** — must `SET ROLE` to elevate | External contractor, break-glass admin, audited access |
+
 **Key concepts you will practice:**
 
 1. **Roles are the only access object** — PostgreSQL has no separate "users" and "groups." Everything is a role. `CREATE USER` is just an alias for `CREATE ROLE ... LOGIN`.
