@@ -30,14 +30,14 @@ Follow these 10 steps from infrastructure deployment to teardown:
 | 2 — Connect | SSH to jumpbox → psql, .pg_azure, .pgpass | Establish connectivity and store credentials securely |
 | 3 — Load Data | pg_restore orders_demo — 4 tables, ~410K rows | Import a realistic e-commerce dataset |
 | 4 — Break Workload | 6 heavy queries — CPU + IOPS + temp spills | Run intentionally unoptimised queries to generate load |
-| 5 — Admin & Access | Roles, permissions, RBAC, PgBouncer pooling | Learn PostgreSQL access control and connection pooling |
-| 6 — Protect | Backup, replication, HA/DR, security, patching | Cover business continuity and security management |
-| 7 — Monitor | Azure Metrics, QPI, alerts, DB profiling | Observe the impact of the broken workload |
-| 8 — Diagnose | MVCC, statistics, EXPLAIN, parameter tuning | Understand *why* the workload was slow |
+| 5 — Monitor | Azure Metrics, QPI, alerts, diagnostic settings | Observe the impact while the damage is fresh |
+| 6 — Admin & Access | Roles, permissions, RBAC, PgBouncer pooling | Learn PostgreSQL access control and connection pooling |
+| 7 — Protect | Backup, replication, HA/DR, security, patching | Cover business continuity and security management |
+| 8 — Diagnose | DB profiling, MVCC, statistics, EXPLAIN, parameter tuning | Understand *why* the workload was slow |
 | 9 — Fix | Index tuning lab — before → after comparison | Add the right indexes and prove the improvement |
 | 10 — Clean Up | Delete resource group, remove credentials | Tear down all resources |
 
-### Day 1 — Deploy, Connect, Administer & Protect
+### Day 1 — Deploy, Connect, Monitor, Administer & Protect
 
 | Time | Session | What We'll Do | Duration |
 |---|---|---|---|
@@ -49,36 +49,33 @@ Follow these 10 steps from infrastructure deployment to teardown:
 | 11:25 | **Break the Workload** | Run 6 intentionally heavy queries — CPU, IOPS, temp spills | 25 min |
 | 11:50 | **Q&A — Morning Recap** | Questions on everything so far, troubleshoot any setup issues | 10 min |
 | 12:00 | 🍽️ **Lunch** | | 60 min |
-| 13:00 | **Administration & Access** | Roles, permissions, RBAC, managing server parameters | 40 min |
-| 13:40 | **Roles Deep Dive** | Hands-on: create roles, GRANT/REVOKE, test access, Azure-specific roles | 35 min |
-| 14:15 | ☕ **Break** | | 15 min |
-| 14:30 | **Logical Backup** | pg_dump / pg_restore — formats, selective restore, verification | 25 min |
-| 14:55 | **Physical Backup & PITR** | Azure managed backups, point-in-time restore walkthrough | 15 min |
-| 15:10 | **HA/DR** | Zone-redundant HA, forced failover, planned failover | 15 min |
-| 15:25 | **Security & Patching** | pgAudit, Log Analytics, maintenance windows | 25 min |
-| 15:50 | **Q&A — Day 1 Wrap-up** | Open discussion, review key concepts, preview of Day 2 | 10 min |
+| 13:00 | **Azure Monitoring** | Portal metrics, QPI, KQL, alerts — correlate spikes to the demo queries | 35 min |
+| 13:35 | **Administration & Roles** | Server parameters, roles, GRANT/REVOKE, INHERIT vs NOINHERIT | 50 min |
+| 14:25 | ☕ **Break** | | 15 min |
+| 14:40 | **Logical Backup** | pg_dump / pg_restore — formats, selective restore, verification | 25 min |
+| 15:05 | **Business Continuity** | Physical backup & PITR, HA/DR failover, security & patching | 30 min |
+| 15:35 | **Q&A — Day 1 Wrap-up** | Open discussion, review key concepts, preview of Day 2 | 25 min |
 | 16:00 | **End of Day 1** | | |
 
-### Day 2 — Monitor, Diagnose & Fix
+### Day 2 — Profile, Diagnose & Fix
 
 | Time | Session | What We'll Do | Duration |
 |---|---|---|---|
 | 09:00 | **Day 2 Kick-off** | Quick recap of Day 1, questions from overnight | 10 min |
-| 09:10 | **Database Profiling** | 22 diagnostic queries — health check & performance triage scripts | 45 min |
-| 09:55 | **Azure Monitoring** | Portal metrics, Query Performance Insight, KQL, alerts | 35 min |
-| 10:30 | ☕ **Break** | | 15 min |
-| 10:45 | **MVCC & Autovacuum** | Dead tuples, VACUUM vs VACUUM FULL, bloat, autovacuum tuning | 30 min |
-| 11:15 | **Parameter Tuning** | work_mem, shared_buffers, effective_cache_size — measure the impact | 30 min |
-| 11:45 | **Q&A — Monitoring & Internals** | Pause for questions — this is the densest part of the workshop | 15 min |
-| 12:00 | 🍽️ **Lunch** | | 60 min |
-| 13:00 | **SQL Characteristics** | Partial indexes, JSONB, GIN indexes — PostgreSQL superpowers | 20 min |
-| 13:20 | **Statistics & Query Planning** | EXPLAIN, cost model, join algorithms — nested loop vs hash vs merge | 25 min |
-| 13:45 | **Index Tuning Lab** | Add 5 indexes, re-run the broken workload, measure 2–50× speedup | 35 min |
-| 14:20 | ☕ **Break** | | 15 min |
-| 14:35 | **Extensions** *(optional)* | pg_trgm, uuid-ossp, pgcrypto, pg_cron | 20 min |
-| 14:55 | **Clean Up** | Delete resource group, verify everything is gone | 10 min |
-| 15:05 | **Final Q&A & Wrap-up** | Open floor — ask anything! Feedback, next steps, resources | 25 min |
-| 15:30 | **End of Workshop** | | |
+| 09:10 | **Database Profiling** | 22 diagnostic queries — health check & performance triage scripts | 50 min |
+| 10:00 | ☕ **Break** | | 15 min |
+| 10:15 | **MVCC & Autovacuum** | Dead tuples, VACUUM vs VACUUM FULL, bloat, autovacuum tuning | 30 min |
+| 10:45 | **Parameter Tuning** | work_mem, shared_buffers, effective_cache_size — measure the impact | 30 min |
+| 11:15 | **Q&A — Internals** | Pause for questions — this is the densest part of the workshop | 15 min |
+| 11:30 | **SQL Characteristics** | Partial indexes, JSONB, GIN indexes — PostgreSQL superpowers | 20 min |
+| 11:50 | **Statistics & Query Planning** | EXPLAIN, cost model, join algorithms — nested loop vs hash vs merge | 25 min |
+| 12:15 | 🍽️ **Lunch** | | 60 min |
+| 13:15 | **Index Tuning Lab** | Add 5 indexes, re-run the broken workload, measure 2–50× speedup | 45 min |
+| 14:00 | ☕ **Break** | | 15 min |
+| 14:15 | **Extensions** *(optional)* | pg_trgm, uuid-ossp, pgcrypto, pg_cron | 20 min |
+| 14:35 | **Clean Up** | Delete resource group, verify everything is gone | 10 min |
+| 14:45 | **Final Q&A & Wrap-up** | Open floor — ask anything! Feedback, next steps, resources | 30 min |
+| 15:15 | **End of Workshop** | | |
 
 ### What You Will Learn
 

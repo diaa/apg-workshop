@@ -23,6 +23,9 @@ In a self-managed PostgreSQL installation, you would edit `postgresql.conf` dire
 
 Changes made in the portal apply as the **server-level default** — they affect all databases, roles, and sessions unless overridden at a lower level.
 
+
+![Managing parameters](media/pg-parameters.png)
+
 #### Parameter types: Dynamic, Static, and Read-Only
 
 Not all parameters behave the same way when you change them:
@@ -61,7 +64,6 @@ WHERE source != 'default'
 ORDER BY name;
 ```
 
-![Managing parameters](media/pg-parameters.png)
 
 To enable PgBouncer, type **pgbouncer** in the search box and set its value to **TRUE**:
 
@@ -77,6 +79,8 @@ Once you see the success screen, access PostgreSQL through port 6432 on your VM:
 psql -p 6432
 ```
 ![Managing parameters](media/pgbouncer-test.png)
+
+> **Want to go deeper?** For pool modes, `pgbench` load testing, and PgBouncer monitoring commands, see [Connection Pooling with PgBouncer](#pgbouncer).
 
 ### Applying Server Locks
 

@@ -184,6 +184,8 @@ Switch to the **IO** tab. This ranks queries by blocks read from storage.
 
 ### Step 7 — Enable pg_stat_statements (if not already enabled)
 
+> **Already done?** If you enabled `pg_stat_statements` in Step 6 of the **Load Data** section, skip to Step 8.
+
 Query Performance Insight relies on `pg_stat_statements` under the hood. If it's not enabled:
 
 1. Go to **Server parameters** in the left menu

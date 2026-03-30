@@ -2,7 +2,7 @@
 sectionid: SQLCharacteristic
 sectionclass: h2
 parent-id: day2
-title: SQL Characteristic
+title: SQL Characteristics
 
 ---
 ### Partial Index
