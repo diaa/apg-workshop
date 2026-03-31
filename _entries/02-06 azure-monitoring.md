@@ -376,10 +376,23 @@ Azure provides pre-built **Workbooks** for PostgreSQL that combine multiple metr
 
 ### Step 12 — Recommended Server Parameters for Monitoring
 
-Before leaving this section, verify these server parameters are enabled. They control what telemetry PostgreSQL collects:
+Before leaving this section, verify these server parameters are enabled. They control what telemetry PostgreSQL and Azure collect:
 
 1. Go to **Server parameters** in the portal
 2. Search for and verify each parameter:
+
+#### Azure-Specific Parameters (Flexible Server only)
+
+These parameters are **unique to Azure Database for PostgreSQL — Flexible Server** and feed data into Azure Monitor. They do not exist in community PostgreSQL.
+
+| Parameter | Recommended value | Why |
+|---|---|---|
+| `metrics.collector_database_activity` | `on` | Enables **Enhanced Metrics** — per-database activity counters (transactions/sec, tuples inserted/updated/deleted, session counts) in Azure Monitor. Dynamic — no restart needed |
+| `metrics.autovacuum_diagnostics` | `on` | Surfaces autovacuum performance metrics (tables processed, duration, dead-tuple removal rate) in Azure Monitor so you can track vacuum health without parsing logs |
+
+#### Standard PostgreSQL Parameters
+
+These are community PostgreSQL parameters that work on any PostgreSQL installation. They control internal statistics collection and logging.
 
 | Parameter | Recommended value | Why |
 |---|---|---|
