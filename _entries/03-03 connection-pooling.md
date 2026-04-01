@@ -102,21 +102,93 @@ Connect to the server on the **direct** port (5432) as the admin:
 psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 ```
 
-Then create the role:
+First, confirm the server's current password encryption method:
+
+<span class="lang-tag lang-tag-sql">sql</span>
+```sql
+SHOW password_encryption;
+```
+
+Expected output:
+
+```
+ password_encryption
+---------------------
+ scram-sha-256
+(1 row)
+```
+
+This confirms the server defaults to SCRAM — which is what we want for all regular roles. Now temporarily switch to MD5 for the pool role:
 
 <span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 -- Switch this session to MD5 password hashing
 SET password_encryption = 'md5';
+```
 
+Verify the session change took effect:
+
+<span class="lang-tag lang-tag-sql">sql</span>
+```sql
+SHOW password_encryption;
+```
+
+```
+ password_encryption
+---------------------
+ md5
+(1 row)
+```
+
+Now create the role (its password will be stored as MD5):
+
+<span class="lang-tag lang-tag-sql">sql</span>
+```sql
 -- Create a dedicated PgBouncer login role
 CREATE ROLE app_pool LOGIN PASSWORD 'MyPoolPassword123!';
 
 -- Grant access to the tables in orders_demo
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_pool;
+```
 
+Revert the session back to SCRAM and confirm:
+
+<span class="lang-tag lang-tag-sql">sql</span>
+```sql
 -- Revert session back to the default
 SET password_encryption = 'scram-sha-256';
+
+SHOW password_encryption;
+```
+
+```
+ password_encryption
+---------------------
+ scram-sha-256
+(1 row)
+```
+
+You can also verify that `app_pool` was stored with MD5 while your admin role remains SCRAM:
+
+<span class="lang-tag lang-tag-sql">sql</span>
+```sql
+SELECT rolname,
+       CASE WHEN rolpassword LIKE 'md5%' THEN 'md5'
+            WHEN rolpassword LIKE 'SCRAM%' THEN 'scram-sha-256'
+            ELSE 'unknown'
+       END AS password_type
+FROM pg_authid
+WHERE rolname IN ('app_pool', current_user);
+```
+
+Expected output:
+
+```
+  rolname  | password_type
+-----------+---------------
+ <pgadmin> | scram-sha-256
+ app_pool  | md5
+(2 rows)
 ```
 
 > **Why MD5 only for this role?** The `SET password_encryption` change is **session-scoped** — it only affects the `CREATE ROLE` statement in the same session. Your admin account and all other roles remain SCRAM-protected. The `app_pool` role is used exclusively for pooled connections through port 6432.
