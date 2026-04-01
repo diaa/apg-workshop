@@ -7,10 +7,12 @@ title: SQL Characteristics
 ---
 ### Partial Index
 Let's create a new table in the `orders_demo` database and load it with some data:
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \c orders_demo
 ```
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 CREATE SCHEMA IF NOT EXISTS games;
 SET SEARCH_PATH TO games;
@@ -33,21 +35,25 @@ FROM generate_series(1, 10000) n,
 ```
 
 Check how many rows were added:
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT count(*) FROM games;
 ```
 
 Update some of the rows so is_activ field will have value FALSE for all the rows where start_time is different than today:
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 UPDATE games SET is_activ = FALSE WHERE start_time::date <> CURRENT_DATE;
 ```
 
 Check how many of the rows have flag is_activ set to TRUE:
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT count(*) FROM games WHERE is_activ;
 ```
 
 Run the same query 4-5 times again and check it's execution time:
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT count(*) FROM games WHERE is_activ;
 ```
@@ -55,17 +61,20 @@ SELECT count(*) FROM games WHERE is_activ;
 Were subsequent executions faster than the first and could you explain why?
 
 Let's create a partial index using is_activ column:
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql 
 CREATE INDEX ON games(id) WHERE is_activ;
 ```
 
 Check again how much time this query needs to be executed:
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT count(*) FROM games WHERE is_activ;
 ```
 
 ### JSONB
 Create a table containing JSONB column and populate it with some data:
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 CREATE TABLE products
 (
@@ -84,6 +93,7 @@ VALUES ('Leffe Blonde Ale',
 
 Query the table using JSON operators:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT name, attributes -> 'ABV'
 FROM products;
@@ -94,11 +104,13 @@ WHERE attributes ->> 'region' = 'Belgium';
 ```
 
 Create the GIN index on the table:
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 CREATE INDEX ON products USING gin(attributes);
 ```
 
 Add more products with varied structures to demonstrate JSONB's schema flexibility:
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 INSERT INTO products (name, attributes) VALUES
   ('Chimay Blue',
@@ -116,6 +128,7 @@ INSERT INTO products (name, attributes) VALUES
 #### Filtering and Operators
 
 Use `->` to extract a value as a JSON object, `->>` to extract as text for comparison:
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 -- Return ABV as text for all products
 SELECT name, attributes ->> 'ABV' AS abv
@@ -129,6 +142,7 @@ ORDER BY abv DESC;
 ```
 
 Use the **containment operator** `@>` — this is what GIN indexes are optimised for:
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 -- All beers from Belgium
 SELECT name FROM products
@@ -136,6 +150,7 @@ WHERE attributes @> '{"region": "Belgium"}';
 ```
 
 Check key existence with `?`:
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 -- Products that have an awards list
 SELECT name FROM products
@@ -143,6 +158,7 @@ WHERE attributes ? 'awards';
 ```
 
 Access an element inside a nested array with `#>>`:
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT name, attributes #>> '{hops,0}' AS first_hop
 FROM products
@@ -150,6 +166,7 @@ WHERE attributes ? 'hops';
 ```
 
 Verify the GIN index is used for containment queries:
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 EXPLAIN SELECT name FROM products
 WHERE attributes @> '{"region": "Belgium"}';
@@ -158,6 +175,7 @@ WHERE attributes @> '{"region": "Belgium"}';
 #### Updating JSONB Fields
 
 Add or update a specific key without replacing the whole document:
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 UPDATE products
 SET attributes = jsonb_set(attributes, '{stock}', '42')
@@ -167,6 +185,7 @@ SELECT name, attributes -> 'stock' FROM products WHERE name = 'Punk IPA';
 ```
 
 Remove a key with the `-` operator:
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 UPDATE products
 SET attributes = attributes - 'stock'
@@ -176,6 +195,7 @@ WHERE name = 'Punk IPA';
 #### Expanding JSONB to Rows
 
 Use `jsonb_each_text` to pivot every key/value pair into rows — useful for generic attribute reporting:
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT name, key, value
 FROM products,

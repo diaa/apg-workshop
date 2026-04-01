@@ -15,18 +15,21 @@ Extensions are what make PostgreSQL uniquely powerful. They let you add new data
 
 From the jumpbox, connect to `orders_demo`:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 ```
 
 List all extensions that Azure Flexible Server allows:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SHOW azure.extensions;
 ```
 
 This returns a comma-separated list. To see the full catalog of extensions available for installation:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT name, default_version, comment
 FROM pg_available_extensions
@@ -35,6 +38,7 @@ ORDER BY name;
 
 List extensions already installed in this database:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT extname, extversion FROM pg_extension ORDER BY extname;
 ```
@@ -47,6 +51,7 @@ You should see at least `plpgsql` (always installed) and `pg_stat_statements` (i
 
 You have already been using this throughout the workshop. Quick recap:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 
@@ -67,6 +72,7 @@ This extension is **critical** for production — it's how you find your slowest
 
 `pg_trgm` provides fast text similarity searches — useful for fuzzy matching, autocomplete, and `LIKE '%pattern%'` queries that can't use standard B-tree indexes.
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 ```
@@ -75,6 +81,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 Without an index, a `LIKE` search on a text column is always a sequential scan:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 EXPLAIN (ANALYZE)
 SELECT customer_id, first_name, last_name, email
@@ -84,12 +91,14 @@ WHERE email LIKE '%jones%';
 
 You will see `Seq Scan` and `Filter`. Now add a trigram GIN index:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 CREATE INDEX idx_customers_email_trgm ON customers USING gin (email gin_trgm_ops);
 ```
 
 Re-run:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 EXPLAIN (ANALYZE)
 SELECT customer_id, first_name, last_name, email
@@ -101,6 +110,7 @@ The planner now uses `Bitmap Index Scan` on the GIN index — much faster.
 
 **Similarity search:**
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 -- Find customers with names similar to "Smith" (typo-tolerant)
 SELECT customer_id, first_name, last_name, similarity(last_name, 'Smith') AS sim
@@ -114,6 +124,7 @@ The `%` operator returns `true` if the similarity score exceeds `pg_trgm.similar
 
 Clean up:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 DROP INDEX idx_customers_email_trgm;
 ```
@@ -124,6 +135,7 @@ DROP INDEX idx_customers_email_trgm;
 
 For generating UUIDs (common for distributed IDs, API keys, etc.):
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 -- PostgreSQL 18: gen_random_uuid() is built-in, no extension needed
 SELECT gen_random_uuid();
@@ -140,6 +152,7 @@ SELECT uuid_generate_v1();  -- time + MAC-based UUID
 
 For password hashing, data encryption, and generating random bytes:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
@@ -169,6 +182,7 @@ SELECT encode(gen_random_bytes(32), 'hex') AS random_token;
 
 After restart:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 
@@ -193,6 +207,7 @@ Try these extension-powered queries against the demo data:
 
 **Trigram search — find orders from cities like "London":**
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 CREATE INDEX idx_cust_city_trgm ON customers USING gin (city gin_trgm_ops);
 
@@ -208,6 +223,7 @@ DROP INDEX idx_cust_city_trgm;
 
 **Generate UUIDs for anonymised export:**
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT gen_random_uuid() AS anon_id, city, country, loyalty_points
 FROM customers
@@ -216,6 +232,7 @@ LIMIT 5;
 
 **Hash email addresses for privacy:**
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT customer_id,
        encode(digest(email, 'sha256'), 'hex') AS email_hash,
@@ -248,6 +265,7 @@ LIMIT 5;
 
 Remove the extensions you installed (optional — they don't affect the other sections):
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 DROP EXTENSION IF EXISTS pg_trgm;
 DROP EXTENSION IF EXISTS "uuid-ossp";

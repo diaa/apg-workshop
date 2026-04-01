@@ -19,6 +19,7 @@ is-parent: yes
 
 List the resources inside the group first so you can visually confirm nothing critical is there:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 az resource list --resource-group PG-Workshop --output table
 ```
@@ -40,6 +41,7 @@ Deleting the resource group removes all resources inside it in a single operatio
 
 **Azure CLI (from CloudShell or your terminal):**
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 az group delete --name PG-Workshop --yes --no-wait
 ```
@@ -52,6 +54,7 @@ The `--no-wait` flag returns control immediately; deletion continues in the back
 
 After a few minutes, confirm the resource group is gone:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 az group show --name PG-Workshop
 ```
@@ -64,6 +67,7 @@ You should see: `ResourceGroupNotFound`. If resources still appear, wait and ret
 
 Remove any credentials or connection files you created on the jumpbox or locally:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 # On the jumpbox (if still accessible before VM is deleted)
 rm -f ~/.pg_azure ~/.pgpass

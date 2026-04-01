@@ -9,6 +9,7 @@ title: Statistics and Query Planning
 
 All exercises use the **orders_demo** database you restored earlier. Connect to it first:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```bash
 psql "host=$PGHOST dbname=orders_demo user=$PGUSER sslmode=require"
 ```
@@ -17,6 +18,7 @@ psql "host=$PGHOST dbname=orders_demo user=$PGUSER sslmode=require"
 
 Run `EXPLAIN` on the `orders` table (~100 000 rows) to see the default execution plan:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 EXPLAIN SELECT * FROM orders;
 ```
@@ -28,12 +30,14 @@ Seq Scan on orders  (cost=0.00..2541.00 rows=100000 width=24)
 
 Check the statistics Postgres currently holds for this table:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT relpages, reltuples FROM pg_class WHERE relname = 'orders';
 ```
 
 If `reltuples` shows 0, the autovacuum hasn't run yet. Force a refresh:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 VACUUM ANALYZE orders;
 
@@ -49,6 +53,7 @@ Expected output (approximate):
 
 Check `EXPLAIN` again — the row estimate should now match reality:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 EXPLAIN SELECT * FROM orders;
 ```
@@ -61,6 +66,7 @@ Seq Scan on orders  (cost=0.00..2041.00 rows=100000 width=24)
 
 The total cost of a sequential scan equals `(relpages × seq_page_cost) + (reltuples × cpu_tuple_cost)`. Verify:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT relpages * current_setting('seq_page_cost')::numeric
      + reltuples * current_setting('cpu_tuple_cost')::numeric
@@ -73,6 +79,7 @@ The result should match the cost in the `EXPLAIN` output above.
 
 ### Adding a WHERE filter
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 EXPLAIN SELECT * FROM orders WHERE customer_id < 200;
 ```
@@ -85,6 +92,7 @@ Seq Scan on orders  (cost=0.00..2291.00 rows=1990 width=24)
 
 Add `ANALYZE` to see actual vs. estimated:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 EXPLAIN ANALYZE SELECT * FROM orders WHERE customer_id < 200;
 ```
@@ -104,6 +112,7 @@ Now not only the plan was shown but also the query was executed.
 
 Create an index on `customer_id` and observe the plan change:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 CREATE INDEX idx_orders_customer_id ON orders(customer_id);
 
@@ -124,6 +133,7 @@ Execution Time: 0.42 ms
 
 Use a join between `orders` and `customers` to explore how the planner picks join algorithms:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 EXPLAIN ANALYZE
 SELECT o.order_id, c.name, o.total_amount
@@ -136,6 +146,7 @@ The planner will likely choose a **Nested Loop** — it can use the index on `or
 
 Now force the planner away from nested loops:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SET enable_nestloop TO off;
 
@@ -150,6 +161,7 @@ The plan switches to a **Hash Join** — it builds a hash table of the matching 
 
 Disable hash joins as well:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SET enable_hashjoin TO off;
 
@@ -166,6 +178,7 @@ The plan falls back to a **Merge Join** — both inputs must be sorted first.
 
 ### Cleanup
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 RESET enable_nestloop;
 RESET enable_hashjoin;

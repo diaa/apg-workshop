@@ -34,12 +34,14 @@ Azure Database for PostgreSQL Flexible Server includes a **built-in PgBouncer** 
 
 Connect to `orders_demo`:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 ```
 
 Once connected, check the current connections:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 -- Current connections
 SELECT count(*) AS total_connections FROM pg_stat_activity;
@@ -89,18 +91,21 @@ SHOW max_connections;
 
 PgBouncer listens on port **6432** (not the default 5432):
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo -p 6432
 ```
 
 Verify you're going through PgBouncer:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SHOW server_version;  -- works: forwarded to PostgreSQL
 ```
 
 Run a query to confirm:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT count(*) FROM orders;
 ```
@@ -113,6 +118,7 @@ Use `pgbench` from the jumpbox to simulate concurrent connections.
 
 #### Without PgBouncer (port 5432):
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```bash
 pgbench -h <postgresql-fqdn> -U <pgadmin> -d orders_demo -p 5432 \
   -c 50 -j 4 -T 30 -S
@@ -128,6 +134,7 @@ Note the **TPS (transactions per second)** and **latency average**.
 
 #### With PgBouncer (port 6432):
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```bash
 pgbench -h <postgresql-fqdn> -U <pgadmin> -d orders_demo -p 6432 \
   -c 50 -j 4 -T 30 -S
@@ -151,6 +158,7 @@ Typical results:
 
 PgBouncer statistics are available through the `pgbouncer` virtual database:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql -h <postgresql-fqdn> -U <pgadmin> -d pgbouncer -p 6432
 

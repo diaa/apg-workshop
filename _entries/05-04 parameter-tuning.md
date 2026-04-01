@@ -19,6 +19,7 @@ There are two ways:
 **1. Azure Portal** — Server parameters blade (GUI)
 **2. Azure CLI:**
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```bash
 az postgres flexible-server parameter set \
   --resource-group <rg> --server-name <server> \
@@ -29,6 +30,7 @@ Some parameters require a server restart (marked as `static` in the portal). Oth
 
 You can check the current value of any parameter from psql:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SHOW work_mem;
 
@@ -55,6 +57,7 @@ The `context` column tells you when the change takes effect:
 
 #### 1. `work_mem` — Per-Operation Sort/Hash Memory
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SHOW work_mem;
 ```
@@ -71,6 +74,7 @@ Default on Flexible Server: typically `4MB`.
 
 **Before (default `work_mem`):**
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SET work_mem = '4MB';
 
@@ -85,6 +89,7 @@ Look at the `Sort` node. If you see `Sort Method: external merge  Disk: XXXkB`, 
 
 **After (increased `work_mem`):**
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SET work_mem = '64MB';
 
@@ -99,6 +104,7 @@ Now the Sort node should show `Sort Method: quicksort  Memory: XXXkB` — the en
 
 Compare execution times:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 -- Reset to default and time it
 SET work_mem = '4MB';
@@ -114,6 +120,7 @@ FROM orders ORDER BY customer_id, total_amount DESC, order_date DESC;
 
 Also test with Query 3 (window functions):
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SET work_mem = '4MB';
 \timing                 -- meta-command: toggles execution timing on
@@ -141,6 +148,7 @@ For a 8GB server with 100 connections: `2048MB / 100 = ~20MB`. Conservative, but
 
 Reset to default:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 RESET work_mem;
 ```
@@ -149,6 +157,7 @@ RESET work_mem;
 
 #### 2. `shared_buffers` — Shared Memory Cache
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SHOW shared_buffers;
 ```
@@ -159,6 +168,7 @@ Default on Flexible Server: auto-tuned by Azure to ~25% of available memory.
 
 **You already measured this:** In the profiling section, `pg_stat_database.blks_hit` vs `blks_read` gives you the cache hit ratio. On a properly sized `shared_buffers`, you should see > 99% cache hit.
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT
   blks_hit,
@@ -178,6 +188,7 @@ WHERE datname = 'orders_demo';
 
 #### 3. `effective_cache_size` — Planner's Cache Estimate
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SHOW effective_cache_size;
 ```
@@ -188,6 +199,7 @@ Default on Flexible Server: auto-tuned to ~75% of available memory.
 
 #### Lab — See the planner's behaviour change
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 -- Low estimate: planner assumes very little is cached
 SET effective_cache_size = '64MB';
@@ -195,6 +207,7 @@ SET effective_cache_size = '64MB';
 EXPLAIN SELECT * FROM orders WHERE customer_id = 42;
 ```
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 -- High estimate: planner assumes most data is cached
 SET effective_cache_size = '4GB';
@@ -206,6 +219,7 @@ With a low `effective_cache_size`, the planner may choose a sequential scan (ass
 
 Reset:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 RESET effective_cache_size;
 ```
@@ -214,6 +228,7 @@ RESET effective_cache_size;
 
 #### 4. `maintenance_work_mem` — Memory for Maintenance Operations
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SHOW maintenance_work_mem;
 ```
@@ -224,6 +239,7 @@ Default: `64MB` (on most Flexible Server SKUs).
 
 #### Lab — Index creation speed
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 -- Drop one of the indexes we created in the tuning lab
 DROP INDEX IF EXISTS idx_orders_cust_amount_date;
@@ -244,6 +260,7 @@ Compare the creation times. With more memory, PostgreSQL can sort the index entr
 
 Reset:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 RESET maintenance_work_mem;
 ```
@@ -254,6 +271,7 @@ RESET maintenance_work_mem;
 
 #### 5. `random_page_cost` — I/O Cost Estimate
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SHOW random_page_cost;
 ```
@@ -266,6 +284,7 @@ Default: `4.0`
 
 #### Lab — See the impact
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 -- Default: random I/O is considered 4× more expensive than sequential
 SET random_page_cost = 4.0;
@@ -280,6 +299,7 @@ With `4.0`, the planner may choose a sequential scan for selective queries. With
 
 Reset:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 RESET random_page_cost;
 ```

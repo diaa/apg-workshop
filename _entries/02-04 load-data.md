@@ -14,6 +14,7 @@ In this section you will restore a sample e-commerce database (`orders_demo`) wi
 
 Connect to the jumpbox VM using the public IP from your deployment output:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 ssh <vmUsername>@<jumpbox-public-ip>
 ```
@@ -26,6 +27,7 @@ ssh <vmUsername>@<jumpbox-public-ip>
 
 From the jumpbox, connect to the default `postgres` database:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql -h <postgresql-fqdn> -U <pgadmin> -d postgres
 ```
@@ -42,6 +44,7 @@ Before restoring any data, run the following meta-commands to understand what is
 
 #### 3.1 — List all databases
 
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \l
 ```
@@ -50,6 +53,7 @@ Before restoring any data, run the following meta-commands to understand what is
 
 #### 3.2 — List schemas
 
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \dn
 ```
@@ -58,6 +62,7 @@ Before restoring any data, run the following meta-commands to understand what is
 
 #### 3.3 — List all tables in all schemas
 
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \dt *.*
 ```
@@ -66,6 +71,7 @@ Before restoring any data, run the following meta-commands to understand what is
 
 #### 3.4 — List all views in all schemas
 
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \dv *.*
 ```
@@ -74,6 +80,7 @@ Before restoring any data, run the following meta-commands to understand what is
 
 #### 3.5 — List all indexes in all schemas
 
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \di *.*
 ```
@@ -101,6 +108,7 @@ Before restoring any data, run the following meta-commands to understand what is
 
 #### 4.1 — Exit psql
 
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \q
 ```
@@ -109,12 +117,14 @@ Before restoring any data, run the following meta-commands to understand what is
 
 The workshop uses a pre-built custom-format dump that contains four tables with realistic e-commerce data (~410K rows total).
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 curl -L -O "https://pg.azure-workshops.cloud/database/orders_demo.dump"
 ```
 
 Verify the file downloaded correctly:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 ls -lh orders_demo.dump
 ```
@@ -123,6 +133,7 @@ You should see a file of roughly 5–10 MB. If the file is missing or 0 bytes, c
 
 #### 4.3 — Create the target database
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql -h <postgresql-fqdn> -U <pgadmin> -d postgres -c "CREATE DATABASE orders_demo;"
 ```
@@ -134,6 +145,7 @@ psql -h <postgresql-fqdn> -U <pgadmin> -d postgres -c "CREATE DATABASE orders_de
 
 #### 4.4 — Restore the dump with pg_restore
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 pg_restore -h <postgresql-fqdn> -U <pgadmin> -d orders_demo --no-owner --no-privileges --verbose orders_demo.dump
 ```
@@ -154,6 +166,7 @@ You should see output listing each table and index being created, followed by da
 
 Connect to the new database and confirm the tables exist with data:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo -c "
 SELECT 'customers' AS tbl, COUNT(*) FROM customers
@@ -181,15 +194,19 @@ If you see all four tables with the expected row counts, the restore was success
 
 Connect to the new database interactively:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 ```
 
 #### 5.1 — Confirm the tables exist
 
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \dt
 ```
+
+> **Tip:** Want to see the SQL behind any `\` command? Run `\set ECHO_HIDDEN on` in psql — it will print the underlying query before each result. This is useful for learning and for reproducing meta-commands in other SQL clients like VS Code.
 
 You should see four tables:
 
@@ -202,6 +219,7 @@ You should see four tables:
 
 #### 5.2 — Inspect table structures
 
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \d customers
 \d products
@@ -213,6 +231,7 @@ Pay attention to data types, primary keys, and whether any foreign key constrain
 
 #### 5.3 — Check row counts
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT 'customers' AS table_name, COUNT(*) AS rows FROM customers
 UNION ALL
@@ -225,6 +244,7 @@ SELECT 'order_items', COUNT(*) FROM order_items;
 
 #### 5.4 — Check table sizes
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT relname AS table_name,
        pg_size_pretty(pg_total_relation_size(oid)) AS total_size,
@@ -237,6 +257,7 @@ ORDER BY pg_total_relation_size(oid) DESC;
 
 #### 5.5 — List indexes
 
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \di
 ```
@@ -245,6 +266,7 @@ ORDER BY pg_total_relation_size(oid) DESC;
 
 #### 5.6 — Explore sample data
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 -- Peek at customers
 SELECT * FROM customers LIMIT 5;
@@ -266,6 +288,7 @@ FROM (SELECT order_id, COUNT(*) AS item_count FROM order_items GROUP BY order_id
 
 #### 5.7 — Check for missing indexes (useful diagnostic)
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT relname AS table,
        seq_scan, seq_tup_read,
@@ -293,12 +316,14 @@ This shows how many sequential scans vs. index scans each table has received. Af
 
 After the restart, connect from the jumpbox and create the extension:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 ```
 
 Verify it is working:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT calls, query FROM pg_stat_statements LIMIT 5;
 ```

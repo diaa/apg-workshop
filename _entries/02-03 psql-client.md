@@ -27,6 +27,7 @@ Anything you type in `psql` that begins with a backslash (`\`) is a **meta-comma
 
 Before running any commands, confirm that you are connected to the right server, database, and user:
 
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \conninfo
 ```
@@ -58,12 +59,14 @@ By default, `psql` displays query results as a horizontal table. This becomes un
 
 **Toggle expanded (vertical) display:**
 
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \x auto
 ```
 
 With `\x auto`, `psql` automatically switches to vertical display when the output is too wide for your terminal. Try it:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT * FROM pg_stat_activity;
 ```
@@ -72,6 +75,7 @@ Without `\x auto`, this is a wall of text. With it, each row is displayed vertic
 
 **Toggle query timing:**
 
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \timing
 ```
@@ -82,6 +86,7 @@ This shows how long each query takes. Enable it now — you will want it for eve
 
 ### Getting Help
 
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \?            -- list all backslash meta-commands
 \h            -- list all SQL commands
@@ -94,10 +99,12 @@ This shows how long each query takes. Enable it now — you will want it for eve
 
 `\watch` re-runs the last query at a set interval — useful for monitoring:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT count(*) FROM pg_stat_activity;
 ```
 
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \watch 2
 ```
@@ -108,6 +115,7 @@ This re-runs the query every 2 seconds. Press `Ctrl+C` to stop.
 
 ### Command History
 
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \s            -- print command history
 ```
@@ -120,6 +128,7 @@ Use `Ctrl+R` to search history interactively — type part of a previous command
 
 You can view the source of any function:
 
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \sf abs(bigint)
 ```
@@ -132,12 +141,14 @@ This prints the `CREATE FUNCTION` definition — useful for understanding built-
 
 Instead of pasting SQL into `psql`, you can run a file:
 
+<span class="lang-tag lang-tag-psql">psql</span>
 ```psql
 \i /path/to/script.sql
 ```
 
 Or from the command line:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql -f /path/to/script.sql
 ```
@@ -148,6 +159,7 @@ This is how you will restore database dumps and run batch scripts later in the w
 
 If `.pgpass` and `.pg_azure` are set up, you can run one-off SQL directly from the shell with `-c`:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql -c "CREATE DATABASE orders_demo;"
 ```

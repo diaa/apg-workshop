@@ -37,6 +37,7 @@ You can save yourself some typing by setting the environment variables PGDATABAS
 
 Example (please change these values to match with your setup) from the cloudshell
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 ssh <vmUsername>@<jumpbox-ip> # the jumpbox VM IP address and the username you selected during deployment
 ```
@@ -45,6 +46,7 @@ ssh <vmUsername>@<jumpbox-ip> # the jumpbox VM IP address and the username you s
 
 Once on the jumpbox, connect to the database (the PostgreSQL 18 client is pre-installed by the Bicep deployment)
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh   
 psql -U adminuser -h postgresql-db.postgres.database.azure.com postgres
 
@@ -61,12 +63,14 @@ Go to the "Connection Strings" tab on the left hand side of the Azure Portal and
 Open Cloud Shell and create a new *.pg_azure* file using your favourite editor (if you are not comfortable with Vim you can use VSCode):
 
 **Using VIM**
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 vi .pg_azure
 ```
 
 Add the following parameters or use the below **wget** command to download the file:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 export PGDATABASE=postgres
 export PGHOST=HOSTNAME.postgres.database.azure.com
@@ -77,12 +81,14 @@ export PGSSLMODE=require
 
 **Using Wget**
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 wget https://pg.azure-workshops.cloud/scripts/pg_azure -O .pg_azure
 ```
 
 Read the content of the file in the current session:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 source ~/.pg_azure
 ```
@@ -91,6 +97,7 @@ If you closed this bash session, you won't be able to login again to psql withou
 
 Let's connect to our Azure database with psql client:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql
 ```
@@ -104,6 +111,7 @@ You can also use the connection string shown in the Azure Portal in the Connecti
 
 While you have the psql connected to the database, Let's run some queries:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT version();
 ```
@@ -111,6 +119,7 @@ You should be able to read the PostgreSQL version.
 
 Create a table with some random data:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 DROP TABLE IF EXISTS random_data;
 
@@ -123,6 +132,7 @@ FROM generate_series(1,500000) s;
 
 Let's select some of the records that we generated:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT * FROM random_data LIMIT 10;
 

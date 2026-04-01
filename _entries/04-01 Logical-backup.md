@@ -19,12 +19,14 @@ PostgreSQL ships three logical backup utilities: `pg_dump` (single database), `p
 
 The simplest format. Output is a SQL script you can replay with `psql`.
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 pg_dump orders_demo > /tmp/orders_demo.plain.sql
 ```
 
 Inspect the output:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 less /tmp/orders_demo.plain.sql
 ```
@@ -33,6 +35,7 @@ You will see `CREATE TABLE`, `COPY` data blocks, and `CREATE INDEX` statements.
 
 #### Schema only (no data):
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 pg_dump --schema-only orders_demo > /tmp/orders_demo_ddl.sql
 less /tmp/orders_demo_ddl.sql
@@ -40,6 +43,7 @@ less /tmp/orders_demo_ddl.sql
 
 #### Data only:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 pg_dump --data-only orders_demo > /tmp/orders_demo_data.sql
 less /tmp/orders_demo_data.sql
@@ -47,6 +51,7 @@ less /tmp/orders_demo_data.sql
 
 #### INSERT statements instead of COPY:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 pg_dump --data-only --inserts orders_demo > /tmp/orders_demo_inserts.sql
 less /tmp/orders_demo_inserts.sql
@@ -56,6 +61,7 @@ less /tmp/orders_demo_inserts.sql
 
 #### Single table:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 pg_dump --table=customers orders_demo > /tmp/customers.sql
 less /tmp/customers.sql
@@ -67,6 +73,7 @@ less /tmp/customers.sql
 
 Custom format (`-Fc`) compresses the data and allows selective restore with `pg_restore`:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 pg_dump -Fc orders_demo -f /tmp/orders_demo.custom.dump
 ls -lh /tmp/orders_demo.custom.dump
@@ -80,6 +87,7 @@ Compare the file size to the plain-text dump — custom format is significantly 
 
 Directory format (`-Fd`) is the only format that supports parallel jobs:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 pg_dump -Fd -j 4 orders_demo -f /tmp/orders_demo_dir
 ls -la /tmp/orders_demo_dir/
@@ -93,18 +101,21 @@ The `-j 4` flag uses 4 parallel workers. You will see one compressed file per ta
 
 Instead of dropping `orders_demo`, create a **new** database to practice the restore:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql -d postgres -c "CREATE DATABASE orders_demo_restored;"
 ```
 
 #### Restore from custom format:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 pg_restore -d orders_demo_restored --no-owner --verbose /tmp/orders_demo.custom.dump
 ```
 
 #### Verify:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql -d orders_demo_restored -c "
 SELECT 'customers' AS tbl, COUNT(*) FROM customers
@@ -115,12 +126,14 @@ UNION ALL SELECT 'order_items', COUNT(*) FROM order_items;"
 
 Check the indexes that are present:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql -d orders_demo_restored -c "\di"
 ```
 
 #### Restore from directory format (parallel):
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql -d postgres -c "DROP DATABASE IF EXISTS orders_demo_restored;"
 psql -d postgres -c "CREATE DATABASE orders_demo_restored;"
@@ -133,6 +146,7 @@ pg_restore -d orders_demo_restored -j 4 --no-owner --verbose /tmp/orders_demo_di
 
 `pg_dumpall` is the only tool that can dump **roles, tablespaces, and other cluster-wide objects** that `pg_dump` cannot:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 pg_dumpall > /tmp/whole_cluster.sql
 less /tmp/whole_cluster.sql
@@ -140,6 +154,7 @@ less /tmp/whole_cluster.sql
 
 For just the global objects (roles + tablespaces):
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 pg_dumpall -g --no-role-passwords > /tmp/globals.sql
 less /tmp/globals.sql
@@ -153,6 +168,7 @@ less /tmp/globals.sql
 
 Drop the test database:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql -d postgres -c "DROP DATABASE IF EXISTS orders_demo_restored;"
 ```

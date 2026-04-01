@@ -236,3 +236,35 @@ $medgray: #999;
         background-color: #EAF2F5;
     }
 }
+
+// Code block language labels
+.lang-tag {
+    display: inline-block;
+    font-size: .75em;
+    font-family: monospace;
+    font-weight: 600;
+    padding: 1px 8px;
+    border-radius: 3px 3px 0 0;
+    margin-bottom: -2px;
+    letter-spacing: 0.5px;
+}
+
+.lang-tag-shell {
+    background-color: #2d2d2d;
+    color: #f0f0f0;
+}
+
+.lang-tag-psql {
+    background-color: #336791;
+    color: #fff;
+}
+
+.lang-tag-sql {
+    background-color: #e8a020;
+    color: #333;
+}
+
+.lang-tag-kql {
+    background-color: #0078d4;
+    color: #fff;
+}

@@ -23,6 +23,7 @@ Deploys the full hub-and-spoke architecture: jumpbox VM, private VNet, PostgreSQ
 
 Open [Azure Cloud Shell](https://shell.azure.com) (Bash), or a local terminal with Azure CLI installed, and download the templates:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 curl -O https://pg.azure-workshops.cloud/scripts/bicep.zip
 unzip bicep.zip
@@ -38,6 +39,7 @@ cd bicep
 
 #### Step 2 — Log in to Azure
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 az login
 ```
@@ -46,12 +48,14 @@ This opens a browser window. Sign in with your Azure account.
 
 Verify you are on the correct subscription:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 az account show --query "{name:name, id:id, state:state}" -o table
 ```
 
 If the subscription shown is not the one you intend to use, list all available subscriptions and set the correct one:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 az account list --query "[].{Name:name, ID:id, Default:isDefault}" -o table
 az account set --subscription "<subscription-name-or-id>"
@@ -59,6 +63,7 @@ az account set --subscription "<subscription-name-or-id>"
 
 #### Step 3 — Create the resource group
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 az group create --name PG-Workshop --location uksouth
 ```
@@ -67,6 +72,7 @@ az group create --name PG-Workshop --location uksouth
 
 #### Step 4 — Deploy the Bicep template
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 az deployment group create --resource-group PG-Workshop --template-file main.bicep
 ```
@@ -108,18 +114,21 @@ Keep these values accessible — you will use them in every subsequent section:
 
 #### Step 6 — SSH into the jumpbox and verify connectivity
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 ssh <vmAdminUsername>@<jumpbox-public-ip>
 ```
 
 Use the password you provided in Step 4. Once connected, verify the PostgreSQL client is installed:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql --version
 ```
 
 You should see `psql (PostgreSQL) 18.x`. Then test connectivity to the database:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql -h <postgresql-fqdn> -U <pgAdminUsername> -d postgres
 ```
@@ -128,12 +137,14 @@ Enter the PostgreSQL password when prompted. If you see the `postgres=>` prompt,
 
 Check the PostgreSQL server version:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT version();
 ```
 
 You should see output containing `PostgreSQL 18.x`. To exit `psql`:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 \q
 ```
@@ -150,6 +161,7 @@ Deploys only a PostgreSQL Flexible Server with a **public endpoint** and a firew
 
 If you haven't already downloaded the templates, do so now (see Option 1 — Step 1). Then navigate to the simple folder:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 cd bicep/simple
 ```
@@ -158,6 +170,7 @@ cd bicep/simple
 
 Skip this step if you already logged in and created the resource group above.
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 az login
 az group create --name PG-Workshop --location uksouth
@@ -171,6 +184,7 @@ On **PowerShell** (Windows):
 ```
 
 On **Bash** (Linux/macOS/Cloud Shell):
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 curl -s ifconfig.me
 ```
@@ -179,6 +193,7 @@ Note the IP address returned.
 
 #### Step 4 — Deploy
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 az deployment group create --resource-group PG-Workshop \
   --template-file main.bicep \
@@ -196,6 +211,7 @@ You will be prompted for:
 
 The deployment output includes a ready-to-use `psqlCommand`. If you have `psql` installed locally:
 
+<span class="lang-tag lang-tag-shell">shell</span>
 ```sh
 psql "host=<server-fqdn> user=<administratorLogin> dbname=postgres sslmode=require"
 ```
@@ -218,12 +234,14 @@ Keep these values accessible — you will use them in every subsequent section:
 
 Once connected via `psql`, check the PostgreSQL server version:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 SELECT version();
 ```
 
 You should see output containing `PostgreSQL 18.x`. To exit `psql`:
 
+<span class="lang-tag lang-tag-sql">sql</span>
 ```sql
 \q
 ```
