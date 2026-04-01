@@ -527,3 +527,5 @@ DELETE FROM customers WHERE email IN ('test@workshop.dev', 'another@workshop.dev
 | **Default privileges** | `ALTER DEFAULT PRIVILEGES` ensures future tables get the right grants automatically. |
 | **Schema isolation** | Revoke `CREATE` on `public` from `PUBLIC`. Use dedicated schemas per application. |
 | **Azure specifics** | Your admin is not a superuser — it's a member of `azure_pg_admin`. `azuresu` is Azure-managed. |
+
+> **Next:** For row-level data filtering (restricting which *rows* a role can see, not just which tables), continue to the optional **Row-Level Security** section.
