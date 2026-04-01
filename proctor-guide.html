@@ -126,15 +126,17 @@
   <li><a href="#ch-patching">18. Patching &amp; Maintenance</a></li>
   <li><a href="#ch-security">19. Security Management (pgAudit)</a></li>
 
-  <span class="day-label">Day 2 — Profile, Diagnose &amp; Fix (09:00 – 15:15)</span>
+  <span class="day-label">Day 2 — Profile, Diagnose &amp; Fix (09:00 – 15:30)</span>
   <li><a href="#ch-profiling">20. Database Profiling &amp; Activity Analysis</a></li>
   <li><a href="#ch-mvcc">21. MVCC Deep Dive</a></li>
-  <li><a href="#ch-params">22. Parameter Tuning</a></li>
-  <li><a href="#ch-sql">23. SQL Characteristics (Partial Indexes + JSONB)</a></li>
-  <li><a href="#ch-stats">24. Statistics &amp; Query Planning</a></li>
-  <li><a href="#ch-index">25. Index Tuning Lab</a></li>
-  <li><a href="#ch-extensions">26. Extensions Overview</a> <span class="badge badge-optional">Optional</span></li>
-  <li><a href="#ch-cleanup">27. Cleanup</a></li>
+  <li><a href="#ch-stats">22. Statistics &amp; Query Planning</a></li>
+  <li><a href="#ch-params">23. Parameter Tuning</a></li>
+  <li><a href="#ch-index">24. Index Tuning Lab</a></li>
+  <li><a href="#ch-rewrite">25. Query Rewriting</a></li>
+  <li><a href="#ch-sql">26. SQL Characteristics (Partial Indexes + JSONB)</a></li>
+  <li><a href="#ch-partitioning">27. Partitioning</a></li>
+  <li><a href="#ch-extensions">28. Extensions Overview</a> <span class="badge badge-optional">Optional</span></li>
+  <li><a href="#ch-cleanup">29. Cleanup</a></li>
 
   <span class="day-label">Reference</span>
   <li><a href="#ch-flow">Workshop Flow &amp; Pacing Guide</a></li>
@@ -1404,9 +1406,75 @@ ALTER TABLE orders SET (autovacuum_vacuum_scale_factor = 0.05);  -- 5% for high-
   </ul>
 </div>
 
-<!-- ═══════════════════ CHAPTER 22: PARAMETER TUNING ═══════════════════ -->
+<!-- ═══════════════════ CHAPTER 22: STATISTICS ═══════════════════ -->
 <hr class="section-divider">
-<h2 id="ch-params">22. Parameter Tuning</h2>
+<h2 id="ch-stats">22. Statistics &amp; Query Planning</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Read EXPLAIN output: node types, costs, actual vs. estimated rows</li>
+    <li>Understand cost calculation formula: <code>relpages × seq_page_cost + reltuples × cpu_tuple_cost</code></li>
+    <li>Compare EXPLAIN vs. EXPLAIN ANALYZE</li>
+    <li>Observe index scan vs. sequential scan decision</li>
+    <li>Compare join algorithms: nested loop, hash join, merge join</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 25–35 minutes</strong></div>
+
+<h3>Key Queries</h3>
+
+<h4>Basic EXPLAIN</h4>
+<pre><code>EXPLAIN SELECT * FROM orders;
+SELECT relpages, reltuples FROM pg_class WHERE relname = 'orders';
+VACUUM ANALYZE orders;   -- Update statistics
+EXPLAIN SELECT * FROM orders;   -- Cost may change after fresh ANALYZE</code></pre>
+
+<h4>Cost calculation</h4>
+<pre><code>SELECT relpages * current_setting('seq_page_cost')::numeric
+     + reltuples * current_setting('cpu_tuple_cost')::numeric
+       AS estimated_cost
+FROM pg_class WHERE relname = 'orders';</code></pre>
+<p class="cmd-explain">This should match the total cost in the EXPLAIN output — demonstrates how the planner calculates cost.</p>
+
+<h4>WHERE filter selectivity</h4>
+<pre><code>EXPLAIN ANALYZE SELECT * FROM orders WHERE customer_id &lt; 200;</code></pre>
+
+<h4>Index scan comparison</h4>
+<pre><code>CREATE INDEX idx_orders_customer_id ON orders(customer_id);
+EXPLAIN ANALYZE SELECT * FROM orders WHERE customer_id &lt; 200;
+-- Now shows Index Scan instead of Seq Scan</code></pre>
+
+<h4>Join algorithms</h4>
+<pre><code>EXPLAIN ANALYZE
+SELECT o.order_id, c.name, o.total_amount
+FROM orders o JOIN customers c ON c.customer_id = o.customer_id
+WHERE o.customer_id &lt; 200;
+
+-- Force different algorithms
+SET enable_nestloop TO off;
+EXPLAIN ANALYZE ...   -- Planner picks Hash Join
+
+SET enable_hashjoin TO off;
+EXPLAIN ANALYZE ...   -- Planner picks Merge Join
+
+RESET enable_nestloop;
+RESET enable_hashjoin;</code></pre>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li><strong>"Why did the planner choose Index Scan rather than Index Only Scan?"</strong> — Because the query selects columns not in the index. An Index Only Scan requires all selected columns to be in the index.</li>
+    <li><strong>"Which algorithm was fastest?"</strong> — Compare <code>Execution Time</code> values. Usually Nested Loop for small result sets, Hash Join for larger.</li>
+    <li>The cost formula demo is a powerful "aha" moment — the planner's math is transparent.</li>
+    <li>Remind attendees to <code>DROP INDEX idx_orders_customer_id</code> at the end — the index tuning lab starts from scratch.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 23: PARAMETER TUNING ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-params">23. Parameter Tuning</h2>
 
 <div class="box box-learning">
   <strong>Learning Objectives</strong>
@@ -1440,13 +1508,14 @@ RESET work_mem;</code></pre>
 <h3>maintenance_work_mem Lab</h3>
 <pre><code>SET maintenance_work_mem = '64MB';
 \timing
-CREATE INDEX idx_orders_cust_amount_date ON orders (customer_id, total_amount DESC, order_date DESC);
-DROP INDEX idx_orders_cust_amount_date;
+CREATE INDEX idx_maint_demo ON orders (customer_id, total_amount DESC, order_date DESC);
+DROP INDEX idx_maint_demo;
 
 SET maintenance_work_mem = '512MB';
-CREATE INDEX idx_orders_cust_amount_date ON orders (customer_id, total_amount DESC, order_date DESC);
+CREATE INDEX idx_maint_demo ON orders (customer_id, total_amount DESC, order_date DESC);
+DROP INDEX idx_maint_demo;
 RESET maintenance_work_mem;</code></pre>
-<p class="cmd-explain">More maintenance_work_mem = faster index creation/VACUUM. Time the difference.</p>
+<p class="cmd-explain">More maintenance_work_mem = faster index creation/VACUUM. Time the difference. The index is dropped at the end so the Index Tuning Lab starts with a clean slate.</p>
 
 <h3>random_page_cost Lab</h3>
 <pre><code>SET random_page_cost = 4.0;    -- default (spinning disk assumption)
@@ -1473,13 +1542,203 @@ RESET random_page_cost;</code></pre>
     <li>The work_mem lab is the <strong>highest-impact demo</strong> — attendees can see the dramatic difference between disk sort and memory sort in EXPLAIN.</li>
     <li>Emphasize that <code>work_mem</code> is per-sort-operation, <em>not</em> per-connection. A complex query can use multiple allocations.</li>
     <li>In Azure Flexible Server, <code>shared_buffers</code> and <code>effective_cache_size</code> are auto-tuned. Don't encourage attendees to change them.</li>
+    <li>The maintenance_work_mem index is now named <code>idx_maint_demo</code> and dropped at the end to avoid conflicts with the Index Tuning Lab.</li>
     <li>The Azure CLI command <code>az postgres flexible-server parameter set</code> can also set parameters — useful for automation.</li>
   </ul>
 </div>
 
-<!-- ═══════════════════ CHAPTER 23: SQL CHARACTERISTICS ═══════════════════ -->
+<!-- ═══════════════════ CHAPTER 24: INDEX TUNING LAB ═══════════════════ -->
 <hr class="section-divider">
-<h2 id="ch-sql">23. SQL Characteristics (Partial Indexes + JSONB)</h2>
+<h2 id="ch-index">24. Index Tuning Lab — Fix the Broken Workload</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Apply the index tuning methodology: baseline → identify problem → add indexes → re-measure → compare</li>
+    <li>Understand which queries benefit from indexing and which don't</li>
+    <li>Create covering indexes and composite indexes</li>
+    <li>Measure improvement with <code>pg_stat_statements</code> before/after</li>
+    <li>Understand index cost/benefit tradeoffs (storage, write overhead)</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 30–40 minutes</strong> (the "capstone" lab of the workshop)</div>
+
+<h3>Step 1 — Reset Statistics and Remove Stale Indexes</h3>
+<pre><code>-- Drop any indexes left over from earlier sections
+DROP INDEX IF EXISTS idx_orders_cust_amount_date;
+DROP INDEX IF EXISTS idx_orders_customer_id;
+
+SELECT pg_stat_reset();
+SELECT pg_stat_statements_reset();</code></pre>
+<p class="cmd-explain">Clean slate for before/after comparison. The DROP removes any stray indexes from the Statistics or Parameter Tuning sections.</p>
+
+<h3>Step 2 — Baseline (run problem queries with EXPLAIN ANALYZE)</h3>
+<p>Re-run Queries 1, 2, and 6 from the workload section with <code>EXPLAIN (ANALYZE, BUFFERS)</code>. Record execution times.</p>
+
+<h3>Step 3 — Create Indexes</h3>
+<pre><code>CREATE INDEX idx_orders_customer_id ON orders (customer_id);
+CREATE INDEX idx_order_items_order_id ON order_items (order_id);
+CREATE INDEX idx_order_items_product_id ON order_items (product_id);
+CREATE INDEX idx_orders_cust_amount_date ON orders (customer_id, total_amount DESC, order_date DESC);
+CREATE INDEX idx_orders_cust_total ON orders (customer_id, total_amount);
+
+\di    -- Verify indexes created
+ANALYZE customers, orders, order_items, products;</code></pre>
+
+<h3>Step 4 — Re-measure</h3>
+<p>Re-run the same EXPLAIN ANALYZE queries. Compare execution times.</p>
+
+<h3>Expected Improvements</h3>
+<table>
+  <tr><th>Query</th><th>Before</th><th>After</th><th>Improvement</th></tr>
+  <tr><td>Q2 (Correlated Subquery)</td><td>Slow (N+1 scans)</td><td>Fast (index lookup)</td><td><strong>10–50×</strong></td></tr>
+  <tr><td>Q1 (Cross-Join Aggregation)</td><td>Full table scans</td><td>Index-assisted joins</td><td><strong>2–5×</strong></td></tr>
+  <tr><td>Q6 (DISTINCT ON)</td><td>Full sort, temp files</td><td>Composite index eliminates sort</td><td><strong>3–10×</strong></td></tr>
+</table>
+
+<h3>Step 5 — Queries That DON'T Benefit</h3>
+<pre><code>-- Q3 (Window Functions) — still slow
+\timing
+SELECT order_id, customer_id, order_date, total_amount,
+       SUM(total_amount) OVER (...) AS running_total, ...
+FROM orders;
+
+-- Q5 (md5 Loop) — still slow
+DO $$ BEGIN FOR i IN 1..20 LOOP ... END LOOP; END $$;</code></pre>
+<p class="cmd-explain"><strong>Why?</strong> Q3: Window functions must process the entire result set regardless of indexes. Q5: <code>md5()</code> computed filter can't be indexed with B-tree. These need <strong>parameter tuning</strong> (work_mem) or <strong>query rewrites</strong> (next section).</p>
+
+<h3>Step 6 — Check Index Sizes</h3>
+<pre><code>SELECT tablename, indexname,
+       pg_size_pretty(pg_relation_size(indexname::regclass)) AS index_size
+FROM pg_indexes WHERE schemaname = 'public'
+ORDER BY pg_relation_size(indexname::regclass) DESC;</code></pre>
+
+<h3>Analysis (pg_stat_statements)</h3>
+<pre><code>SELECT calls,
+       ROUND(total_exec_time::numeric, 2) AS total_ms,
+       ROUND(mean_exec_time::numeric, 2) AS mean_ms,
+       shared_blks_hit, shared_blks_read, temp_blks_written,
+       LEFT(query, 120) AS query
+FROM pg_stat_statements
+ORDER BY total_exec_time DESC LIMIT 10;</code></pre>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>This is the <strong>capstone lab</strong> — tie together everything from monitoring, statistics, and parameter tuning.</li>
+    <li>Step 1 now drops stale indexes from earlier sections to guarantee a clean baseline.</li>
+    <li>Walk attendees through the before/after EXPLAIN output side by side. Highlight:
+      <ul>
+        <li><strong>Seq Scan → Index Scan</strong></li>
+        <li><strong>Sort Method: external merge Disk → quicksort Memory</strong></li>
+        <li><strong>Execution Time</strong> reduction</li>
+        <li><strong>Buffers: shared hit</strong> vs <strong>shared read</strong> changes</li>
+      </ul>
+    </li>
+    <li>Key discussion point: <strong>Indexes have a cost</strong> — each index adds write overhead and storage. Don't create indexes blindly.</li>
+    <li>"Why doesn't indexing help Q3 and Q5?" is a great question to pose to the group before revealing the answer. The next section (Query Rewriting) picks up where indexes leave off.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 25: QUERY REWRITING ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-rewrite">25. Query Rewriting — Fix What Indexes Can't</h2>
+
+<div class="box box-learning">
+  <strong>Learning Objectives</strong>
+  <ul>
+    <li>Rewrite correlated subqueries as JOINs for single-pass execution</li>
+    <li>Understand EXISTS vs IN semi-join optimisation</li>
+    <li>Use LATERAL JOIN for efficient top-N-per-group queries</li>
+    <li>Understand CTE materialisation behaviour (PG 12+)</li>
+    <li>Know when <code>SELECT *</code> prevents Index Only Scans</li>
+  </ul>
+</div>
+
+<div class="box box-timing"><strong>⏱ Timing: 20–30 minutes</strong></div>
+
+<h3>Key Rewrites</h3>
+
+<h4>Correlated subquery → JOIN</h4>
+<pre><code>-- Original (Q2): two subqueries per customer = 20,000 index scans
+SELECT c.customer_id, c.first_name, c.last_name,
+       (SELECT COUNT(*) FROM orders o WHERE o.customer_id = c.customer_id) AS order_count,
+       (SELECT COALESCE(SUM(total_amount),0) FROM orders o WHERE o.customer_id = c.customer_id) AS lifetime_value
+FROM customers c ORDER BY lifetime_value DESC LIMIT 100;
+
+-- Rewrite: single pass with LEFT JOIN + GROUP BY
+SELECT c.customer_id, c.first_name, c.last_name,
+       COUNT(o.order_id) AS order_count,
+       COALESCE(SUM(o.total_amount), 0) AS lifetime_value
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.customer_id
+GROUP BY c.customer_id, c.first_name, c.last_name
+ORDER BY lifetime_value DESC LIMIT 100;</code></pre>
+<p class="cmd-explain">The rewrite replaces 20,000 index lookups with a single Hash Aggregate — typically <strong>5–50×</strong> faster.</p>
+
+<h4>LATERAL JOIN for top-N-per-group</h4>
+<pre><code>-- Slow: ROW_NUMBER() scans all 100K orders, discards most rows
+SELECT * FROM (
+  SELECT c.customer_id, c.first_name, o.order_id, o.order_date, o.total_amount,
+         ROW_NUMBER() OVER (PARTITION BY c.customer_id ORDER BY o.order_date DESC) AS rn
+  FROM customers c JOIN orders o ON o.customer_id = c.customer_id
+) sub WHERE rn &lt;= 3;
+
+-- Fast: LATERAL fetches only 3 rows per customer via index
+SELECT c.customer_id, c.first_name,
+       lat.order_id, lat.order_date, lat.total_amount
+FROM customers c
+CROSS JOIN LATERAL (
+  SELECT o.order_id, o.order_date, o.total_amount
+  FROM orders o WHERE o.customer_id = c.customer_id
+  ORDER BY o.order_date DESC LIMIT 3
+) lat;</code></pre>
+<p class="cmd-explain">With an index on <code>orders(customer_id)</code>, each LATERAL probe is an index scan + LIMIT 3 — far fewer rows processed.</p>
+
+<h4>EXISTS vs IN</h4>
+<pre><code>-- IN: builds full subquery result
+SELECT customer_id, first_name FROM customers
+WHERE customer_id IN (SELECT DISTINCT customer_id FROM orders WHERE total_amount &gt; 500);
+
+-- EXISTS: stops at first match per row
+SELECT c.customer_id, c.first_name FROM customers c
+WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id AND o.total_amount &gt; 500);</code></pre>
+<p class="cmd-explain">Modern PostgreSQL often auto-optimises <code>IN</code> into a semi-join, but <code>EXISTS</code> makes the intent explicit. Check the EXPLAIN plans — look for <code>Semi Join</code>.</p>
+
+<h4>SELECT * vs explicit columns</h4>
+<pre><code>-- Heap fetch required (all columns)
+EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM orders WHERE customer_id = 42;
+
+-- Index Only Scan possible (columns in the covering index)
+EXPLAIN (ANALYZE, BUFFERS) SELECT order_id, order_date, total_amount
+FROM orders WHERE customer_id = 42;</code></pre>
+
+<h4>CTE materialisation</h4>
+<pre><code>-- Inlined (PG 12+ default): planner pushes country filter into the CTE
+WITH big_orders AS (SELECT order_id, customer_id, total_amount FROM orders WHERE total_amount &gt; 500)
+SELECT c.first_name, bo.total_amount FROM customers c
+JOIN big_orders bo ON bo.customer_id = c.customer_id WHERE c.country = 'Germany';
+
+-- Forced materialisation: CTE evaluated first, then filtered = more work
+WITH big_orders AS MATERIALIZED (SELECT order_id, customer_id, total_amount FROM orders WHERE total_amount &gt; 500)
+SELECT c.first_name, bo.total_amount FROM customers c
+JOIN big_orders bo ON bo.customer_id = c.customer_id WHERE c.country = 'Germany';</code></pre>
+
+<div class="box box-proctor">
+  <strong>Proctor Notes</strong>
+  <ul>
+    <li>This section picks up directly where the Index Tuning Lab left off — Q2 was improved by indexing but can be improved <em>further</em> by rewriting. Show both techniques stacking.</li>
+    <li>The LATERAL JOIN demo is the highlight — attendees familiar with Oracle's <code>CONNECT BY</code> or SQL Server's <code>CROSS APPLY</code> will recognise the pattern.</li>
+    <li>The EXISTS vs IN comparison may show identical plans — that's a teaching moment: "The planner is smart, but writing clear intent costs nothing."</li>
+    <li>For the CTE demo, compare the EXPLAIN plans side by side. The inlined version pushes <code>country = 'Germany'</code> down, reducing rows earlier.</li>
+    <li>If short on time, focus on the correlated subquery rewrite and LATERAL — these have the biggest visual impact.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CHAPTER 26: SQL CHARACTERISTICS ═══════════════════ -->
+<hr class="section-divider">
+<h2 id="ch-sql">26. SQL Characteristics (Partial Indexes + JSONB)</h2>
 
 <div class="box box-learning">
   <strong>Learning Objectives</strong>
@@ -1554,164 +1813,101 @@ EXPLAIN SELECT name FROM products WHERE attributes @> '{"region": "Belgium"}';</
   </ul>
 </div>
 
-<!-- ═══════════════════ CHAPTER 24: STATISTICS ═══════════════════ -->
+<!-- ═══════════════════ CHAPTER 27: PARTITIONING ═══════════════════ -->
 <hr class="section-divider">
-<h2 id="ch-stats">24. Statistics &amp; Query Planning</h2>
+<h2 id="ch-partitioning">27. Partitioning</h2>
 
 <div class="box box-learning">
   <strong>Learning Objectives</strong>
   <ul>
-    <li>Read EXPLAIN output: node types, costs, actual vs. estimated rows</li>
-    <li>Understand cost calculation formula: <code>relpages × seq_page_cost + reltuples × cpu_tuple_cost</code></li>
-    <li>Compare EXPLAIN vs. EXPLAIN ANALYZE</li>
-    <li>Observe index scan vs. sequential scan decision</li>
-    <li>Compare join algorithms: nested loop, hash join, merge join</li>
+    <li>Create range-partitioned and list-partitioned tables</li>
+    <li>Observe partition pruning in EXPLAIN output</li>
+    <li>Create indexes on partitioned tables (auto-propagated to partitions)</li>
+    <li>Attach and detach partitions for data lifecycle management</li>
+    <li>Understand when partitioning helps and when it doesn't</li>
   </ul>
 </div>
 
-<div class="box box-timing"><strong>⏱ Timing: 25–35 minutes</strong></div>
+<div class="box box-timing"><strong>⏱ Timing: 20–30 minutes</strong></div>
 
-<h3>Key Queries</h3>
+<h3>Range Partitioning (by date)</h3>
+<pre><code>CREATE TABLE orders_partitioned (
+    order_id INTEGER NOT NULL, customer_id INTEGER NOT NULL,
+    order_date DATE NOT NULL, total_amount NUMERIC(10,2),
+    status VARCHAR(20), shipping_country VARCHAR(50)
+) PARTITION BY RANGE (order_date);
 
-<h4>Basic EXPLAIN</h4>
-<pre><code>EXPLAIN SELECT * FROM orders;
-SELECT relpages, reltuples FROM pg_class WHERE relname = 'orders';
-VACUUM ANALYZE orders;   -- Update statistics
-EXPLAIN SELECT * FROM orders;   -- Cost may change after fresh ANALYZE</code></pre>
+CREATE TABLE orders_p_2024_q1 PARTITION OF orders_partitioned
+  FOR VALUES FROM ('2024-01-01') TO ('2024-04-01');
+CREATE TABLE orders_p_2024_q2 PARTITION OF orders_partitioned
+  FOR VALUES FROM ('2024-04-01') TO ('2024-07-01');
+CREATE TABLE orders_p_2024_q3 PARTITION OF orders_partitioned
+  FOR VALUES FROM ('2024-07-01') TO ('2024-10-01');
+CREATE TABLE orders_p_2024_q4 PARTITION OF orders_partitioned
+  FOR VALUES FROM ('2024-10-01') TO ('2025-01-01');
+CREATE TABLE orders_p_default PARTITION OF orders_partitioned DEFAULT;
 
-<h4>Cost calculation</h4>
-<pre><code>SELECT relpages * current_setting('seq_page_cost')::numeric
-     + reltuples * current_setting('cpu_tuple_cost')::numeric
-       AS estimated_cost
-FROM pg_class WHERE relname = 'orders';</code></pre>
-<p class="cmd-explain">This should match the total cost in the EXPLAIN output — demonstrates how the planner calculates cost.</p>
+INSERT INTO orders_partitioned
+  SELECT order_id, customer_id, order_date, total_amount, status, shipping_country
+  FROM orders;</code></pre>
 
-<h4>WHERE filter selectivity</h4>
-<pre><code>EXPLAIN ANALYZE SELECT * FROM orders WHERE customer_id &lt; 200;</code></pre>
+<h4>Partition pruning demo</h4>
+<pre><code>-- Unpartitioned: scans all 100K rows
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT COUNT(*), SUM(total_amount) FROM orders
+WHERE order_date BETWEEN '2024-07-01' AND '2024-09-30';
 
-<h4>Index scan comparison</h4>
-<pre><code>CREATE INDEX idx_orders_customer_id ON orders(customer_id);
-EXPLAIN ANALYZE SELECT * FROM orders WHERE customer_id &lt; 200;
--- Now shows Index Scan instead of Seq Scan</code></pre>
+-- Partitioned: prunes to Q3 only
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT COUNT(*), SUM(total_amount) FROM orders_partitioned
+WHERE order_date BETWEEN '2024-07-01' AND '2024-09-30';</code></pre>
+<p class="cmd-explain">The partitioned query shows <code>Seq Scan on orders_p_2024_q3</code> — only one partition is touched. Other partitions show <code>(never executed)</code>.</p>
 
-<h4>Join algorithms</h4>
-<pre><code>EXPLAIN ANALYZE
-SELECT o.order_id, c.name, o.total_amount
-FROM orders o JOIN customers c ON c.customer_id = o.customer_id
-WHERE o.customer_id &lt; 200;
+<h3>List Partitioning (by status)</h3>
+<pre><code>CREATE TABLE orders_by_status (LIKE orders_partitioned INCLUDING ALL)
+  PARTITION BY LIST (status);
 
--- Force different algorithms
-SET enable_nestloop TO off;
-EXPLAIN ANALYZE ...   -- Planner picks Hash Join
+CREATE TABLE orders_status_pending  PARTITION OF orders_by_status FOR VALUES IN ('pending');
+CREATE TABLE orders_status_shipped  PARTITION OF orders_by_status FOR VALUES IN ('shipped');
+CREATE TABLE orders_status_delivered PARTITION OF orders_by_status FOR VALUES IN ('delivered');
+CREATE TABLE orders_status_other    PARTITION OF orders_by_status DEFAULT;
 
-SET enable_hashjoin TO off;
-EXPLAIN ANALYZE ...   -- Planner picks Merge Join
+INSERT INTO orders_by_status
+  SELECT order_id, customer_id, order_date, total_amount, status, shipping_country
+  FROM orders;
 
-RESET enable_nestloop;
-RESET enable_hashjoin;</code></pre>
+EXPLAIN (ANALYZE) SELECT COUNT(*) FROM orders_by_status WHERE status = 'pending';</code></pre>
+
+<h3>Attach / Detach Partitions</h3>
+<pre><code>-- Create and attach a new partition
+CREATE TABLE orders_p_2025_q1 (LIKE orders_partitioned INCLUDING ALL);
+ALTER TABLE orders_partitioned
+  ATTACH PARTITION orders_p_2025_q1 FOR VALUES FROM ('2025-01-01') TO ('2025-04-01');
+
+-- Detach an old partition for archival (PG 14+ CONCURRENTLY avoids locks)
+ALTER TABLE orders_partitioned DETACH PARTITION orders_p_2024_q1 CONCURRENTLY;
+SELECT COUNT(*) FROM orders_p_2024_q1;   -- still accessible as standalone table</code></pre>
+
+<h3>Cleanup</h3>
+<pre><code>DROP TABLE IF EXISTS orders_partitioned CASCADE;
+DROP TABLE IF EXISTS orders_by_status CASCADE;
+DROP TABLE IF EXISTS orders_p_2024_q1;</code></pre>
 
 <div class="box box-proctor">
   <strong>Proctor Notes</strong>
   <ul>
-    <li><strong>"Why did the planner choose Index Scan rather than Index Only Scan?"</strong> — Because the query selects columns not in the index. An Index Only Scan requires all selected columns to be in the index.</li>
-    <li><strong>"Which algorithm was fastest?"</strong> — Compare <code>Execution Time</code> values. Usually Nested Loop for small result sets, Hash Join for larger.</li>
-    <li>The cost formula demo is a powerful "aha" moment — the planner's math is transparent.</li>
-    <li>Remind attendees to <code>DROP INDEX idx_orders_customer_id</code> at the end — the index tuning lab starts from scratch.</li>
+    <li>The key "aha" is the EXPLAIN comparison: unpartitioned scans all pages; partitioned prunes to one quarter of the data.</li>
+    <li>Emphasize the <strong>upper-bound-exclusive</strong> rule: <code>FROM ('2024-04-01') TO ('2024-07-01')</code> means April 1 lands in Q2, not Q1.</li>
+    <li><strong>DETACH CONCURRENTLY</strong> requires PG 14+. Azure Flexible Server PG 18 supports it.</li>
+    <li><strong>When NOT to partition:</strong> tables under ~1M rows, queries that don't filter on the partition key, or data with no lifecycle requirement.</li>
+    <li>For Oracle DBAs: PostgreSQL declarative partitioning (PG 10+) is analogous to Oracle partitioning but without global indexes — each partition has its own local index.</li>
+    <li>Remind attendees to run the cleanup block — the exercises create several tables.</li>
   </ul>
 </div>
 
-<!-- ═══════════════════ CHAPTER 25: INDEX TUNING LAB ═══════════════════ -->
+<!-- ═══════════════════ CHAPTER 28: EXTENSIONS ═══════════════════ -->
 <hr class="section-divider">
-<h2 id="ch-index">25. Index Tuning Lab — Fix the Broken Workload</h2>
-
-<div class="box box-learning">
-  <strong>Learning Objectives</strong>
-  <ul>
-    <li>Apply the index tuning methodology: baseline → identify problem → add indexes → re-measure → compare</li>
-    <li>Understand which queries benefit from indexing and which don't</li>
-    <li>Create covering indexes and composite indexes</li>
-    <li>Measure improvement with <code>pg_stat_statements</code> before/after</li>
-    <li>Understand index cost/benefit tradeoffs (storage, write overhead)</li>
-  </ul>
-</div>
-
-<div class="box box-timing"><strong>⏱ Timing: 30–40 minutes</strong> (the "capstone" lab of the workshop)</div>
-
-<h3>Step 1 — Reset Statistics</h3>
-<pre><code>SELECT pg_stat_reset();
-SELECT pg_stat_statements_reset();</code></pre>
-<p class="cmd-explain">Clean slate for before/after comparison.</p>
-
-<h3>Step 2 — Baseline (run problem queries with EXPLAIN ANALYZE)</h3>
-<p>Re-run Queries 1, 2, and 6 from the workload section with <code>EXPLAIN (ANALYZE, BUFFERS)</code>. Record execution times.</p>
-
-<h3>Step 3 — Create Indexes</h3>
-<pre><code>CREATE INDEX idx_orders_customer_id ON orders (customer_id);
-CREATE INDEX idx_order_items_order_id ON order_items (order_id);
-CREATE INDEX idx_order_items_product_id ON order_items (product_id);
-CREATE INDEX idx_orders_cust_amount_date ON orders (customer_id, total_amount DESC, order_date DESC);
-CREATE INDEX idx_orders_cust_total ON orders (customer_id, total_amount);
-
-\di    -- Verify indexes created
-ANALYZE customers, orders, order_items, products;</code></pre>
-
-<h3>Step 4 — Re-measure</h3>
-<p>Re-run the same EXPLAIN ANALYZE queries. Compare execution times.</p>
-
-<h3>Expected Improvements</h3>
-<table>
-  <tr><th>Query</th><th>Before</th><th>After</th><th>Improvement</th></tr>
-  <tr><td>Q2 (Correlated Subquery)</td><td>Slow (N+1 scans)</td><td>Fast (index lookup)</td><td><strong>10–50×</strong></td></tr>
-  <tr><td>Q1 (Cross-Join Aggregation)</td><td>Full table scans</td><td>Index-assisted joins</td><td><strong>2–5×</strong></td></tr>
-  <tr><td>Q6 (DISTINCT ON)</td><td>Full sort, temp files</td><td>Composite index eliminates sort</td><td><strong>3–10×</strong></td></tr>
-</table>
-
-<h3>Step 5 — Queries That DON'T Benefit</h3>
-<pre><code>-- Q3 (Window Functions) — still slow
-\timing
-SELECT order_id, customer_id, order_date, total_amount,
-       SUM(total_amount) OVER (...) AS running_total, ...
-FROM orders;
-
--- Q5 (md5 Loop) — still slow
-DO $$ BEGIN FOR i IN 1..20 LOOP ... END LOOP; END $$;</code></pre>
-<p class="cmd-explain"><strong>Why?</strong> Q3: Window functions must process the entire result set regardless of indexes. Q5: <code>md5()</code> computed filter can't be indexed with B-tree. These need <strong>parameter tuning</strong> (work_mem) or <strong>query rewrites</strong>.</p>
-
-<h3>Step 6 — Check Index Sizes</h3>
-<pre><code>SELECT tablename, indexname,
-       pg_size_pretty(pg_relation_size(indexname::regclass)) AS index_size
-FROM pg_indexes WHERE schemaname = 'public'
-ORDER BY pg_relation_size(indexname::regclass) DESC;</code></pre>
-
-<h3>Analysis (pg_stat_statements)</h3>
-<pre><code>SELECT calls,
-       ROUND(total_exec_time::numeric, 2) AS total_ms,
-       ROUND(mean_exec_time::numeric, 2) AS mean_ms,
-       shared_blks_hit, shared_blks_read, temp_blks_written,
-       LEFT(query, 120) AS query
-FROM pg_stat_statements
-ORDER BY total_exec_time DESC LIMIT 10;</code></pre>
-
-<div class="box box-proctor">
-  <strong>Proctor Notes</strong>
-  <ul>
-    <li>This is the <strong>capstone lab</strong> — tie together everything from monitoring, statistics, and parameter tuning.</li>
-    <li>Walk attendees through the before/after EXPLAIN output side by side. Highlight:
-      <ul>
-        <li><strong>Seq Scan → Index Scan</strong></li>
-        <li><strong>Sort Method: external merge Disk → quicksort Memory</strong></li>
-        <li><strong>Execution Time</strong> reduction</li>
-        <li><strong>Buffers: shared hit</strong> vs <strong>shared read</strong> changes</li>
-      </ul>
-    </li>
-    <li>Key discussion point: <strong>Indexes have a cost</strong> — each index adds write overhead and storage. Don't create indexes blindly.</li>
-    <li>"Why doesn't indexing help Q3 and Q5?" is a great question to pose to the group before revealing the answer.</li>
-  </ul>
-</div>
-
-<!-- ═══════════════════ CHAPTER 26: EXTENSIONS ═══════════════════ -->
-<hr class="section-divider">
-<h2 id="ch-extensions">26. Extensions Overview <span class="badge badge-optional">Optional</span></h2>
+<h2 id="ch-extensions">28. Extensions Overview <span class="badge badge-optional">Optional</span></h2>
 
 <div class="box box-learning">
   <strong>Learning Objectives</strong>
@@ -1787,9 +1983,9 @@ FROM customers LIMIT 5;</code></pre>
   </ul>
 </div>
 
-<!-- ═══════════════════ CHAPTER 27: CLEANUP ═══════════════════ -->
+<!-- ═══════════════════ CHAPTER 29: CLEANUP ═══════════════════ -->
 <hr class="section-divider">
-<h2 id="ch-cleanup">27. Cleanup</h2>
+<h2 id="ch-cleanup">29. Cleanup</h2>
 
 <div class="box box-learning">
   <strong>Learning Objectives</strong>
@@ -1884,7 +2080,7 @@ az group show --name PG-Workshop</code></pre>
 
 <table>
   <tr><th>Metric</th><th>Count</th></tr>
-  <tr><td>Total Sections</td><td>27 (including 3 optional)</td></tr>
+  <tr><td>Total Sections</td><td>29 (including 3 optional)</td></tr>
   <tr><td>CLI Commands</td><td>~85</td></tr>
   <tr><td>SQL Queries</td><td>~140</td></tr>
   <tr><td>Azure Portal Actions</td><td>~80</td></tr>
@@ -1943,9 +2139,10 @@ az group show --name PG-Workshop</code></pre>
   <tr><td><strong>2. Break</strong></td><td>Ch 9 (Demo Workload)</td><td>Fun — intentionally causing chaos</td><td>Cheerleader. Encourage concurrent sessions, bigger loop counts. "Let's melt this server."</td></tr>
   <tr><td><strong>3. Observe</strong></td><td>Ch 10 (Azure Monitoring)</td><td>Aha moment — "my queries did THAT?"</td><td>Guide. Walk through each metric and connect it to a specific query. This is the highest-engagement section of Day 1.</td></tr>
   <tr><td><strong>4. Govern</strong></td><td>Ch 11–19 (Admin → Security)</td><td>Settling in — absorbing concepts</td><td>Instructor. More explanation, less hands-on. Roles section is the most SQL-heavy — go step by step.</td></tr>
-  <tr><td><strong>5. Diagnose</strong></td><td>Ch 20–22 (Profiling → Params)</td><td>Deep focus — densest material</td><td>Teacher. Pause for questions frequently. Draw Oracle/SQL Server parallels for experienced DBAs.</td></tr>
-  <tr><td><strong>6. Fix</strong></td><td>Ch 23–25 (SQL → Index Lab)</td><td>Satisfaction — seeing 10–50× improvements</td><td>Coach. Let them struggle with EXPLAIN output before revealing answers. The before/after comparison is the payoff.</td></tr>
-  <tr><td><strong>7. Explore</strong></td><td>Ch 26 (Extensions)</td><td>Light, curious — winding down</td><td>Entertainer. The "London" typo search and beer database are crowd-pleasers.</td></tr>
+  <tr><td><strong>5. Diagnose</strong></td><td>Ch 20–23 (Profiling → Params)</td><td>Deep focus — densest material</td><td>Teacher. Pause for questions frequently. Draw Oracle/SQL Server parallels for experienced DBAs.</td></tr>
+  <tr><td><strong>6. Fix</strong></td><td>Ch 24–26 (Index Lab → SQL Chars)</td><td>Satisfaction — seeing 10–50× improvements</td><td>Coach. Let them struggle with EXPLAIN output before revealing answers. The before/after comparison is the payoff.</td></tr>
+  <tr><td><strong>7. Scale</strong></td><td>Ch 27 (Partitioning)</td><td>Forward-looking — production patterns</td><td>Guide. Connect partitioning to real data lifecycle scenarios.</td></tr>
+  <tr><td><strong>8. Explore</strong></td><td>Ch 28 (Extensions)</td><td>Light, curious — winding down</td><td>Entertainer. The "London" typo search and beer database are crowd-pleasers.</td></tr>
 </table>
 
 <h3>Day 1 Detailed Flow</h3>
@@ -1987,34 +2184,39 @@ az group show --name PG-Workshop</code></pre>
   </ul>
 </div>
 
-<h4>Day 2 Detailed Flow (09:00 – 15:15)</h4>
+<h4>Day 2 Detailed Flow (09:00 – 15:30)</h4>
 <div class="box box-timing">
   <strong>⏱ Pacing</strong>
   <ul>
     <li><strong>09:00–09:10</strong> — Day 2 Kick-off. Quick recap, answer overnight questions. Ask: "What surprised you yesterday?"</li>
-    <li><strong>09:10–10:00</strong> — Database Profiling. This is the <strong>densest section</strong>. Don't try to cover all 22 queries — focus on A5 (dead tuples), A7 (seq vs idx scans), A9 (cache hit), B1 (active sessions), B7 (top queries by time). Save the rest as reference material.</li>
+    <li><strong>09:10–10:00</strong> — Database Profiling (Ch 20). This is the <strong>densest section</strong>. Don't try to cover all 22 queries — focus on A5 (dead tuples), A7 (seq vs idx scans), A9 (cache hit), B1 (active sessions), B7 (top queries by time). Save the rest as reference material.</li>
     <li><strong>10:00–10:15</strong> — Break.</li>
-    <li><strong>10:15–10:45</strong> — MVCC. The xmin/xmax demo is powerful. Run UPDATE → check dead tuples → VACUUM → VACUUM FULL. Draw on the whiteboard.</li>
-    <li><strong>10:45–11:15</strong> — Parameter Tuning. The work_mem lab (disk sort → memory sort) is the single best demo. Run it and let the numbers speak.</li>
-    <li><strong>11:15–11:30</strong> — Q&amp;A. This is the densest part — give people time to absorb.</li>
-    <li><strong>11:30–11:50</strong> — SQL Characteristics. Partial indexes are quick (15M row insert takes a minute). JSONB is fun but don't overdo the operators.</li>
-    <li><strong>11:50–12:15</strong> — Statistics &amp; Query Planning. EXPLAIN output, cost formula, join algorithms. The cost calculation demo ("planner's math is transparent") is an aha moment.</li>
+    <li><strong>10:15–10:45</strong> — MVCC (Ch 21). The xmin/xmax demo is powerful. Run UPDATE → check dead tuples → VACUUM → VACUUM FULL. Draw on the whiteboard.</li>
+    <li><strong>10:45–11:10</strong> — Statistics &amp; Query Planning (Ch 22). EXPLAIN output, cost formula, join algorithms. The cost calculation demo ("planner's math is transparent") is an aha moment.</li>
+    <li><strong>11:10–11:40</strong> — Parameter Tuning (Ch 23). The work_mem lab (disk sort → memory sort) is the single best demo. Run it and let the numbers speak.</li>
+    <li><strong>11:40–11:50</strong> — Q&amp;A. This is the densest part — give people time to absorb.</li>
+    <li><strong>11:50–12:15</strong> — Index Tuning Lab, part 1 (Ch 24). Reset stats, run baseline queries, note execution times. Getting the baseline in before lunch means attendees return ready to index.</li>
     <li><strong>12:15–13:15</strong> — Lunch.</li>
-    <li><strong>13:15–14:00</strong> — Index Tuning Lab. The <strong>capstone</strong>. Reset stats → re-run queries → create indexes → re-run → compare. Before/after EXPLAIN side by side. This is where everything clicks.</li>
-    <li><strong>14:00–14:15</strong> — Break.</li>
-    <li><strong>14:15–14:35</strong> — Extensions (optional). The pg_trgm "Londen" → "London" search always gets a reaction.</li>
-    <li><strong>14:35–14:45</strong> — Cleanup. <strong>Walk the room.</strong> Verify every attendee has started deletion.</li>
-    <li><strong>14:45–15:15</strong> — Final Q&amp;A. Open floor — this is where the best conversations happen.</li>
+    <li><strong>13:15–13:45</strong> — Index Tuning Lab, part 2 (Ch 24). Create indexes → re-run queries → compare. Before/after EXPLAIN side by side. This is where everything clicks.</li>
+    <li><strong>13:45–14:05</strong> — Query Rewriting (Ch 25). Correlated subquery → JOIN, LATERAL for top-N-per-group. Show how rewrites stack on top of indexes for further gains.</li>
+    <li><strong>14:05–14:20</strong> — Break.</li>
+    <li><strong>14:20–14:40</strong> — SQL Characteristics (Ch 26). Partial indexes are quick (15M row insert takes a minute). JSONB is fun but don't overdo the operators.</li>
+    <li><strong>14:40–15:00</strong> — Partitioning (Ch 27). Range partition → EXPLAIN comparison → attach/detach. The pruning demo is a visual win.</li>
+    <li><strong>15:00–15:20</strong> — Extensions (Ch 28, optional). The pg_trgm "Londen" → "London" search always gets a reaction.</li>
+    <li><strong>15:20–15:30</strong> — Cleanup (Ch 29). <strong>Walk the room.</strong> Verify every attendee has started deletion.</li>
+    <li><strong>15:30–16:00</strong> — Final Q&amp;A. Open floor — this is where the best conversations happen.</li>
   </ul>
 </div>
 
 <div class="box box-proctor">
   <strong>If Running Behind on Day 2</strong>
   <ul>
-    <li><strong>First to drop:</strong> Extensions (Ch 26) — optional self-study</li>
-    <li><strong>Second to compress:</strong> SQL Characteristics (Ch 23) — show partial index only, skip JSONB</li>
-    <li><strong>Third to compress:</strong> Database Profiling (Ch 20) — cover 5 key queries instead of all 22</li>
-    <li><strong>Never skip:</strong> Index Tuning Lab (Ch 25) — it's the payoff for the entire workshop</li>
+    <li><strong>First to drop:</strong> Extensions (Ch 28) — optional self-study</li>
+    <li><strong>Second to drop:</strong> Partitioning (Ch 27) — can be read as self-study; no downstream dependency</li>
+    <li><strong>Third to compress:</strong> SQL Characteristics (Ch 26) — show partial index only, skip JSONB</li>
+    <li><strong>Fourth to compress:</strong> Query Rewriting (Ch 25) — show the correlated-subquery rewrite only, skip the rest</li>
+    <li><strong>Fifth to compress:</strong> Database Profiling (Ch 20) — cover 5 key queries instead of all 22</li>
+    <li><strong>Never skip:</strong> Index Tuning Lab (Ch 24) — it's the payoff for the entire workshop</li>
   </ul>
 </div>
 

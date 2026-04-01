@@ -241,29 +241,29 @@ Default: `64MB` (on most Flexible Server SKUs).
 
 <div class="lang-tag lang-tag-sql">sql</div>
 ```sql
--- Drop one of the indexes we created in the tuning lab
-DROP INDEX IF EXISTS idx_orders_cust_amount_date;
-
 -- Create with default maintenance_work_mem
 SET maintenance_work_mem = '64MB';
 \timing                 -- meta-command: toggles execution timing on
-CREATE INDEX idx_orders_cust_amount_date ON orders (customer_id, total_amount DESC, order_date DESC);
+CREATE INDEX idx_maint_demo ON orders (customer_id, total_amount DESC, order_date DESC);
 
 -- Drop and recreate with more memory
-DROP INDEX idx_orders_cust_amount_date;
+DROP INDEX idx_maint_demo;
 
 SET maintenance_work_mem = '512MB';
-CREATE INDEX idx_orders_cust_amount_date ON orders (customer_id, total_amount DESC, order_date DESC);
+CREATE INDEX idx_maint_demo ON orders (customer_id, total_amount DESC, order_date DESC);
 ```
 
 Compare the creation times. With more memory, PostgreSQL can sort the index entries in memory instead of using temp files, making index creation faster.
 
-Reset:
+Reset and clean up the test index:
 
 <div class="lang-tag lang-tag-sql">sql</div>
 ```sql
+DROP INDEX IF EXISTS idx_maint_demo;
 RESET maintenance_work_mem;
 ```
+
+> **Important:** Drop the index before continuing. The **Index Tuning Lab** later in this chapter expects only primary-key indexes on the `orders_demo` tables. Leaving this index in place will skew the baseline measurements.
 
 **Guideline:** Set to 256MB–1GB for index creation and VACUUM on large tables. It's safe to set high because only one maintenance operation runs per connection.
 

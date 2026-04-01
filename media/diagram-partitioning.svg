@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" font-family="Segoe UI,system-ui,sans-serif">
+  <defs>
+    <linearGradient id="pg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e0f2fe"/><stop offset="100%" stop-color="#bae6fd"/>
+    </linearGradient>
+    <linearGradient id="q1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#fde68a"/>
+    </linearGradient>
+    <linearGradient id="q2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#fde68a"/>
+    </linearGradient>
+    <linearGradient id="q3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#dcfce7"/><stop offset="100%" stop-color="#86efac"/>
+    </linearGradient>
+    <linearGradient id="q4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#fde68a"/>
+    </linearGradient>
+    <linearGradient id="def" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f1f5f9"/><stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Title -->
+  <text x="360" y="28" text-anchor="middle" font-size="16" font-weight="600" fill="#1e293b">Range Partitioning with Partition Pruning</text>
+
+  <!-- Logical table -->
+  <rect x="40" y="50" width="640" height="50" rx="8" fill="url(#pg)" stroke="#0284c7" stroke-width="1.5"/>
+  <text x="360" y="72" text-anchor="middle" font-size="14" font-weight="600" fill="#0c4a6e">orders_partitioned</text>
+  <text x="360" y="90" text-anchor="middle" font-size="11" fill="#475569">PARTITION BY RANGE (order_date)</text>
+
+  <!-- Arrows from logical to physical -->
+  <line x1="120" y1="100" x2="80" y2="130" stroke="#64748b" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="250" y1="100" x2="220" y2="130" stroke="#64748b" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="400" y1="100" x2="400" y2="130" stroke="#16a34a" stroke-width="2"/>
+  <line x1="530" y1="100" x2="540" y2="130" stroke="#64748b" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="640" y1="100" x2="660" y2="130" stroke="#64748b" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- Partition Q1 -->
+  <rect x="20" y="130" width="120" height="105" rx="6" fill="url(#q1)" stroke="#f59e0b" stroke-width="1" opacity="0.5"/>
+  <text x="80" y="152" text-anchor="middle" font-size="11" font-weight="600" fill="#92400e">Q1 2024</text>
+  <text x="80" y="168" text-anchor="middle" font-size="9" fill="#78350f">Jan 1 – Mar 31</text>
+  <rect x="30" y="178" width="100" height="12" rx="2" fill="#fbbf24" opacity="0.4"/>
+  <rect x="30" y="194" width="100" height="12" rx="2" fill="#fbbf24" opacity="0.4"/>
+  <rect x="30" y="210" width="100" height="12" rx="2" fill="#fbbf24" opacity="0.4"/>
+  <text x="80" y="227" text-anchor="middle" font-size="9" fill="#92400e" font-style="italic">skipped</text>
+
+  <!-- Partition Q2 -->
+  <rect x="160" y="130" width="120" height="105" rx="6" fill="url(#q2)" stroke="#f59e0b" stroke-width="1" opacity="0.5"/>
+  <text x="220" y="152" text-anchor="middle" font-size="11" font-weight="600" fill="#92400e">Q2 2024</text>
+  <text x="220" y="168" text-anchor="middle" font-size="9" fill="#78350f">Apr 1 – Jun 30</text>
+  <rect x="170" y="178" width="100" height="12" rx="2" fill="#fbbf24" opacity="0.4"/>
+  <rect x="170" y="194" width="100" height="12" rx="2" fill="#fbbf24" opacity="0.4"/>
+  <rect x="170" y="210" width="100" height="12" rx="2" fill="#fbbf24" opacity="0.4"/>
+  <text x="220" y="227" text-anchor="middle" font-size="9" fill="#92400e" font-style="italic">skipped</text>
+
+  <!-- Partition Q3 (highlighted - pruned to) -->
+  <rect x="310" y="128" width="140" height="110" rx="6" fill="url(#q3)" stroke="#16a34a" stroke-width="2.5"/>
+  <text x="380" y="152" text-anchor="middle" font-size="11" font-weight="700" fill="#14532d">Q3 2024</text>
+  <text x="380" y="168" text-anchor="middle" font-size="9" fill="#166534">Jul 1 – Sep 30</text>
+  <rect x="320" y="178" width="120" height="12" rx="2" fill="#4ade80"/>
+  <rect x="320" y="194" width="120" height="12" rx="2" fill="#4ade80"/>
+  <rect x="320" y="210" width="120" height="12" rx="2" fill="#4ade80"/>
+  <text x="380" y="227" text-anchor="middle" font-size="9" fill="#14532d" font-weight="700">✓ scanned</text>
+
+  <!-- Partition Q4 -->
+  <rect x="480" y="130" width="120" height="105" rx="6" fill="url(#q4)" stroke="#f59e0b" stroke-width="1" opacity="0.5"/>
+  <text x="540" y="152" text-anchor="middle" font-size="11" font-weight="600" fill="#92400e">Q4 2024</text>
+  <text x="540" y="168" text-anchor="middle" font-size="9" fill="#78350f">Oct 1 – Dec 31</text>
+  <rect x="490" y="178" width="100" height="12" rx="2" fill="#fbbf24" opacity="0.4"/>
+  <rect x="490" y="194" width="100" height="12" rx="2" fill="#fbbf24" opacity="0.4"/>
+  <rect x="490" y="210" width="100" height="12" rx="2" fill="#fbbf24" opacity="0.4"/>
+  <text x="540" y="227" text-anchor="middle" font-size="9" fill="#92400e" font-style="italic">skipped</text>
+
+  <!-- Default -->
+  <rect x="620" y="130" width="80" height="105" rx="6" fill="url(#def)" stroke="#94a3b8" stroke-width="1" opacity="0.5"/>
+  <text x="660" y="152" text-anchor="middle" font-size="10" font-weight="600" fill="#475569">Default</text>
+  <text x="660" y="168" text-anchor="middle" font-size="9" fill="#64748b">overflow</text>
+  <rect x="630" y="178" width="60" height="12" rx="2" fill="#cbd5e1" opacity="0.5"/>
+  <text x="660" y="207" text-anchor="middle" font-size="9" fill="#64748b" font-style="italic">skipped</text>
+
+  <!-- Query box -->
+  <rect x="120" y="260" width="480" height="44" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="360" y="278" text-anchor="middle" font-size="11" fill="#e2e8f0" font-family="Consolas,monospace">SELECT COUNT(*), SUM(total_amount)</text>
+  <text x="360" y="295" text-anchor="middle" font-size="11" fill="#e2e8f0" font-family="Consolas,monospace">FROM orders_partitioned WHERE order_date BETWEEN <tspan fill="#4ade80">'2024-07-01'</tspan> AND <tspan fill="#4ade80">'2024-09-30'</tspan></text>
+
+  <!-- Arrow from query to Q3 -->
+  <path d="M 380 260 L 380 240" stroke="#16a34a" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <!-- Benefit callout -->
+  <rect x="140" y="320" width="440" height="45" rx="6" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="360" y="340" text-anchor="middle" font-size="12" font-weight="600" fill="#14532d">Partition Pruning: only Q3 is scanned</text>
+  <text x="360" y="356" text-anchor="middle" font-size="11" fill="#166534">4 partitions skipped → ~75% fewer pages read</text>
+</svg>

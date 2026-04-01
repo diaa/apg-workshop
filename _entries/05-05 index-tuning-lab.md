@@ -14,7 +14,7 @@ This is the most satisfying section of the workshop. In the **Run Demo Workload*
 
 ---
 
-### Step 1 — Reset Statistics
+### Step 1 — Reset Statistics and Remove Stale Indexes
 
 Start with a clean baseline so your before/after comparison is accurate:
 
@@ -30,6 +30,10 @@ psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 
 <div class="lang-tag lang-tag-sql">sql</div>
 ```sql
+-- Drop any indexes left over from earlier sections (e.g. parameter tuning, statistics)
+DROP INDEX IF EXISTS idx_orders_cust_amount_date;
+DROP INDEX IF EXISTS idx_orders_customer_id;
+
 -- Reset table-level stats
 SELECT pg_stat_reset();
 
