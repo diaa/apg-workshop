@@ -42,6 +42,8 @@ Before restoring any data, run the following meta-commands to understand what is
 
 > **psql session skills** (`\timing`, `\x`, `\watch`, `\conninfo`, `\i`, `\?`) are covered in the previous **psql: The PostgreSQL Command-Line Client** section. This step focuses on navigation commands that explore what is on the server.
 
+> **Tip:** Want to see the SQL behind any `\` command? Run `\set ECHO_HIDDEN on` in psql — it will print the underlying query before each result. This is useful for learning and for reproducing meta-commands in other SQL clients like VS Code.
+
 #### 3.1 — List all databases
 
 <span class="lang-tag lang-tag-psql">psql</span>
@@ -205,8 +207,6 @@ psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 ```psql
 \dt
 ```
-
-> **Tip:** Want to see the SQL behind any `\` command? Run `\set ECHO_HIDDEN on` in psql — it will print the underlying query before each result. This is useful for learning and for reproducing meta-commands in other SQL clients like VS Code.
 
 You should see four tables:
 
