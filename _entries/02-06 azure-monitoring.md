@@ -135,17 +135,23 @@ For 10 concurrent connections with `work_mem = 64MB`, PostgreSQL may use up to 6
 
 ---
 
-### Step 6 — Enable pg_stat_statements (if not already enabled)
+### Step 6 — Enable Server-Side Prerequisites
 
-> **Already done?** If you enabled `pg_stat_statements` in Step 6 of the **Load Data** section, skip to Step 7.
-
-Query Performance Insight (next step) relies on `pg_stat_statements` under the hood. If it's not enabled:
+Query Performance Insight (Step 8) and the KQL queries in Log Analytics both require several server parameters to be enabled. Configure them all in one step to minimise restarts.
 
 1. Go to **Server parameters** in the left menu
-2. Search for `shared_preload_libraries`
-3. Ensure `pg_stat_statements` is checked
-4. Search for `pg_stat_statements.track` and set it to `ALL`
-5. Click **Save** — this requires a server restart
+2. Search for and set each parameter:
+
+| Parameter | Value | Why |
+|---|---|---|
+| `shared_preload_libraries` | Include `pg_stat_statements` | Required for per-query statistics |
+| `pg_stat_statements.track` | `ALL` | Track queries in all contexts (top-level + nested) |
+| `pg_qs.query_capture_mode` | `ALL` (or `TOP`) | Enables **Query Store** — collects query runtime statistics that feed Query Performance Insight and the `PostgreSQLQueryStoreRuntimeStatistics` log category |
+| `pgms_wait_sampling.query_capture_mode` | `ALL` | Enables **Query Store Wait Sampling** — collects wait event data that feeds the `PostgreSQLQueryStoreWaitStatistics` log category |
+
+3. Click **Save** — this requires a **server restart**
+
+> **Already done?** If you enabled `pg_stat_statements` in Step 6 of the **Load Data** section, you still need to verify that `pg_qs.query_capture_mode` and `pgms_wait_sampling.query_capture_mode` are set. These are separate from `pg_stat_statements`.
 
 After the restart, connect from the jumpbox and create the extension:
 
@@ -166,58 +172,11 @@ You should see the demo workload queries at the top of the list.
 
 ---
 
-### Step 7 — Query Performance Insight
+### Step 7 — Configure Diagnostic Settings (Logs to Log Analytics)
 
-This is the most powerful built-in tool for finding slow queries without installing any extensions.
+While Metrics Explorer shows numbers, **diagnostic settings** capture detailed logs including individual query executions, autovacuum runs, and connection events. This is also a prerequisite for **Query Performance Insight** (Step 8).
 
-1. In the left menu, under **Intelligent Performance**, click **Query Performance Insight**
-2. You will see tabs: **Long running queries**, **Top queries by CPU**, **Top queries by IO**
-
-#### 7.1 — Long running queries
-
-This tab shows queries that took the longest wall-clock time. After the demo workload, you should see:
-
-| Expected query | Why it appears here |
-|---|---|
-| Query 5 (DO $$ loop) | Ran for 30+ seconds |
-| Query 1 (cross-join aggregation) | Multi-table join with aggregation |
-| Query 3 (window functions) | Three sorts on 100K rows |
-
-> **Note:** Query Performance Insight normalises queries — it replaces literal values with `$1`, `$2` placeholders so identical queries with different parameters are grouped together. The `DO $$ ... $$` block appears as a single query.
-
-#### 7.2 — Top queries by CPU
-
-Switch to the **CPU** tab. This shows queries ranked by total CPU time consumed.
-
-**Expected top entries after the workload:**
-
-| Rank | Query | Why |
-|---|---|---|
-| 1 | Query 5 (loop) | md5() computed on 300K rows × 20–100 iterations |
-| 2 | Query 1 (cross-join) | Hash joins + COUNT(DISTINCT) + final sort |
-| 3 | Query 4 (md5 + string_agg) | md5() on every row + string_agg with internal sort |
-
-#### 7.3 — Top queries by IO
-
-Switch to the **IO** tab. This ranks queries by blocks read from storage.
-
-**Expected top entries:**
-
-| Rank | Query | Why |
-|---|---|---|
-| 1 | Query 5 (loop) | Sequential scan of orders + order_items × 20–100 times |
-| 2 | Query 2 (correlated subquery) | ~20,000 sequential scans of orders |
-| 3 | Query 1 (cross-join) | Full scan of all 4 tables |
-
-> **Tip:** Click on any query bar to see the full query text and its execution timeline.
-
----
-
-### Step 8 — Configure Diagnostic Settings (Logs to Log Analytics)
-
-While Metrics Explorer shows numbers, **diagnostic settings** capture detailed logs including individual query executions, autovacuum runs, and connection events.
-
-#### 8.1 — Create a Log Analytics workspace (if you don't have one)
+#### 7.1 — Create a Log Analytics workspace (if you don't have one)
 
 ```bash
 az monitor log-analytics workspace create \
@@ -226,7 +185,7 @@ az monitor log-analytics workspace create \
   --location uksouth
 ```
 
-#### 8.2 — Enable diagnostic settings
+#### 7.2 — Enable diagnostic settings
 
 1. In the PostgreSQL server blade, click **Diagnostic settings** (under Monitoring)
 2. Click **+ Add diagnostic setting**
@@ -239,22 +198,21 @@ az monitor log-analytics workspace create \
 6. Destination: **Send to Log Analytics workspace** → select `pg-workshop-logs`
 7. Click **Save**
 
-> Logs take 5–10 minutes to start appearing in Log Analytics.
+> Logs take 5–10 minutes to start appearing in Log Analytics. Re-run a few demo workload queries to generate fresh data while you wait.
 
-#### 8.3 — Enable Query Store
+#### 7.3 — Verify data is flowing
 
-The KQL queries below rely on **Query Store**, which collects query execution statistics on the server. Without it enabled, the `PostgreSQLQueryStoreRuntimeStatistics` and `PostgreSQLQueryStoreWaitStatistics` categories will be empty in Log Analytics — even if diagnostic settings are configured.
+Before running any analytical queries, confirm that logs are arriving in your Log Analytics workspace. Go to your Log Analytics workspace → **Logs** and run:
 
-1. Go to **Server parameters** in the portal
-2. Search for `pg_qs.query_capture_mode` and set it to **ALL** (or **TOP**)
-3. Search for `pgms_wait_sampling.query_capture_mode` and set it to **ALL**
-4. Click **Save** — this requires a server restart
+```kql
+AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.DBFORPOSTGRESQL"
+| summarize count() by Category
+```
 
-> **Note:** `pg_qs.query_capture_mode` controls whether the server collects query runtime statistics. `pgms_wait_sampling.query_capture_mode` controls wait event sampling. Both feed data into the diagnostic log categories used by the KQL queries below.
+You should see categories including `PostgreSQLQueryStoreRuntimeStatistics`, `PostgreSQLQueryStoreWaitStatistics`, and `PostgreSQLSessions`. If this returns no results, check that: (1) diagnostic settings in Step 7.2 are saved and pointing to this workspace, (2) Query Store is enabled in Step 6, (3) you've waited at least 5–10 minutes.
 
-After the restart, re-run a few demo workload queries to generate fresh data, then wait 5–10 minutes for logs to appear.
-
-#### 8.4 — Query the logs with KQL
+#### 7.4 — Query the logs with KQL
 
 Go to your Log Analytics workspace → **Logs**. Try these queries:
 
@@ -291,6 +249,57 @@ AzureDiagnostics
 | order by total_wait_ms desc
 | take 20
 ```
+
+> **No results?** If the KQL queries return empty, verify: (1) `pg_qs.query_capture_mode` is set to `ALL` or `TOP` in Step 6, (2) diagnostic settings in Step 7.2 include the Query Store log categories, (3) you've waited at least 5–10 minutes after configuration.
+
+---
+
+### Step 8 — Query Performance Insight
+
+This is the most powerful built-in tool for finding slow queries without installing any extensions.
+
+> **Prerequisites:** Steps 6 and 7 must be completed first. Query Performance Insight requires Query Store (`pg_qs.query_capture_mode`), Query Store Wait Sampling (`pgms_wait_sampling.query_capture_mode`), and a Log Analytics workspace with diagnostic settings configured. See the [official prerequisites](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-query-performance-insight#prerequisites).
+
+1. In the left menu, under **Intelligent Performance**, click **Query Performance Insight**
+2. You will see tabs: **Long running queries**, **Top queries by CPU**, **Top queries by IO**
+
+#### 8.1 — Long running queries
+
+This tab shows queries that took the longest wall-clock time. After the demo workload, you should see:
+
+| Expected query | Why it appears here |
+|---|---|
+| Query 5 (DO $$ loop) | Ran for 30+ seconds |
+| Query 1 (cross-join aggregation) | Multi-table join with aggregation |
+| Query 3 (window functions) | Three sorts on 100K rows |
+
+> **Note:** Query Performance Insight normalises queries — it replaces literal values with `$1`, `$2` placeholders so identical queries with different parameters are grouped together. The `DO $$ ... $$` block appears as a single query.
+
+#### 8.2 — Top queries by CPU
+
+Switch to the **CPU** tab. This shows queries ranked by total CPU time consumed.
+
+**Expected top entries after the workload:**
+
+| Rank | Query | Why |
+|---|---|---|
+| 1 | Query 5 (loop) | md5() computed on 300K rows × 20–100 iterations |
+| 2 | Query 1 (cross-join) | Hash joins + COUNT(DISTINCT) + final sort |
+| 3 | Query 4 (md5 + string_agg) | md5() on every row + string_agg with internal sort |
+
+#### 8.3 — Top queries by IO
+
+Switch to the **IO** tab. This ranks queries by blocks read from storage.
+
+**Expected top entries:**
+
+| Rank | Query | Why |
+|---|---|---|
+| 1 | Query 5 (loop) | Sequential scan of orders + order_items × 20–100 times |
+| 2 | Query 2 (correlated subquery) | ~20,000 sequential scans of orders |
+| 3 | Query 1 (cross-join) | Full scan of all 4 tables |
+
+> **Tip:** Click on any query bar to see the full query text and its execution timeline.
 
 ---
 
@@ -432,9 +441,9 @@ These are community PostgreSQL parameters that work on any PostgreSQL installati
 In this section you:
 
 1. **Observed CPU, memory, IOPS, and temp file metrics** in Azure Metrics Explorer and correlated each spike to a specific demo query
-2. **Used Query Performance Insight** to identify the top queries by CPU consumption and I/O without needing SSH access to the server
-3. **Enabled pg_stat_statements** to collect detailed per-query statistics
-4. **Configured diagnostic settings** and **Query Store** to send PostgreSQL logs to Log Analytics and wrote KQL queries to analyse them
+2. **Enabled server-side prerequisites** — `pg_stat_statements`, Query Store, and Query Store Wait Sampling
+3. **Configured diagnostic settings** to send PostgreSQL logs to Log Analytics and wrote KQL queries to analyse them
+4. **Used Query Performance Insight** to identify the top queries by CPU consumption and I/O without needing SSH access to the server
 5. **Created an alert rule** that sends a notification when CPU exceeds a threshold
 6. **Learned the triage workflow**: Metric spike → timestamp → Query Performance Insight → EXPLAIN ANALYZE → fix → verify
 
