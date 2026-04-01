@@ -114,7 +114,16 @@ SELECT count(*) FROM orders;
 
 ### Step 4 — Load Test: With and Without PgBouncer
 
-Use `pgbench` from the jumpbox to simulate concurrent connections.
+Use `pgbench` from the jumpbox to simulate concurrent connections. `pgbench` ships in the `postgresql-contrib` package, which is **not** installed by default on Rocky Linux. Install it from the PGDG repository:
+
+<span class="lang-tag lang-tag-shell">shell</span>
+```sh
+sudo dnf -y module disable postgresql          # prevent AppStream from pulling PG13
+sudo dnf install -y postgresql18-contrib       # includes pgbench, pg_stat_statements, etc.
+pgbench --version                              # should show: pgbench (PostgreSQL) 18.x
+```
+
+> **Why `module disable`?** Rocky Linux ships a `postgresql` AppStream module (usually PG13). Without disabling it, `dnf` may resolve to the older version and overwrite your PGDG `psql` binary.
 
 #### Without PgBouncer (port 5432):
 
