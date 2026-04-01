@@ -51,14 +51,14 @@ You can override the server-level default at narrower scopes. Each level inherit
 
 To check the current effective value of any parameter in your session:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SHOW work_mem;
 ```
 
 To see all non-default parameter values:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SELECT name, setting, source
 FROM pg_settings
@@ -77,7 +77,7 @@ Click **Save** and wait for the deployment to complete successfully:
 
 Once you see the success screen, access PostgreSQL through port 6432 on your VM:
 
-<span class="lang-tag lang-tag-shell">shell</span>
+<div class="lang-tag lang-tag-shell">shell</div>
 ```sh
 psql -p 6432
 ```

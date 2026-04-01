@@ -42,7 +42,7 @@ Click on save schedule to complete the configuration.
 
 You can also configure the maintenance window via CLI:
 
-<span class="lang-tag lang-tag-shell">shell</span>
+<div class="lang-tag lang-tag-shell">shell</div>
 ```sh
 az postgres flexible-server update \
   --resource-group PG-Workshop \

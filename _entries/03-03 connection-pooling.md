@@ -34,14 +34,14 @@ Azure Database for PostgreSQL Flexible Server includes a **built-in PgBouncer** 
 
 Connect to `orders_demo`:
 
-<span class="lang-tag lang-tag-shell">shell</span>
+<div class="lang-tag lang-tag-shell">shell</div>
 ```sh
 psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 ```
 
 Once connected, check the current connections:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 -- Current connections
 SELECT count(*) AS total_connections FROM pg_stat_activity;
@@ -97,14 +97,14 @@ The workaround is to create a dedicated pool login role with an **MD5** password
 
 Connect to the server on the **direct** port (5432) as the admin:
 
-<span class="lang-tag lang-tag-shell">shell</span>
+<div class="lang-tag lang-tag-shell">shell</div>
 ```sh
 psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 ```
 
 First, confirm the server's current password encryption method:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SHOW password_encryption;
 ```
@@ -120,7 +120,7 @@ Expected output:
 
 This confirms the server defaults to SCRAM — which is what we want for all regular roles. Now temporarily switch to MD5 for the pool role:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 -- Switch this session to MD5 password hashing
 SET password_encryption = 'md5';
@@ -128,7 +128,7 @@ SET password_encryption = 'md5';
 
 Verify the session change took effect:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SHOW password_encryption;
 ```
@@ -142,7 +142,7 @@ SHOW password_encryption;
 
 Now create the role (its password will be stored as MD5):
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 -- Create a dedicated PgBouncer login role
 CREATE ROLE app_pool LOGIN PASSWORD 'MyPoolPassword123!';
@@ -153,7 +153,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_pool;
 
 Revert the session back to SCRAM and confirm:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 -- Revert session back to the default
 SET password_encryption = 'scram-sha-256';
@@ -170,7 +170,7 @@ SHOW password_encryption;
 
 You can also verify that `app_pool` was stored with MD5 while your admin role remains SCRAM:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SELECT rolname,
        CASE WHEN rolpassword LIKE 'md5%' THEN 'md5'
@@ -201,7 +201,7 @@ Expected output:
 
 PgBouncer listens on port **6432** (not the default 5432). Connect using the `app_pool` role you just created:
 
-<span class="lang-tag lang-tag-shell">shell</span>
+<div class="lang-tag lang-tag-shell">shell</div>
 ```sh
 psql -h <postgresql-fqdn> -U app_pool -d orders_demo -p 6432
 ```
@@ -210,14 +210,14 @@ Enter the password `MyPoolPassword123!` when prompted.
 
 Verify you're going through PgBouncer:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SHOW server_version;  -- works: forwarded to PostgreSQL
 ```
 
 Run a query to confirm:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SELECT count(*) FROM orders;
 ```
@@ -228,7 +228,7 @@ SELECT count(*) FROM orders;
 
 Use `pgbench` from the jumpbox to simulate concurrent connections. `pgbench` ships in the `postgresql-contrib` package, which is **not** installed by default on Rocky Linux. Install it from the PGDG repository:
 
-<span class="lang-tag lang-tag-shell">shell</span>
+<div class="lang-tag lang-tag-shell">shell</div>
 ```sh
 sudo dnf -y module disable postgresql          # prevent AppStream from pulling PG13
 sudo dnf install -y postgresql18-contrib       # includes pgbench, pg_stat_statements, etc.
@@ -239,7 +239,7 @@ pgbench --version                              # should show: pgbench (PostgreSQ
 
 #### Without PgBouncer (port 5432 — direct, SCRAM auth):
 
-<span class="lang-tag lang-tag-shell">shell</span>
+<div class="lang-tag lang-tag-shell">shell</div>
 ```bash
 pgbench -h <postgresql-fqdn> -U <pgadmin> -d orders_demo -p 5432 \
   -c 50 -j 4 -T 30 -S
@@ -255,7 +255,7 @@ Note the **TPS (transactions per second)** and **latency average**.
 
 #### With PgBouncer (port 6432 — pooled, MD5 `app_pool` role):
 
-<span class="lang-tag lang-tag-shell">shell</span>
+<div class="lang-tag lang-tag-shell">shell</div>
 ```bash
 pgbench -h <postgresql-fqdn> -U app_pool -d orders_demo -p 6432 \
   -c 50 -j 4 -T 30 -S
@@ -281,7 +281,7 @@ Typical results:
 
 PgBouncer statistics are available through the `pgbouncer` virtual database:
 
-<span class="lang-tag lang-tag-shell">shell</span>
+<div class="lang-tag lang-tag-shell">shell</div>
 ```sh
 psql -h <postgresql-fqdn> -U app_pool -d pgbouncer -p 6432
 

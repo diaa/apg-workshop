@@ -105,14 +105,14 @@ On Azure Database for PostgreSQL Flexible Server, the admin user you created dur
 
 Connect to the server from the jumpbox:
 
-<span class="lang-tag lang-tag-shell">shell</span>
+<div class="lang-tag lang-tag-shell">shell</div>
 ```sh
 psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 ```
 
 View the existing roles:
 
-<span class="lang-tag lang-tag-psql">psql</span>
+<div class="lang-tag lang-tag-psql">psql</div>
 ```psql
 \du
 ```
@@ -139,7 +139,7 @@ Key points:
 
 A good practice is to create a **group role** (cannot login) that holds privileges, then add **login roles** (users) as members.
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 -- Create a group role for the application team
 CREATE ROLE app_team NOLOGIN;
@@ -150,7 +150,7 @@ CREATE ROLE readonly NOLOGIN;
 
 Now create two users and assign them to roles:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 -- Developer: inherits app_team privileges automatically
 CREATE ROLE dev_user LOGIN PASSWORD 'Workshop#Dev1' IN ROLE app_team INHERIT;
@@ -164,7 +164,7 @@ CREATE ROLE contractor_user LOGIN PASSWORD 'Workshop#Ext1' IN ROLE app_team NOIN
 
 Verify the roles:
 
-<span class="lang-tag lang-tag-psql">psql</span>
+<div class="lang-tag lang-tag-psql">psql</div>
 ```psql
 \du
 ```
@@ -185,14 +185,14 @@ Verify the roles:
 
 You should already be connected to the `orders_demo` database. If not:
 
-<span class="lang-tag lang-tag-psql">psql</span>
+<div class="lang-tag lang-tag-psql">psql</div>
 ```psql
 \c orders_demo
 ```
 
 Grant privileges to each group role:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 -- app_team gets full access to all tables and sequences in public
 GRANT USAGE ON SCHEMA public TO app_team;
@@ -214,7 +214,7 @@ This is the most important concept in this section. Use `SET ROLE` to impersonat
 
 First, grant yourself the ability to switch to these roles:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 -- Run as your admin user
 GRANT dev_user TO <your-admin>;
@@ -224,7 +224,7 @@ GRANT contractor_user TO <your-admin>;
 
 #### Test `dev_user` (INHERIT):
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SET ROLE dev_user;
 
@@ -241,7 +241,7 @@ RESET ROLE;
 
 #### Test `analyst_user` (INHERIT, readonly):
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SET ROLE analyst_user;
 
@@ -258,7 +258,7 @@ RESET ROLE;
 
 #### Test `contractor_user` (NOINHERIT):
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SET ROLE contractor_user;
 
@@ -269,7 +269,7 @@ SELECT * FROM customers LIMIT 1;
 
 **Why?** `contractor_user` was created with `NOINHERIT`. Even though it is a member of `app_team`, it does not automatically receive `app_team`'s privileges. The user must explicitly activate the role:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 -- Explicitly activate the parent role
 SET ROLE app_team;
@@ -290,12 +290,12 @@ RESET ROLE;
 
 Run the following to see all granted privileges:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 RESET ROLE;
 ```
 
-<span class="lang-tag lang-tag-psql">psql</span>
+<div class="lang-tag lang-tag-psql">psql</div>
 ```psql
 \dp
 ```
@@ -344,14 +344,14 @@ The format is `role=privileges/grantor`. So `app_team=arwdDxt/<admin>` means: `a
 
 A realistic scenario: the `orders` table holds financial data and should be read-only for the application team. Remove INSERT/UPDATE/DELETE from `app_team` on `orders`, keeping only SELECT:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 REVOKE INSERT, UPDATE, DELETE ON TABLE orders FROM app_team;
 ```
 
 Verify:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SET ROLE dev_user;
 
@@ -372,7 +372,7 @@ RESET ROLE;
 
 Check the privilege codes again:
 
-<span class="lang-tag lang-tag-psql">psql</span>
+<div class="lang-tag lang-tag-psql">psql</div>
 ```psql
 \dp orders
 ```
@@ -387,7 +387,7 @@ The `GRANT ALL ON ALL TABLES` command only affects tables that **already exist**
 
 Fix this with `ALTER DEFAULT PRIVILEGES`:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 -- Any future table created by your admin in the public schema
 -- will automatically grant SELECT to readonly and ALL to app_team
@@ -400,7 +400,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public
 
 Test it:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 -- Create a new table
 CREATE TABLE test_defaults (id serial, name text);
@@ -408,7 +408,7 @@ CREATE TABLE test_defaults (id serial, name text);
 -- Check privileges — readonly and app_team should already have access
 ```
 
-<span class="lang-tag lang-tag-psql">psql</span>
+<div class="lang-tag lang-tag-psql">psql</div>
 ```psql
 \dp test_defaults
 ```
@@ -417,7 +417,7 @@ You should see `readonly=r/<admin>` and `app_team=arwdDxt/<admin>` without any e
 
 Clean up:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 DROP TABLE test_defaults;
 ```
@@ -428,7 +428,7 @@ DROP TABLE test_defaults;
 
 For a more realistic setup, create a separate schema for the application and restrict the `public` schema:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 -- Create an application schema
 CREATE SCHEMA app AUTHORIZATION app_team;
@@ -445,13 +445,13 @@ REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 
 Open a **new** psql session as `dev_user` to verify everything works without `SET ROLE`:
 
-<span class="lang-tag lang-tag-shell">shell</span>
+<div class="lang-tag lang-tag-shell">shell</div>
 ```sh
 # On the jumpbox, open a new connection
 psql -h <postgresql-fqdn> -U dev_user -d orders_demo
 ```
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 -- Should work (inherited from app_team)
 SELECT COUNT(*) FROM customers;
@@ -462,7 +462,7 @@ VALUES (1, now(), 49.99, 'pending');
 -- ERROR: permission denied for table orders
 ```
 
-<span class="lang-tag lang-tag-psql">psql</span>
+<div class="lang-tag lang-tag-psql">psql</div>
 ```psql
 \q
 ```
@@ -473,12 +473,12 @@ VALUES (1, now(), 49.99, 'pending');
 
 Switch back to your admin user and clean up:
 
-<span class="lang-tag lang-tag-shell">shell</span>
+<div class="lang-tag lang-tag-shell">shell</div>
 ```sh
 psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 ```
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 -- Revoke privileges first (required before dropping roles)
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM app_team;

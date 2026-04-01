@@ -238,6 +238,7 @@ $medgray: #999;
 }
 
 // Code block language labels
+// Code block language labels (rendered as <div> to avoid kramdown <p> wrapping)
 .lang-tag {
     display: inline-block;
     font-size: .75em;
@@ -245,8 +246,13 @@ $medgray: #999;
     font-weight: 600;
     padding: 1px 8px;
     border-radius: 3px 3px 0 0;
-    margin-bottom: -2px;
+    margin-bottom: 0;
     letter-spacing: 0.5px;
+}
+
+// Remove top margin/gap on code blocks that follow a lang-tag
+.lang-tag + .highlighter-rouge {
+    margin-top: 0;
 }
 
 .lang-tag-shell {

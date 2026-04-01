@@ -12,7 +12,7 @@ In this section you will run a set of intentionally unoptimised, CPU-heavy queri
 
 Connect to the database if you are not already:
 
-<span class="lang-tag lang-tag-shell">shell</span>
+<div class="lang-tag lang-tag-shell">shell</div>
 ```sh
 psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 ```
@@ -32,7 +32,7 @@ These queries are **intentionally unoptimised** — they trigger full sequential
 
 #### Query 1 — Full Cross-Join Aggregation (extreme CPU)
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SELECT c.city, c.country, p.category,
        COUNT(DISTINCT o.order_id) AS total_orders,
@@ -51,7 +51,7 @@ ORDER BY revenue DESC;
 
 #### Query 2 — Correlated Subquery (no index, sequential scans)
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SELECT c.customer_id, c.first_name, c.last_name,
        (SELECT COUNT(*) FROM orders o WHERE o.customer_id = c.customer_id) AS order_count,
@@ -67,7 +67,7 @@ LIMIT 100;
 
 #### Query 3 — Window Functions Over Large Dataset (memory + CPU)
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SELECT order_id, customer_id, order_date, total_amount,
        SUM(total_amount) OVER (PARTITION BY customer_id ORDER BY order_date) AS running_total,
@@ -82,7 +82,7 @@ FROM orders;
 
 #### Query 4 — Heavy Text Computation + Sort (CPU + temp disk)
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SELECT c.email, md5(c.email || o.order_id::TEXT) AS hash_key,
        string_agg(p.product_name, ', ' ORDER BY oi.unit_price DESC) AS products_bought
@@ -100,7 +100,7 @@ ORDER BY hash_key;
 
 #### Query 5 — Repeated Sequential Scan Loop (sustained CPU for ~30s+)
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 DO $$
 BEGIN
@@ -140,7 +140,7 @@ END $$;
 
 #### Query 6 — Large Temp-Table Sort + Distinct (IOPS + memory pressure)
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SELECT DISTINCT ON (customer_id)
        customer_id, order_id, order_date, total_amount
@@ -174,7 +174,7 @@ After running the workload, check the damage:
 
 #### Active queries
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SELECT pid, state, query_start, LEFT(query, 80) AS query_snippet
 FROM pg_stat_activity
@@ -184,7 +184,7 @@ ORDER BY query_start;
 
 #### Sequential scan statistics (revisit from the Load Data section)
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SELECT relname AS table,
        seq_scan, seq_tup_read,
@@ -206,7 +206,7 @@ ORDER BY seq_tup_read DESC;
 
 #### Temp file usage
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SELECT datname, temp_files, pg_size_pretty(temp_bytes) AS temp_size
 FROM pg_stat_database
@@ -222,7 +222,7 @@ WHERE datname = 'orders_demo';
 
 #### Total database size
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SELECT pg_size_pretty(pg_database_size('orders_demo')) AS db_size;
 ```

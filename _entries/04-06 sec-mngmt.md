@@ -31,7 +31,7 @@ Audit logging of database activities in Azure Database for PostgreSQL - Flexible
 
 Connect to your server from the jumpbox and enable the extension:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 CREATE EXTENSION pgaudit;
 ```
@@ -50,7 +50,7 @@ From this point, all database actions in your server are being audited.
 
 Open a psql session and run some test commands:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 CREATE TABLE audit_test(id int);
 INSERT INTO audit_test SELECT generate_series(1, 100);
@@ -68,7 +68,7 @@ Audit logs are sent to the **Azure diagnostic logs** pipeline. You can view them
 3. Click **Save**
 4. After a few minutes, go to **Logs** in the left menu and run:
 
-<span class="lang-tag lang-tag-kql">kql</span>
+<div class="lang-tag lang-tag-kql">kql</div>
 ```kql
 AzureDiagnostics
 | where Category == "PostgreSQLLogs"

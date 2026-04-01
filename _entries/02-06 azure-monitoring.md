@@ -154,14 +154,14 @@ For 10 concurrent connections with `work_mem = 64MB`, PostgreSQL may use up to 6
 
 After the restart, connect from the jumpbox and create the extension:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 ```
 
 Verify it's working:
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 SELECT calls, total_exec_time, mean_exec_time, rows, LEFT(query, 100) AS query
 FROM pg_stat_statements
@@ -195,7 +195,7 @@ This step requires both **Azure Query Store** (server-side data collection) and 
 
 #### 7.2 — Create a Log Analytics workspace (if you don't have one)
 
-<span class="lang-tag lang-tag-shell">shell</span>
+<div class="lang-tag lang-tag-shell">shell</div>
 ```bash
 az monitor log-analytics workspace create \
   --resource-group <resource-group> \
@@ -222,7 +222,7 @@ az monitor log-analytics workspace create \
 
 Before running any analytical queries, confirm that logs are arriving in your Log Analytics workspace. Go to your Log Analytics workspace → **Logs** and run:
 
-<span class="lang-tag lang-tag-kql">kql</span>
+<div class="lang-tag lang-tag-kql">kql</div>
 ```kql
 AzureDiagnostics
 | where ResourceProvider == "MICROSOFT.DBFORPOSTGRESQL"
@@ -237,7 +237,7 @@ Go to your Log Analytics workspace → **Logs**. Try these queries:
 
 **Slow queries (> 5 seconds):**
 
-<span class="lang-tag lang-tag-kql">kql</span>
+<div class="lang-tag lang-tag-kql">kql</div>
 ```kql
 AzureDiagnostics
 | where ResourceProvider == "MICROSOFT.DBFORPOSTGRESQL"
@@ -250,7 +250,7 @@ AzureDiagnostics
 
 **Connection events:**
 
-<span class="lang-tag lang-tag-kql">kql</span>
+<div class="lang-tag lang-tag-kql">kql</div>
 ```kql
 AzureDiagnostics
 | where ResourceProvider == "MICROSOFT.DBFORPOSTGRESQL"
@@ -262,7 +262,7 @@ AzureDiagnostics
 
 **Wait events (what are queries waiting on):**
 
-<span class="lang-tag lang-tag-kql">kql</span>
+<div class="lang-tag lang-tag-kql">kql</div>
 ```kql
 AzureDiagnostics
 | where ResourceProvider == "MICROSOFT.DBFORPOSTGRESQL"
@@ -360,12 +360,12 @@ Set up an alert so you are notified when CPU exceeds a threshold — this simula
 
 Go back to the jumpbox and re-run Query 5 with a higher loop count:
 
-<span class="lang-tag lang-tag-psql">psql</span>
+<div class="lang-tag lang-tag-psql">psql</div>
 ```psql
 \c orders_demo
 ```
 
-<span class="lang-tag lang-tag-sql">sql</span>
+<div class="lang-tag lang-tag-sql">sql</div>
 ```sql
 DO $$
 BEGIN

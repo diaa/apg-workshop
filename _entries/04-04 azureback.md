@@ -19,21 +19,21 @@ You can manually take a backup by using the PostgreSQL tool pg_dump and pg_resto
 
 SSH into to the jumpbox vm. 
 
-<span class="lang-tag lang-tag-shell">shell</span>
+<div class="lang-tag lang-tag-shell">shell</div>
 ```sh
 ssh username@<jumpbox-ip
 ```
 
 Execute below command to take a back up of the database.
 
-<span class="lang-tag lang-tag-shell">shell</span>
+<div class="lang-tag lang-tag-shell">shell</div>
 ```sh 
 pg_dump -Fc -v --host=<host> --username=<name> --dbname=<database name> -f <database>.dump
 ```
 
 * Restore manual database backup using pg_restore
 
-<span class="lang-tag lang-tag-shell">shell</span>
+<div class="lang-tag lang-tag-shell">shell</div>
 ```sh 
 pg_restore -v --no-owner --host=<server name> --port=<port> --username=<user-name> --dbname=<target database name> <database>.dump
 ```
