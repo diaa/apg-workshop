@@ -135,23 +135,22 @@ For 10 concurrent connections with `work_mem = 64MB`, PostgreSQL may use up to 6
 
 ---
 
-### Step 6 — Enable Server-Side Prerequisites
+### Step 6 — Enable pg_stat_statements
 
-Query Performance Insight (Step 8) and the KQL queries in Log Analytics both require several server parameters to be enabled. Configure them all in one step to minimise restarts.
+`pg_stat_statements` is a standard PostgreSQL extension that collects per-query execution statistics (calls, time, rows). It works on any PostgreSQL installation and is the foundation for query performance analysis.
 
 1. Go to **Server parameters** in the left menu
-2. Search for and set each parameter:
+2. Allow the extension first:
+   - Search for `azure.extensions`
+   - Click the dropdown — this shows all extensions available on Flexible Server
+   - Find and **check** `pg_stat_statements`
+   - Click **Save** (this does not require a restart)
+3. Now enable the extension in the server:
+   - Search for `shared_preload_libraries` and ensure `pg_stat_statements` is checked
+   - Search for `pg_stat_statements.track` and set it to `ALL`
+4. Click **Save** — this requires a **server restart**
 
-| Parameter | Value | Why |
-|---|---|---|
-| `shared_preload_libraries` | Include `pg_stat_statements` | Required for per-query statistics |
-| `pg_stat_statements.track` | `ALL` | Track queries in all contexts (top-level + nested) |
-| `pg_qs.query_capture_mode` | `ALL` (or `TOP`) | Enables **Query Store** — collects query runtime statistics that feed Query Performance Insight and the `PostgreSQLQueryStoreRuntimeStatistics` log category |
-| `pgms_wait_sampling.query_capture_mode` | `ALL` | Enables **Query Store Wait Sampling** — collects wait event data that feeds the `PostgreSQLQueryStoreWaitStatistics` log category |
-
-3. Click **Save** — this requires a **server restart**
-
-> **Already done?** If you enabled `pg_stat_statements` in Step 6 of the **Load Data** section, you still need to verify that `pg_qs.query_capture_mode` and `pgms_wait_sampling.query_capture_mode` are set. These are separate from `pg_stat_statements`.
+> **Already done?** If you enabled `pg_stat_statements` in Step 6 of the **Load Data** section, skip to Step 7.
 
 After the restart, connect from the jumpbox and create the extension:
 
@@ -172,11 +171,27 @@ You should see the demo workload queries at the top of the list.
 
 ---
 
-### Step 7 — Configure Diagnostic Settings (Logs to Log Analytics)
+### Step 7 — Configure Diagnostic Settings and Query Store (Logs to Log Analytics)
 
 While Metrics Explorer shows numbers, **diagnostic settings** capture detailed logs including individual query executions, autovacuum runs, and connection events. This is also a prerequisite for **Query Performance Insight** (Step 8).
 
-#### 7.1 — Create a Log Analytics workspace (if you don't have one)
+This step requires both **Azure Query Store** (server-side data collection) and **diagnostic settings** (export to Log Analytics). Query Store is an Azure-specific feature — it is separate from the standard `pg_stat_statements` extension configured in Step 6.
+
+#### 7.1 — Enable Query Store
+
+1. Go to **Server parameters** in the left menu
+2. Search for `pg_qs.query_capture_mode` and set it to **ALL** (or **TOP**)
+3. Search for `pgms_wait_sampling.query_capture_mode` and set it to **ALL**
+4. Click **Save** — this requires a **server restart**
+
+| Parameter | Value | Why |
+|---|---|---|
+| `pg_qs.query_capture_mode` | `ALL` (or `TOP`) | Enables **Query Store** — collects query runtime statistics that feed Query Performance Insight and the `PostgreSQLQueryStoreRuntimeStatistics` log category |
+| `pgms_wait_sampling.query_capture_mode` | `ALL` | Enables **Query Store Wait Sampling** — collects wait event data that feeds the `PostgreSQLQueryStoreWaitStatistics` log category |
+
+> **Without these parameters**, the diagnostic settings below will export empty log categories — and Query Performance Insight (Step 8) will show no data.
+
+#### 7.2 — Create a Log Analytics workspace (if you don't have one)
 
 ```bash
 az monitor log-analytics workspace create \
@@ -185,7 +200,7 @@ az monitor log-analytics workspace create \
   --location uksouth
 ```
 
-#### 7.2 — Enable diagnostic settings
+#### 7.3 — Enable diagnostic settings
 
 1. In the PostgreSQL server blade, click **Diagnostic settings** (under Monitoring)
 2. Click **+ Add diagnostic setting**
@@ -200,7 +215,7 @@ az monitor log-analytics workspace create \
 
 > Logs take 5–10 minutes to start appearing in Log Analytics. Re-run a few demo workload queries to generate fresh data while you wait.
 
-#### 7.3 — Verify data is flowing
+#### 7.4 — Verify data is flowing
 
 Before running any analytical queries, confirm that logs are arriving in your Log Analytics workspace. Go to your Log Analytics workspace → **Logs** and run:
 
@@ -210,9 +225,9 @@ AzureDiagnostics
 | summarize count() by Category
 ```
 
-You should see categories including `PostgreSQLQueryStoreRuntimeStatistics`, `PostgreSQLQueryStoreWaitStatistics`, and `PostgreSQLSessions`. If this returns no results, check that: (1) diagnostic settings in Step 7.2 are saved and pointing to this workspace, (2) Query Store is enabled in Step 6, (3) you've waited at least 5–10 minutes.
+You should see categories including `PostgreSQLQueryStoreRuntimeStatistics`, `PostgreSQLQueryStoreWaitStatistics`, and `PostgreSQLSessions`. If this returns no results, check that: (1) diagnostic settings in Step 7.2 are saved and pointing to this workspace, (2) Query Store is enabled in Step 7.1, (3) you've waited at least 5–10 minutes.
 
-#### 7.4 — Query the logs with KQL
+#### 7.5 — Query the logs with KQL
 
 Go to your Log Analytics workspace → **Logs**. Try these queries:
 
@@ -250,7 +265,7 @@ AzureDiagnostics
 | take 20
 ```
 
-> **No results?** If the KQL queries return empty, verify: (1) `pg_qs.query_capture_mode` is set to `ALL` or `TOP` in Step 6, (2) diagnostic settings in Step 7.2 include the Query Store log categories, (3) you've waited at least 5–10 minutes after configuration.
+> **No results?** If the KQL queries return empty, verify: (1) `pg_qs.query_capture_mode` is set to `ALL` or `TOP` in Step 7.1, (2) diagnostic settings in Step 7.3 include the Query Store log categories, (3) you've waited at least 5–10 minutes after configuration.
 
 ---
 
@@ -258,7 +273,7 @@ AzureDiagnostics
 
 This is the most powerful built-in tool for finding slow queries without installing any extensions.
 
-> **Prerequisites:** Steps 6 and 7 must be completed first. Query Performance Insight requires Query Store (`pg_qs.query_capture_mode`), Query Store Wait Sampling (`pgms_wait_sampling.query_capture_mode`), and a Log Analytics workspace with diagnostic settings configured. See the [official prerequisites](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-query-performance-insight#prerequisites).
+> **Prerequisites:** Step 7 must be completed first. Query Performance Insight requires Query Store (`pg_qs.query_capture_mode`), Query Store Wait Sampling (`pgms_wait_sampling.query_capture_mode`), and a Log Analytics workspace with diagnostic settings configured. See the [official prerequisites](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-query-performance-insight#prerequisites).
 
 1. In the left menu, under **Intelligent Performance**, click **Query Performance Insight**
 2. You will see tabs: **Long running queries**, **Top queries by CPU**, **Top queries by IO**
@@ -441,8 +456,8 @@ These are community PostgreSQL parameters that work on any PostgreSQL installati
 In this section you:
 
 1. **Observed CPU, memory, IOPS, and temp file metrics** in Azure Metrics Explorer and correlated each spike to a specific demo query
-2. **Enabled server-side prerequisites** — `pg_stat_statements`, Query Store, and Query Store Wait Sampling
-3. **Configured diagnostic settings** to send PostgreSQL logs to Log Analytics and wrote KQL queries to analyse them
+2. **Enabled `pg_stat_statements`** to collect per-query execution statistics (standard PostgreSQL)
+3. **Configured Query Store and diagnostic settings** to send PostgreSQL logs to Log Analytics and wrote KQL queries to analyse them
 4. **Used Query Performance Insight** to identify the top queries by CPU consumption and I/O without needing SSH access to the server
 5. **Created an alert rule** that sends a notification when CPU exceeds a threshold
 6. **Learned the triage workflow**: Metric spike → timestamp → Query Performance Insight → EXPLAIN ANALYZE → fix → verify
