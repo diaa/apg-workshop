@@ -87,14 +87,54 @@ SHOW max_connections;
 
 ---
 
-### Step 3 — Connect Through PgBouncer
+### Step 3 — Create a PgBouncer-Compatible Login Role (MD5)
 
-PgBouncer listens on port **6432** (not the default 5432):
+Azure-managed PgBouncer **cannot use SCRAM-SHA-256** for client authentication. The built-in pooler has no mechanism to retrieve the SCRAM verifier from the server, so connections that use SCRAM passwords will fail with an authentication error on port 6432.
+
+This is an **architectural limitation** of the Azure PgBouncer integration, not a protocol limitation — SCRAM itself works fine on direct connections (port 5432).
+
+The workaround is to create a dedicated pool login role with an **MD5** password:
+
+Connect to the server on the **direct** port (5432) as the admin:
 
 <span class="lang-tag lang-tag-shell">shell</span>
 ```sh
-psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo -p 6432
+psql -h <postgresql-fqdn> -U <pgadmin> -d orders_demo
 ```
+
+Then create the role:
+
+<span class="lang-tag lang-tag-sql">sql</span>
+```sql
+-- Switch this session to MD5 password hashing
+SET password_encryption = 'md5';
+
+-- Create a dedicated PgBouncer login role
+CREATE ROLE app_pool LOGIN PASSWORD 'MyPoolPassword123!';
+
+-- Grant access to the tables in orders_demo
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_pool;
+
+-- Revert session back to the default
+SET password_encryption = 'scram-sha-256';
+```
+
+> **Why MD5 only for this role?** The `SET password_encryption` change is **session-scoped** — it only affects the `CREATE ROLE` statement in the same session. Your admin account and all other roles remain SCRAM-protected. The `app_pool` role is used exclusively for pooled connections through port 6432.
+
+> **Security note:** Use a strong, unique password for `app_pool`. In production, store it in Azure Key Vault and rotate it regularly. Do not reuse the admin password.
+
+---
+
+### Step 4 — Connect Through PgBouncer
+
+PgBouncer listens on port **6432** (not the default 5432). Connect using the `app_pool` role you just created:
+
+<span class="lang-tag lang-tag-shell">shell</span>
+```sh
+psql -h <postgresql-fqdn> -U app_pool -d orders_demo -p 6432
+```
+
+Enter the password `MyPoolPassword123!` when prompted.
 
 Verify you're going through PgBouncer:
 
@@ -112,7 +152,7 @@ SELECT count(*) FROM orders;
 
 ---
 
-### Step 4 — Load Test: With and Without PgBouncer
+### Step 5 — Load Test: With and Without PgBouncer
 
 Use `pgbench` from the jumpbox to simulate concurrent connections. `pgbench` ships in the `postgresql-contrib` package, which is **not** installed by default on Rocky Linux. Install it from the PGDG repository:
 
@@ -125,7 +165,7 @@ pgbench --version                              # should show: pgbench (PostgreSQ
 
 > **Why `module disable`?** Rocky Linux ships a `postgresql` AppStream module (usually PG13). Without disabling it, `dnf` may resolve to the older version and overwrite your PGDG `psql` binary.
 
-#### Without PgBouncer (port 5432):
+#### Without PgBouncer (port 5432 — direct, SCRAM auth):
 
 <span class="lang-tag lang-tag-shell">shell</span>
 ```bash
@@ -141,13 +181,15 @@ Flags:
 
 Note the **TPS (transactions per second)** and **latency average**.
 
-#### With PgBouncer (port 6432):
+#### With PgBouncer (port 6432 — pooled, MD5 `app_pool` role):
 
 <span class="lang-tag lang-tag-shell">shell</span>
 ```bash
-pgbench -h <postgresql-fqdn> -U <pgadmin> -d orders_demo -p 6432 \
+pgbench -h <postgresql-fqdn> -U app_pool -d orders_demo -p 6432 \
   -c 50 -j 4 -T 30 -S
 ```
+
+Enter the `app_pool` password when prompted.
 
 Compare:
 
@@ -163,13 +205,13 @@ Typical results:
 
 ---
 
-### Step 5 — Monitor PgBouncer via Server Parameters
+### Step 6 — Monitor PgBouncer via Server Parameters
 
 PgBouncer statistics are available through the `pgbouncer` virtual database:
 
 <span class="lang-tag lang-tag-shell">shell</span>
 ```sh
-psql -h <postgresql-fqdn> -U <pgadmin> -d pgbouncer -p 6432
+psql -h <postgresql-fqdn> -U app_pool -d pgbouncer -p 6432
 
 SHOW POOLS;
 SHOW STATS;
